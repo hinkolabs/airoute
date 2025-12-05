@@ -1,0 +1,282 @@
+---
+alwaysApply: true
+---
+============================================================
+AIRROUTE – MASTER PROJECT INSTRUCTIONS (FINAL VERSION)
+============================================================
+
+You are the lead developer of AIRROUTE (HinkoLabs).
+Follow ALL rules strictly. Never deviate unless asked.
+
+This document defines:
+✔ Project vision & UX philosophy  
+✔ Development rules  
+✔ Folder structure  
+✔ Code conventions  
+✔ Supabase DB schema (5 tables)  
+✔ What features to build NOW (v0.5)  
+✔ What features NOT to build yet  
+============================================================
+
+
+============================================================
+1. PROJECT VISION (READ CAREFULLY)
+============================================================
+
+AIRROUTE = Global AI Navigation Portal  
+Target user = Light beginner users who want simple recommendations.  
+The UX philosophy:
+- Very simple. Very visual. Mobile-first.
+- User should find a tool in < 3 seconds.
+- Minimal text. Use cards, icons, badges.
+- No clutter. No complex filtering early on.
+- Trust-first: Verified links only.
+
+Primary Service Flows:
+1) Simple Mode (core of v0.5)
+   - User chooses purpose → Airoute recommends tools.
+   - Based on “task_category”, “best_for”, and ranking fields.
+
+2) Tool Cards
+   - Show image (later), name, desc_simple_en or desc_ko, badges, CTA button.
+
+3) Tool Detail (v0.5 minimal)
+   - Show all fields from tools table.
+   - Show prompts list (optional, if using prompts table now).
+
+4) Verified Link system
+   - affiliate_url is primary link.
+   - related_gear (Coupang/HW link) used later.
+
+5) Senior Mode (Hyodo Mode)
+   - Use desc_senior field (Korean simple explanation).
+   - Not required for v0.5 but code structure must allow future expansion.
+
+
+============================================================
+2. DEVELOPMENT RULES (MANDATORY)
+============================================================
+
+✔ Next.js 14 App Router only  
+✔ TypeScript only  
+✔ Tailwind CSS only  
+✔ React Server Components default  
+✔ Do NOT use inline styles  
+✔ Do NOT change DB schema unless user explicitly says so  
+✔ Create new folders/files if missing  
+✔ Never break folder structure  
+✔ Always generate clean, production-level code  
+
+File naming:
+- components → PascalCase
+- pages → default Next.js naming
+- filename → kebab-case
+
+General:
+- Use constants for magic numbers
+- Keep functions small and pure
+- Separate UI from data-fetching logic
+
+
+============================================================
+3. FOLDER STRUCTURE (STRICT)
+============================================================
+
+src/
+ ├─ app/
+ │   ├─ layout.tsx
+ │   ├─ page.tsx
+ │   ├─ simple/
+ │   │    └─ page.tsx
+ │   ├─ api/
+ │   │    ├─ tools/
+ │   │    │    └─ route.ts        # GET tools list
+ │   │    └─ tool/
+ │   │         └─ [id]/route.ts   # GET tool detail
+ │
+ ├─ components/
+ │   ├─ layout/
+ │   │    ├─ header.tsx
+ │   │    └─ footer.tsx
+ │   ├─ tool/
+ │   │    └─ tool-card.tsx
+ │   ├─ ui/
+ │   │    └─ button.tsx
+ │
+ ├─ lib/
+ │   └─ supabase.ts
+ │
+ ├─ types/
+ │   ├─ db-tool.ts
+ │   ├─ db-prompt.ts
+ │   ├─ db-user.ts
+ │   ├─ db-credit-log.ts
+ │   └─ db-saved-tool.ts
+
+
+============================================================
+4. SUPABASE DB SCHEMA (5 TABLES – DO NOT MODIFY)
+============================================================
+
+CREATE TABLE public.users (
+    id uuid REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+    email text NOT NULL UNIQUE,
+    subscription_plan text DEFAULT 'free' NOT NULL,
+    billing_cycle text DEFAULT 'monthly',
+    credits integer DEFAULT 5 NOT NULL,
+    next_billing_date date,
+    customer_id text,
+    created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.tools (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    name text NOT NULL,
+    affiliate_url text NOT NULL,
+    desc_en text,
+    desc_ko text,
+    desc_simple_en text,
+    desc_senior text,
+    manual_rank integer DEFAULT 999 NOT NULL,
+    task_category text NOT NULL,
+    best_for text,
+    rank_in_task integer DEFAULT 999 NOT NULL,
+    why_pick text,
+    tags text[],
+    related_gear text,
+    created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.saved_tools (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+    tool_id uuid REFERENCES public.tools(id) ON DELETE CASCADE NOT NULL,
+    folder_name text,
+    memo text,
+    created_at timestamptz DEFAULT now(),
+    UNIQUE (user_id, tool_id)
+);
+
+CREATE TABLE public.credit_logs (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    user_id uuid REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+    action_type text NOT NULL,
+    feature_name text NOT NULL,
+    amount integer NOT NULL,
+    created_at timestamptz DEFAULT now()
+);
+
+CREATE TABLE public.prompts (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    tool_id uuid REFERENCES public.tools(id) ON DELETE CASCADE NOT NULL,
+    title text NOT NULL,
+    content text NOT NULL,
+    is_premium boolean DEFAULT FALSE NOT NULL,
+    created_at timestamptz DEFAULT now()
+);
+
+
+============================================================
+5. TYPESCRIPT TYPES (USE THESE EXACT STRUCTURES)
+============================================================
+
+DbTool, DbPrompt, DbUser, DbSavedTool, DbCreditLog
+(Already provided previously. Cursor must generate them accurately.)
+
+
+============================================================
+6. API RULES
+============================================================
+
+/tools (list)
+- GET only
+- Return sorted tools:
+  ORDER BY manual_rank ASC, rank_in_task ASC, created_at DESC
+
+/tool/[id] (detail)
+- GET only
+- Return full fields + related prompts (optional)
+
+Error Handling:
+- Always check Supabase { data, error }
+- Log error internally, return friendly message to UI
+
+No mutation endpoints needed in v0.5.
+
+
+============================================================
+7. UI / UX RULES
+============================================================
+
+✔ Mobile-first layout  
+✔ Cards > text  
+✔ Clear spacing  
+✔ CTA is always a Button component  
+✔ Use desc_simple_en for initial listing  
+✔ Use best_for badge  
+✔ Dark theme default  
+
+ToolCard required fields:
+- name
+- desc_simple_en (fallback desc_ko)
+- best_for badge
+- task_category
+- tags
+- affiliate_url button
+
+Simple Mode page:
+- Fetch tools via /api/tools
+- Display cards in responsive grid
+- Keep UI extremely simple
+
+
+============================================================
+8. WHAT WE BUILD *NOW* (v0.5 – December Sprint)
+============================================================
+
+DO BUILD:
+- Layout (header, footer)
+- Landing page
+- Simple Mode (page + API + UI)
+- ToolCard component
+- Supabase integration
+- DB types
+- Tools list + detail endpoints
+
+DO NOT BUILD YET:
+- Auth (login/signup)
+- Saved tools
+- Credit logs
+- Premium prompts gating
+- Payment
+- My Page
+- Admin dashboard
+
+
+============================================================
+9. BEHAVIOR RULES FOR CURSOR
+============================================================
+
+When the user requests code:
+- Show file path before code.
+- Create missing files automatically.
+- Never delete unrelated code.
+- Always follow folder structure.
+- Use correct DB column names.
+- Use supabase.ts client.
+
+
+============================================================
+END OF AIRROUTE MASTER PROJECT INSTRUCTIONS
+============================================================
+# Korean Response Rule
+
+From now on, the AI Agent must always respond in Korean unless the user explicitly requests English.
+
+- 모든 설명, 해석, 개발 가이드, 코드 리뷰는 한국어로 답변한다.
+- 코드를 생성할 때는 영어로 작성하되, 설명 부분은 반드시 한국어로 한다.
+- 사용자 명령어가 한국어/영어/혼합이어도 기본 응답은 한국어이다.
+- 기술적 용어는 한국 개발 관행에 맞춰 자연스럽게 번역하거나 설명한다.
+- 만약 사용자가 "영어로 답변해줘" 또는 "영문 버전"이라고 명시했을 때만 영어로 답한다.
+
+이 규칙은 모든 요청(context), 계획(plan), /command-K 작업에 자동으로 적용된다.
