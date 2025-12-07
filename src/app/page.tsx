@@ -1,65 +1,38 @@
-import Image from "next/image";
+import { getActiveTools } from "@/lib/tools";
+import HeroSection from "./_components/home/hero-section";
+import BestForYouSection from "./_components/home/best-for-you-section";
+import AiStudioSection from "./_components/home/ai-studio-section";
+import PopularToolsSection from "./_components/home/popular-tools-section";
+import BenefitServicesSection from "./_components/home/benefit-services-section";
+import GuidesSection from "./_components/home/guides-section";
+import SimpleModeCtaSection from "./_components/home/simple-mode-cta-section";
 
-export default function Home() {
+export default async function Page() {
+  // Fetch tools data for sections that need it
+  const tools = await getActiveTools();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <main>
+      {/* Hero Section - 메인 히어로 */}
+      <HeroSection />
+
+      {/* Best For You Section - 작업별 추천 툴 */}
+      <BestForYouSection tools={tools} />
+
+      {/* AI Studio Section - AI 스튜디오 소개 */}
+      <AiStudioSection />
+
+      {/* Popular Tools Section - 인기 툴 목록 */}
+      <PopularToolsSection tools={tools} />
+
+      {/* Benefit Services Section - 부가 서비스 소개 */}
+      <BenefitServicesSection />
+
+      {/* Guides Section - 가이드 & 아티클 */}
+      <GuidesSection />
+
+      {/* Simple Mode CTA Section - 심플 모드 전환 유도 */}
+      <SimpleModeCtaSection />
+    </main>
   );
 }

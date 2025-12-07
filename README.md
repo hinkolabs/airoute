@@ -1,36 +1,177 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Airoute 🌍  
+**AI Tool Navigation Platform for Global Beginners**  
+*Too many AI tools? Don’t worry — Airoute finds the best route for you.*
 
-## Getting Started
+Airoute is a global AI tool navigation platform designed for beginners and casual users.  
+Instead of overwhelming filters and technical jargon, Airoute helps users **discover the right AI tool in seconds**, based purely on their purpose.
 
-First, run the development server:
+Current version: **v0.5 Beta (Simple Mode MVP)**  
+Commercial product roadmap toward **v1.0 Launch (2026)** is in progress.
+
+---
+
+## 🚀 Mission
+
+AI tools are growing exponentially, yet the majority of everyday users have **no idea which tool fits their needs**.
+
+Airoute’s mission is simple:
+
+- Provide a **clear, beginner-friendly map** of the AI tool ecosystem  
+- Offer **instant recommendations** with zero complexity  
+- Deliver **verified, safe, and official links only**  
+- Focus on **mobile-first, fast-loading UX** suitable for global casual users
+
+Airoute aims to become the **“Google Maps for AI tools.”**
+
+---
+
+## 🎯 Core Product Features
+
+### **1. Simple Mode (v0.5 – Core MVP Flow)**
+A frictionless recommendation interface:
+- Users select a task (e.g., Resume, Image, Video, Writing)
+- Airoute returns a curated list of AI tools
+- Data is ranked by category, tool quality, and global usage
+- Clean card-based UI optimized for mobile
+
+### **2. Verified Link Layer**
+Every tool links to:
+- **Official websites only**
+- Or verified affiliate links (when applicable)
+
+This ensures **zero risk of phishing or fake AI sites**, a critical global issue today.
+
+### **3. Multilingual Content Architecture**
+Airoute is designed for global expansion with content fields supporting:
+- `desc_en` (English)
+- `desc_ko` (Korean)
+- `desc_simple_en` (Beginner-friendly English)
+- `desc_senior` (Senior-friendly Korean for “Hyodo Mode”)
+
+### **4. Data-Driven Tool Rankings**
+Each AI tool includes:
+- Manual ranking score  
+- Task-level ranking  
+- Tags for fast search  
+- “Best for” badges  
+- Why-pick recommendations
+
+This allows Airoute to scale toward **AI-powered recommendation engines**.
+
+---
+
+## 🗃 Database Overview (Supabase)
+
+Airoute uses **5 core tables** in Supabase:
+
+| Table | Purpose |
+|-------|---------|
+| `users` | User profiles, subscription plan, credits |
+| `tools` | Master data of AI tools (content, tags, badges, ranking) |
+| `saved_tools` | User bookmarks (“My Toolbox”) |
+| `credit_logs` | Credit usage & history for premium features |
+| `prompts` | Premium prompt library connected to each tool |
+
+All schemas are stored and maintained through Supabase SQL.
+
+---
+
+## 🛠 Tech Stack
+
+**Frontend**  
+- Next.js 14 (App Router)  
+- TypeScript  
+- Tailwind CSS  
+- Responsive mobile-first UI
+
+**Backend / Infra**  
+- Supabase (DB + Auth)  
+- Serverless API routes  
+- Vercel (production + preview deployments)
+
+**AI-Assisted Development**  
+- Cursor IDE  
+- Custom project rules stored in `.cursor/rules/airoute-core-rules.mdc`
+
+---
+
+## 📁 Project Structure
 
 ```bash
+airoute/
+├── .cursor/
+│   └── rules/
+│       └── airoute-core-rules.mdc      # Master development rules for Cursor
+├── lib/
+│   └── supabase.ts                     # Supabase client
+├── src/
+│   ├── app/
+│   │   ├── page.tsx                    # Landing page
+│   │   ├── simple/page.tsx             # Simple Mode UI
+│   │   └── api/
+│   │       ├── tools/route.ts          # Fetch AI tools
+│   │       └── tool/[id]/route.ts      # Fetch single tool
+│   ├── components/
+│   │   └── tool-card.tsx               # Card UI for each AI tool
+│   └── types/                          # DB types
+⚙️ Local Development
+1. Install dependencies
+bash
+코드 복사
+npm install
+2. Add environment variables
+Create .env.local:
+
+bash
+코드 복사
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+3. Run locally
+bash
+코드 복사
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+🚀 Deployment (Vercel)
+Connect GitHub repository to Vercel
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Add Supabase environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Deploy using default Next.js build settings
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Branch Strategy
 
-## Learn More
+main → Production
 
-To learn more about Next.js, take a look at the following resources:
+dev → Development, preview deployments
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+🧭 Roadmap
+v0.6
+Tool detail pages
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Category-based navigation
 
-## Deploy on Vercel
+Related hardware recommendations
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+v0.8
+Multilingual UI (EN/KR/JP)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Senior-friendly “Hyodo Mode”
+
+Basic analytics dashboard
+
+v1.0 Launch
+Smart recommendation engine
+
+Premium prompt library
+
+Subscription model integration
+
+Global marketing rollout
+
+📄 License
+Commercial, all rights reserved.
+(Custom license will be added prior to v1.0 launch.)
+
+🤝 Contact & Collaboration
+Airoute is developed by HinkoLabs.
+For partnership or collaboration inquiries, please contact:
+ramumkii@hinkolabs.com

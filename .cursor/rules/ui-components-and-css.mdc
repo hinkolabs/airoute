@@ -1,0 +1,28 @@
+---
+alwaysApply: true
+---
+
+# AIRoute UI & CSS reuse rules
+
+1. Global CSS safety
+   - Never modify `src/app/globals.css` unless the user explicitly asks for a global style change.
+   - Prefer local styles via Tailwind classes inside each component.
+   - Do NOT reset base fonts, body margins, or global background colors without confirmation.
+
+2. Reuse shared UI components
+   - When implementing or updating any page UI, always reuse existing components from `src/components` instead of re-creating similar styles.
+   - Prefer these components:
+     - Layout: `PageShell`, `PageHeader` from `src/components/layout`.
+     - Basic UI: `Button`, `Badge`, `Chip` from `src/components/ui`.
+     - Search: `ToolSearchBar`, `ToolFilterChips` from `src/components/search`.
+     - Tools: `ToolCard`, `ToolGrid` from `src/components/tools`.
+   - If you need a new variation, extend the existing component with props (e.g. `variant`, `size`) instead of cloning the same JSX in a new file.
+
+3. UI Lab page
+   - `/ui-lab` is the internal playground for components.
+   - When adding or changing shared UI components, update `/ui-lab` as well so we can visually check them.
+   - Do NOT link `/ui-lab` from the public navigation.
+
+4. Language
+   - All code comments, component names, and file names should stay in English.
+   - Explanations and summaries for the user should be written in Korean.
