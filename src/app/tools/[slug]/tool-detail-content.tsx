@@ -169,10 +169,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         </section>
 
         {/* Divider */}
-        <hr className={cn(
-          "mb-10",
-          theme === "day" ? "border-slate-200" : "border-white/10"
-        )} />
+        <hr className="mb-10 border-white/10" />
 
         {/* More Tools Placeholder */}
         <section>
@@ -183,12 +180,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={cn(
-                  "flex h-32 items-center justify-center rounded-2xl border border-dashed text-sm",
-                  theme === "day"
-                    ? "border-slate-300 bg-slate-100/50 text-slate-500"
-                    : "border-white/10 bg-slate-900/30 text-slate-500"
-                )}
+                className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-900/30 text-sm text-slate-500"
               >
                 Coming soon...
               </div>
