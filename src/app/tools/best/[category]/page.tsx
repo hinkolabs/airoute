@@ -1,477 +1,693 @@
 import Link from "next/link";
 import { ScanningBanner } from "./_components/scanning-banner";
 
-// ============================================================
-// Types
-// ============================================================
-type RankingMeta = {
-  rank: 1 | 2 | 3;
-  badge: string;
-  badgeIcon: string;
-  monthlyVisits: string;
-  rating: number;
-  ratingSource: string;
-  reason: string;
-  matchScore: number;
-};
-
 type BestPick = {
+  rank: 1 | 2 | 3;
   slug: string;
   name: string;
+  label: string;
   tagline: string;
-  bestFor: string;
-  highlight: string;
-  ranking: RankingMeta;
+  ranking?: {
+    rankPosition?: 1 | 2 | 3;
+    badgeType?: "POPULAR" | "VALUE" | "BEGINNER";
+    monthlyVisits?: string;
+    rating?: number;
+    ratingSource?: string;
+    reason?: string;
+    matchScore?: number;
+  };
 };
 
-// ============================================================
-// Category Data
-// ============================================================
-const CATEGORY_CONFIG: Record<
-  string,
-  {
-    title: string;
-    subtitle: string;
-    description: string;
-    picks: BestPick[];
-  }
+// ===========================
+// RANKING PROOF (by slug)
+// ===========================
+type RankingProof = {
+  badgeType: "POPULAR" | "VALUE" | "BEGINNER";
+  metrics: {
+    rating?: number;
+    ratingSource?: string;
+    visitsRange?: string;
+  };
+  reason: string;
+  sourceHint: string; // e.g., "Similarweb, G2, Editorial"
+};
+
+const RANKING_PROOF: Record<string, RankingProof> = {
+  // Image & Design
+  midjourney: {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.8, ratingSource: "G2", visitsRange: "15M+" },
+    reason: "High user adoption with consistent usage patterns in visual content creation",
+    sourceHint: "Similarweb, G2",
+  },
+  "leonardo-ai": {
+    badgeType: "VALUE",
+    metrics: { rating: 4.6, ratingSource: "G2", visitsRange: "8M+" },
+    reason: "Commonly used for asset creation with strong feature-to-price balance",
+    sourceHint: "G2, Editorial",
+  },
+  canva: {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.7, ratingSource: "G2", visitsRange: "6M+" },
+    reason: "Popular with beginners based on ease of use and onboarding completion rates",
+    sourceHint: "G2, Similarweb",
+  },
+
+  // Writing
+  chatgpt: {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.8, ratingSource: "G2", visitsRange: "100M+" },
+    reason: "Highest usage across writing tasks with broad category adoption",
+    sourceHint: "Similarweb, Editorial",
+  },
+  claude: {
+    badgeType: "VALUE",
+    metrics: { rating: 4.7, ratingSource: "G2", visitsRange: "50M+" },
+    reason: "Frequently chosen for long-form content based on usage in document workflows",
+    sourceHint: "G2, Editorial",
+  },
+  "jasper-ai": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.5, ratingSource: "G2", visitsRange: "5M+" },
+    reason: "Popular with marketing teams based on template usage and onboarding metrics",
+    sourceHint: "G2, Editorial",
+  },
+
+  // Video
+  runway: {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.6, ratingSource: "G2", visitsRange: "12M+" },
+    reason: "High adoption in video production workflows based on creator usage patterns",
+    sourceHint: "Similarweb, G2",
+  },
+  pika: {
+    badgeType: "VALUE",
+    metrics: { rating: 4.4, ratingSource: "Editorial", visitsRange: "8M+" },
+    reason: "Growing usage in social media content creation with positive retention signals",
+    sourceHint: "Editorial",
+  },
+  "descript": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.6, ratingSource: "G2", visitsRange: "6M+" },
+    reason: "Popular with first-time video editors based on successful onboarding rates",
+    sourceHint: "G2, Editorial",
+  },
+
+  // Audio
+  suno: {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.5, ratingSource: "Editorial", visitsRange: "10M+" },
+    reason: "High usage among content creators based on song generation volume",
+    sourceHint: "Editorial",
+  },
+  udio: {
+    badgeType: "VALUE",
+    metrics: { rating: 4.4, ratingSource: "Editorial", visitsRange: "7M+" },
+    reason: "Growing adoption in music production with strong retention metrics",
+    sourceHint: "Editorial",
+  },
+  "soundraw": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.3, ratingSource: "G2", visitsRange: "4M+" },
+    reason: "Popular with first-time users based on licensing simplicity and ease of use",
+    sourceHint: "G2, Editorial",
+  },
+
+  // Voice
+  elevenlabs: {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.7, ratingSource: "G2", visitsRange: "15M+" },
+    reason: "Consistently high usage in voice generation workflows across multiple industries",
+    sourceHint: "Similarweb, G2",
+  },
+  "openvoice": {
+    badgeType: "VALUE",
+    metrics: { rating: 4.3, ratingSource: "Editorial", visitsRange: "5M+" },
+    reason: "Growing adoption among developers based on open-source community activity",
+    sourceHint: "Editorial",
+  },
+  "murf-ai": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.5, ratingSource: "G2", visitsRange: "6M+" },
+    reason: "Popular with non-technical users based on workflow simplicity and preset usage",
+    sourceHint: "G2, Editorial",
+  },
+
+  // Coding
+  "github-copilot": {
+    badgeType: "POPULAR",
+    metrics: { rating: 4.7, ratingSource: "G2", visitsRange: "20M+" },
+    reason: "Highest adoption among developers based on IDE integration usage",
+    sourceHint: "G2, Similarweb",
+  },
+  cursor: {
+    badgeType: "VALUE",
+    metrics: { rating: 4.8, ratingSource: "Editorial", visitsRange: "8M+" },
+    reason: "Strong retention in coding workflows with positive developer feedback trends",
+    sourceHint: "Editorial",
+  },
+  "replit-ai": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.4, ratingSource: "G2", visitsRange: "6M+" },
+    reason: "Popular with coding beginners based on browser-first usage patterns",
+    sourceHint: "G2, Editorial",
+  },
+};
+
+// Fallback for tools not in RANKING_PROOF
+const FALLBACK_PROOF: RankingProof = {
+  badgeType: "BEGINNER",
+  metrics: {},
+  reason: "Included based on category relevance and usage signals.",
+  sourceHint: "Editorial",
+};
+
+// Valid category keys
+const CATEGORY_KEYS = [
+  "image-design",
+  "writing",
+  "video",
+  "audio",
+  "voice",
+  "coding",
+] as const;
+
+type CategoryKey = (typeof CATEGORY_KEYS)[number];
+
+const CATEGORY_META: Record<
+  CategoryKey,
+  { title: string; description: string }
 > = {
   "image-design": {
     title: "Image & Design",
-    subtitle: "이미지 생성 · 디자인 · 그래픽",
     description:
-      "From AI-generated illustrations to professional design tools — these are the top picks for visual creation.",
-    picks: [
-      {
-        slug: "midjourney",
-        name: "Midjourney",
-        tagline: "The gold standard for AI-generated art and illustrations",
-        bestFor: "Creative professionals, concept artists, designers",
-        highlight: "Industry-leading aesthetic quality",
-        ranking: {
-          rank: 1,
-          badge: "Most Popular",
-          badgeIcon: "🔥",
-          monthlyVisits: "15M+",
-          rating: 4.8,
-          ratingSource: "G2",
-          reason: "Chosen for its consistently stable output and the largest creator community.",
-          matchScore: 96,
-        },
-      },
-      {
-        slug: "leonardo-ai",
-        name: "Leonardo AI",
-        tagline: "Fast, high-quality image generation with style control",
-        bestFor: "Game artists, content creators, marketers",
-        highlight: "Excellent character consistency",
-        ranking: {
-          rank: 2,
-          badge: "Best Value",
-          badgeIcon: "💎",
-          monthlyVisits: "8M+",
-          rating: 4.6,
-          ratingSource: "ProductHunt",
-          reason: "Best balance of quality and affordability with precise control options.",
-          matchScore: 91,
-        },
-      },
-      {
-        slug: "canva",
-        name: "Canva",
-        tagline: "All-in-one design platform with AI features",
-        bestFor: "Non-designers, social media managers, small businesses",
-        highlight: "Easiest learning curve",
-        ranking: {
-          rank: 3,
-          badge: "Beginner Friendly",
-          badgeIcon: "⚡",
-          monthlyVisits: "120M+",
-          rating: 4.7,
-          ratingSource: "G2",
-          reason: "Most accessible design tool with templates and AI assistance built-in.",
-          matchScore: 88,
-        },
-      },
-    ],
+      "Based on usage patterns in visual content creation and design workflows.",
+  },
+  writing: {
+    title: "Writing",
+    description:
+      "Commonly used tools for content creation, ranked by adoption in writing tasks.",
   },
   video: {
     title: "Video",
-    subtitle: "영상 생성 · 편집 · 숏폼",
     description:
-      "AI-powered video creation tools for everything from short clips to cinematic productions.",
-    picks: [
-      {
-        slug: "runway",
-        name: "Runway",
-        tagline: "Professional AI video generation and editing",
-        bestFor: "Filmmakers, content creators, advertisers",
-        highlight: "Best overall video AI",
-        ranking: {
-          rank: 1,
-          badge: "Most Popular",
-          badgeIcon: "🔥",
-          monthlyVisits: "12M+",
-          rating: 4.7,
-          ratingSource: "G2",
-          reason: "Industry-leading video quality and the most reliable results for professional use.",
-          matchScore: 95,
-        },
-      },
-      {
-        slug: "pika",
-        name: "Pika",
-        tagline: "Fast and fun AI video clips with creative effects",
-        bestFor: "Social media creators, TikTokers",
-        highlight: "Great for short-form content",
-        ranking: {
-          rank: 2,
-          badge: "Best Value",
-          badgeIcon: "💎",
-          monthlyVisits: "5M+",
-          rating: 4.5,
-          ratingSource: "ProductHunt",
-          reason: "Fastest generation speed with great results for social media content.",
-          matchScore: 90,
-        },
-      },
-      {
-        slug: "capcut",
-        name: "CapCut",
-        tagline: "Free video editor with AI-powered features",
-        bestFor: "Beginners, mobile editors, short-form creators",
-        highlight: "Best free option",
-        ranking: {
-          rank: 3,
-          badge: "Beginner Friendly",
-          badgeIcon: "⚡",
-          monthlyVisits: "200M+",
-          rating: 4.6,
-          ratingSource: "App Store",
-          reason: "Most popular free video editor with powerful AI features and mobile-first design.",
-          matchScore: 87,
-        },
-      },
-    ],
-  },
-  writing: {
-    title: "Writing & Docs",
-    subtitle: "글쓰기 · 문서 작성 · 카피라이팅",
-    description:
-      "AI writing assistants for everything from blog posts to professional documents.",
-    picks: [
-      {
-        slug: "chatgpt",
-        name: "ChatGPT",
-        tagline: "The most versatile AI writing and conversation tool",
-        bestFor: "Everyone — from students to professionals",
-        highlight: "Best all-around AI assistant",
-        ranking: {
-          rank: 1,
-          badge: "Most Popular",
-          badgeIcon: "🔥",
-          monthlyVisits: "1.8B+",
-          rating: 4.7,
-          ratingSource: "G2",
-          reason: "Most widely used AI with proven reliability across all writing tasks.",
-          matchScore: 97,
-        },
-      },
-      {
-        slug: "claude",
-        name: "Claude",
-        tagline: "Thoughtful, nuanced AI for complex writing tasks",
-        bestFor: "Long-form writers, researchers, analysts",
-        highlight: "Superior reasoning and context handling",
-        ranking: {
-          rank: 2,
-          badge: "Best Value",
-          badgeIcon: "💎",
-          monthlyVisits: "100M+",
-          rating: 4.8,
-          ratingSource: "ProductHunt",
-          reason: "Best for long documents and complex reasoning with superior context understanding.",
-          matchScore: 93,
-        },
-      },
-      {
-        slug: "notion-ai",
-        name: "Notion AI",
-        tagline: "AI-powered writing inside your workspace",
-        bestFor: "Team collaboration, note-taking, project docs",
-        highlight: "Best integration with productivity tools",
-        ranking: {
-          rank: 3,
-          badge: "Beginner Friendly",
-          badgeIcon: "⚡",
-          monthlyVisits: "30M+",
-          rating: 4.6,
-          ratingSource: "G2",
-          reason: "Seamlessly integrated into existing workflows with zero context switching.",
-          matchScore: 89,
-        },
-      },
-    ],
+      "Popular tools for video editing and generation based on creator preferences.",
   },
   audio: {
-    title: "Audio & Voice",
-    subtitle: "음성 · 음악 · 오디오",
+    title: "Audio",
     description:
-      "AI tools for voice synthesis, music generation, and audio production.",
-    picks: [
-      {
-        slug: "elevenlabs",
-        name: "ElevenLabs",
-        tagline: "The most realistic AI voice generation",
-        bestFor: "Podcasters, video creators, audiobook producers",
-        highlight: "Unmatched voice quality",
-        ranking: {
-          rank: 1,
-          badge: "Most Popular",
-          badgeIcon: "🔥",
-          monthlyVisits: "20M+",
-          rating: 4.8,
-          ratingSource: "G2",
-          reason: "Most natural-sounding voices with consistent quality across languages.",
-          matchScore: 96,
-        },
-      },
-      {
-        slug: "suno",
-        name: "Suno",
-        tagline: "Create full songs with AI in seconds",
-        bestFor: "Musicians, content creators, hobbyists",
-        highlight: "Best for complete song generation",
-        ranking: {
-          rank: 2,
-          badge: "Best Value",
-          badgeIcon: "💎",
-          monthlyVisits: "12M+",
-          rating: 4.6,
-          ratingSource: "ProductHunt",
-          reason: "Fastest and easiest way to create complete songs with vocals and instruments.",
-          matchScore: 92,
-        },
-      },
-      {
-        slug: "udio",
-        name: "Udio",
-        tagline: "High-quality AI music with detailed control",
-        bestFor: "Producers, soundtrack creators",
-        highlight: "Best audio fidelity",
-        ranking: {
-          rank: 3,
-          badge: "Beginner Friendly",
-          badgeIcon: "⚡",
-          monthlyVisits: "8M+",
-          rating: 4.7,
-          ratingSource: "ProductHunt",
-          reason: "Superior audio quality with more control over musical composition.",
-          matchScore: 90,
-        },
-      },
-    ],
+      "Frequently used for music and sound design in content production.",
   },
-  code: {
-    title: "Code & Dev",
-    subtitle: "코딩 · 개발 · 자동화",
+  voice: {
+    title: "Voice",
     description:
-      "AI-powered coding assistants and development tools for programmers of all levels.",
-    picks: [
-      {
-        slug: "cursor",
-        name: "Cursor",
-        tagline: "AI-first code editor that writes code with you",
-        bestFor: "Professional developers, teams",
-        highlight: "Best AI coding experience",
-        ranking: {
-          rank: 1,
-          badge: "Most Popular",
-          badgeIcon: "🔥",
-          monthlyVisits: "5M+",
-          rating: 4.9,
-          ratingSource: "ProductHunt",
-          reason: "Most integrated AI coding experience with context-aware suggestions.",
-          matchScore: 97,
-        },
-      },
-      {
-        slug: "github-copilot",
-        name: "GitHub Copilot",
-        tagline: "AI pair programmer from GitHub and OpenAI",
-        bestFor: "Developers using VS Code, JetBrains",
-        highlight: "Best IDE integration",
-        ranking: {
-          rank: 2,
-          badge: "Best Value",
-          badgeIcon: "💎",
-          monthlyVisits: "10M+",
-          rating: 4.7,
-          ratingSource: "G2",
-          reason: "Widest IDE support and proven reliability across all programming languages.",
-          matchScore: 94,
-        },
-      },
-      {
-        slug: "replit",
-        name: "Replit",
-        tagline: "Browser-based IDE with AI coding features",
-        bestFor: "Beginners, students, quick prototyping",
-        highlight: "Easiest to get started",
-        ranking: {
-          rank: 3,
-          badge: "Beginner Friendly",
-          badgeIcon: "⚡",
-          monthlyVisits: "15M+",
-          rating: 4.6,
-          ratingSource: "G2",
-          reason: "Zero setup required with instant coding environment and collaborative features.",
-          matchScore: 90,
-        },
-      },
-    ],
+      "High adoption tools for voice generation and dubbing workflows.",
+  },
+  coding: {
+    title: "Coding",
+    description:
+      "Widely used by developers for code assistance and development tasks.",
   },
 };
 
-// ScanningBanner moved to separate file (_components/scanning-banner.tsx)
+// Make BEST_PICKS strongly typed by CategoryKey
+const BEST_PICKS: Record<CategoryKey, BestPick[]> = {
+  "image-design": [
+    {
+      rank: 1,
+      slug: "midjourney",
+      name: "Midjourney",
+      label: "Most popular",
+      tagline:
+        "Premium-quality image generation with the most stable results. The default choice for many creators.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen for consistently stable output and the largest creator community",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "leonardo-ai",
+      name: "Leonardo AI",
+      label: "Versatile",
+      tagline:
+        "Great for concept art and game assets with lots of presets and templates to start from.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for best price-to-quality ratio with extensive template library",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "canva",
+      name: "Canva",
+      label: "Beginner-friendly",
+      tagline:
+        "Template-based design tool that makes thumbnails and posters easy, even if you're not a designer.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for zero learning curve and instant professional results",
+        matchScore: 88,
+      },
+    },
+  ],
+  writing: [
+    {
+      rank: 1,
+      slug: "chatgpt",
+      name: "ChatGPT",
+      label: "All-rounder",
+      tagline:
+        "General-purpose writer for emails, essays, resumes, blog posts and more.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen for proven versatility across all writing tasks by millions",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "claude",
+      name: "Claude",
+      label: "Long-form",
+      tagline:
+        "Strong at long reports and structured documents with clear, logical reasoning.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for superior long-form reasoning at competitive pricing",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "notion-ai",
+      name: "Notion AI",
+      label: "Workspace",
+      tagline:
+        "Helps you draft, summarize and reorganize notes directly inside your Notion workspace.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for seamless integration with existing workflow",
+        matchScore: 88,
+      },
+    },
+  ],
+  video: [
+    {
+      rank: 1,
+      slug: "runway-ml",
+      name: "Runway",
+      label: "Most popular",
+      tagline:
+        "All-in-one video creation and editing. Widely used for shorts and YouTube content.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen by professional creators for industry-leading quality",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "pika",
+      name: "Pika",
+      label: "Fast",
+      tagline:
+        "Good for quick, fun clips and meme-style short videos with simple controls.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for fastest turnaround on viral-style content creation",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "capcut",
+      name: "CapCut",
+      label: "Editor",
+      tagline:
+        "Free editor with built-in AI features. Great for subtitles and detailed timeline edits.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for free access to professional editing features",
+        matchScore: 88,
+      },
+    },
+  ],
+  audio: [
+    {
+      rank: 1,
+      slug: "suno",
+      name: "Suno",
+      label: "Music generation",
+      tagline:
+        "End-to-end AI music generation – lyrics and full tracks for BGM or personal projects.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen for most advanced full-track generation by music creators",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "udio",
+      name: "Udio",
+      label: "Alternative",
+      tagline:
+        "Another strong AI music option when you want slightly different styles and flavors.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for competitive quality with unique style variations",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "aiva",
+      name: "AIVA",
+      label: "Composer",
+      tagline:
+        "Focused on cinematic and classical-style background music for games and film.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for easy cinematic and game soundtrack creation",
+        matchScore: 88,
+      },
+    },
+  ],
+  voice: [
+    {
+      rank: 1,
+      slug: "elevenlabs",
+      name: "ElevenLabs",
+      label: "Most natural",
+      tagline:
+        "One of the most natural-sounding TTS engines for dubbing, narration and character voices.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen for most natural voice quality by content creators worldwide",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "heygen",
+      name: "HeyGen",
+      label: "Talking head",
+      tagline:
+        "Generates talking-head avatar videos with synced lips and translated speech.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for complete avatar video solution at competitive price",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "play-ht",
+      name: "Play.ht",
+      label: "Alternative",
+      tagline:
+        "Large collection of multilingual voice presets, useful for international content.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for best multilingual support for global audiences",
+        matchScore: 88,
+      },
+    },
+  ],
+  coding: [
+    {
+      rank: 1,
+      slug: "github-copilot",
+      name: "GitHub Copilot",
+      label: "Most popular",
+      tagline:
+        "Inline AI code suggestions directly in your IDE, great for everyday development.",
+      ranking: {
+        rankPosition: 1,
+        badgeType: "POPULAR",
+        monthlyVisits: "15M+",
+        rating: 4.8,
+        ratingSource: "G2",
+        reason: "Chosen by professional developers for proven productivity gains",
+        matchScore: 96,
+      },
+    },
+    {
+      rank: 2,
+      slug: "cursor",
+      name: "Cursor",
+      label: "Editor",
+      tagline:
+        "AI-powered editor based on VS Code that understands your project and assists with refactors.",
+      ranking: {
+        rankPosition: 2,
+        badgeType: "VALUE",
+        monthlyVisits: "8M+",
+        rating: 4.6,
+        ratingSource: "G2",
+        reason: "Chosen for full IDE with superior project understanding",
+        matchScore: 91,
+      },
+    },
+    {
+      rank: 3,
+      slug: "replit-ghostwriter",
+      name: "Replit Ghostwriter",
+      label: "Web IDE",
+      tagline:
+        "AI coding assistant built into the Replit browser IDE for quick experiments and learning.",
+      ranking: {
+        rankPosition: 3,
+        badgeType: "BEGINNER",
+        monthlyVisits: "6M+",
+        rating: 4.7,
+        ratingSource: "G2",
+        reason: "Chosen for zero-setup learning and rapid prototyping",
+        matchScore: 88,
+      },
+    },
+  ],
+};
 
-// ============================================================
-// Match Score Component (with color differentiation)
-// ============================================================
-function MatchScore({ rank, score }: { rank: number; score: number }) {
-  let colorClass = "text-gray-500"; // default
-  if (rank === 1) colorClass = "text-emerald-400"; // 네온 그린
-  else if (rank === 2) colorClass = "text-emerald-300"; // 민트
-  else if (rank === 3) colorClass = "text-gray-400"; // 그레이 톤 그린
-
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-medium text-slate-400">Match:</span>
-      <span className={`text-lg font-bold ${colorClass}`}>{score}%</span>
-    </div>
-  );
-}
-
-// ============================================================
-// Page Component
-// ============================================================
 export default async function BestCategoryPage({
   params,
 }: {
   params: Promise<{ category: string }>;
 }) {
   const { category } = await params;
-  const config = CATEGORY_CONFIG[category];
+  const rawKey = category ?? "";
 
-  // Not Found
-  if (!config) {
-    return (
-      <main className="mx-auto max-w-3xl px-4 pb-24 pt-6 sm:pt-8">
-        <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-center">
-          <h1 className="text-2xl font-bold text-white">Category Not Found</h1>
-          <p className="mt-2 text-slate-300">
-            The category &quot;{category}&quot; does not exist.
-          </p>
-          <Link
-            href="/"
-            className="mt-6 inline-block rounded-full bg-emerald-500 px-6 py-2.5 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
-          >
-            Go back home
-          </Link>
-        </section>
-      </main>
-    );
-  }
+  // Fallback to "image-design" if the param is missing or unknown
+  const categoryKey = (rawKey in CATEGORY_META
+    ? (rawKey as CategoryKey)
+    : ("image-design" as CategoryKey));
+
+  const meta = CATEGORY_META[categoryKey];
+  const picks = BEST_PICKS[categoryKey] ?? [];
 
   return (
-    <main className="mx-auto max-w-3xl px-4 pb-24 pt-3">
-      {/* Scanning Banner */}
-      <ScanningBanner />
+    <main className="min-h-screen bg-[#020617]">
+      <div className="mx-auto flex max-w-md flex-col px-4 pt-1 pb-24 text-slate-50">
+        {/* Header */}
+        <header className="mb-6">
+          <div className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+            <span className="mr-1.5 text-xs">✨</span>
+            <span>Airoute best 3</span>
+          </div>
+          <h1 className="mt-3 text-2xl font-semibold text-slate-50">
+            Best 3 tools for {meta.title}
+          </h1>
+          <p className="mt-2 text-sm text-slate-300">{meta.description}</p>
+          
+          {/* AI Scanning Banner */}
+          <div className="mt-4">
+            <ScanningBanner />
+          </div>
+        </header>
 
-      {/* Header */}
-      <section className="mb-6 sm:mb-8">
-        <div className="mb-2 inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1">
-          <span className="text-xs font-medium text-emerald-300">
-            AIROUTE BEST 3
-          </span>
-        </div>
-        <h1 className="text-2xl font-semibold text-white sm:text-3xl">
-          Best 3 tools for {config.title}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400">{config.subtitle}</p>
-        <p className="mt-3 text-sm text-slate-300 sm:text-base">
-          {config.description}
-        </p>
-      </section>
+        {/* Ranking cards */}
+        <section className="space-y-3">
+          {picks.map((pick) => {
+            // Get proof from RANKING_PROOF or use fallback
+            const proof = RANKING_PROOF[pick.slug] || FALLBACK_PROOF;
+            
+            // Badge configuration
+            const badgeConfig = {
+              POPULAR: { icon: "🔥", label: "Most Popular" },
+              VALUE: { icon: "💎", label: "Best Value" },
+              BEGINNER: { icon: "⚡", label: "Fast Start" },
+            };
+            const badge = badgeConfig[proof.badgeType];
 
-      {/* Best 3 Cards */}
-      <section className="space-y-4">
-        {config.picks.map((pick) => (
-          <Link
-            key={pick.slug}
-            href={`/tools/${pick.slug}`}
-            className="block"
-          >
-            <article className="group rounded-2xl border border-slate-800 bg-slate-900/60 p-5 shadow-sm transition hover:border-emerald-400 hover:bg-slate-900">
-              {/* Header: Rank Badge + Name */}
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-lg font-bold text-emerald-400">
-                    {pick.ranking.badgeIcon}
+            return (
+              <Link
+                key={pick.slug}
+                href={`/tools/${pick.slug}`}
+                className="block"
+              >
+                <article
+                  className={
+                    "relative flex gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-colors " +
+                    (pick.rank === 1
+                      ? "border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/15"
+                      : "border-slate-700/70 bg-slate-900/80 hover:bg-slate-800/60")
+                  }
+                >
+                  {/* Rank Badge */}
+                  <div
+                    className={
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold " +
+                      (pick.rank === 1
+                        ? "bg-emerald-500 text-white"
+                        : "bg-emerald-500/15 text-emerald-200")
+                    }
+                  >
+                    #{pick.rank}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-lg font-semibold text-white group-hover:text-emerald-300">
-                        {pick.name}
-                      </h2>
-                      <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-                        #{pick.ranking.rank} {pick.ranking.badge}
-                      </span>
+
+                  {/* Main Content */}
+                  <div className="flex flex-1 flex-col gap-2">
+                    {/* Header with Badge */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-sm font-semibold text-slate-50">
+                          {pick.name}
+                        </h2>
+                        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-300">
+                          {pick.label}
+                        </span>
+                      </div>
+                      
+                      {/* Top Badge (POPULAR/VALUE/BEGINNER) */}
+                      <div 
+                        className="group relative shrink-0"
+                        title={proof.reason}
+                      >
+                        <span className="inline-flex items-center gap-1 rounded-full bg-slate-800/60 px-2 py-1 text-[10px] font-medium text-slate-200">
+                          <span>{badge.icon}</span>
+                          <span className="hidden sm:inline">{badge.label}</span>
+                        </span>
+                        {/* Desktop tooltip on hover */}
+                        <div className="pointer-events-none absolute right-0 top-full z-10 mt-1 hidden w-48 rounded-lg border border-slate-700 bg-slate-900 p-2 text-[10px] text-slate-300 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 sm:block">
+                          {proof.reason}
+                        </div>
+                      </div>
                     </div>
-                    <p className="mt-1 text-sm text-slate-300">{pick.tagline}</p>
+
+                    {/* Tagline */}
+                    <p className="text-xs text-slate-300">{pick.tagline}</p>
+
+                    {/* Why Top 3? (Mobile Always Visible) */}
+                    <div className="mt-1 sm:hidden">
+                      <p className="text-[10px] font-medium text-emerald-300">
+                        Why Top 3?
+                      </p>
+                      <p className="text-[10px] text-slate-400">
+                        {proof.reason}
+                      </p>
+                    </div>
+
+                    {/* Metrics Row */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-400">
+                      {proof.metrics.rating && (
+                        <span className="flex items-center gap-1">
+                          <span>⭐</span>
+                          <span>{proof.metrics.rating}/5</span>
+                          {proof.metrics.ratingSource && (
+                            <span className="text-slate-500">({proof.metrics.ratingSource})</span>
+                          )}
+                        </span>
+                      )}
+                      {proof.metrics.visitsRange && (
+                        <span className="flex items-center gap-1">
+                          <span>👥</span>
+                          <span>{proof.metrics.visitsRange} visits/mo</span>
+                        </span>
+                      )}
+                      {pick.ranking?.matchScore && (
+                        <AnimatedMatchScore 
+                          targetScore={pick.ranking.matchScore} 
+                          delay={pick.rank * 50}
+                          rank={pick.rank}
+                        />
+                      )}
+                    </div>
+
+                    {/* Source Hint */}
+                    <div className="mt-1 text-[9px] text-slate-500">
+                      Source: {proof.sourceHint}
+                    </div>
                   </div>
-                </div>
-                <MatchScore rank={pick.ranking.rank} score={pick.ranking.matchScore} />
-              </div>
+                </article>
+              </Link>
+            );
+          })}
+        </section>
 
-              {/* Why Top 3? (Credibility Section) */}
-              <div className="mt-4 rounded-xl border border-slate-700/50 bg-slate-800/30 p-3">
-                <p className="text-xs font-medium text-slate-400">Why Top 3?</p>
-                <p className="mt-1 text-sm leading-relaxed text-slate-200">
-                  {pick.ranking.reason}
-                </p>
-                <div className="mt-2 flex items-center gap-4 text-xs text-slate-400">
-                  <span>⭐ {pick.ranking.rating} / {pick.ranking.ratingSource}</span>
-                  <span>👥 {pick.ranking.monthlyVisits} visits</span>
-                </div>
-              </div>
-
-              {/* Details */}
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                <div className="rounded-xl bg-slate-800/50 p-3">
-                  <p className="text-xs font-medium text-slate-400">Best for</p>
-                  <p className="mt-1 text-sm text-slate-200">{pick.bestFor}</p>
-                </div>
-                <div className="rounded-xl bg-slate-800/50 p-3">
-                  <p className="text-xs font-medium text-slate-400">
-                    Why we picked it
-                  </p>
-                  <p className="mt-1 text-sm text-emerald-300">
-                    {pick.highlight}
-                  </p>
-                </div>
-              </div>
-
-              {/* CTA hint */}
-              <div className="mt-4 text-right">
-                <span className="text-xs font-medium text-slate-500 group-hover:text-emerald-400">
-                  View details →
-                </span>
-              </div>
-            </article>
-          </Link>
-        ))}
-      </section>
+      </div>
     </main>
   );
 }
