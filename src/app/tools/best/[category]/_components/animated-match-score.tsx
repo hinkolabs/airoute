@@ -3,32 +3,42 @@
 import { useState, useEffect } from "react";
 
 interface AnimatedMatchScoreProps {
+  targetScore: number;
+  delay?: number;
   rank: number;
-  score: number;
 }
 
-export function AnimatedMatchScore({ rank, score }: AnimatedMatchScoreProps) {
+export function AnimatedMatchScore({ 
+  targetScore, 
+  delay = 0,
+  rank 
+}: AnimatedMatchScoreProps) {
   const [displayScore, setDisplayScore] = useState(0);
 
   useEffect(() => {
-    // 애니메이션: 0부터 목표 점수까지 증가
-    const duration = 1000; // 1초
-    const steps = 30;
-    const increment = score / steps;
-    const interval = duration / steps;
+    // delay 후 애니메이션 시작
+    const startTimer = setTimeout(() => {
+      // 애니메이션: 0부터 목표 점수까지 증가
+      const duration = 800; // 0.8초
+      const steps = 20;
+      const increment = targetScore / steps;
+      const interval = duration / steps;
 
-    let currentStep = 0;
-    const timer = setInterval(() => {
-      currentStep++;
-      if (currentStep <= steps) {
-        setDisplayScore(Math.min(Math.round(increment * currentStep), score));
-      } else {
-        clearInterval(timer);
-      }
-    }, interval);
+      let currentStep = 0;
+      const animationTimer = setInterval(() => {
+        currentStep++;
+        if (currentStep <= steps) {
+          setDisplayScore(Math.min(Math.round(increment * currentStep), targetScore));
+        } else {
+          clearInterval(animationTimer);
+        }
+      }, interval);
 
-    return () => clearInterval(timer);
-  }, [score]);
+      return () => clearInterval(animationTimer);
+    }, delay);
+
+    return () => clearTimeout(startTimer);
+  }, [targetScore, delay]);
 
   // Rank별 색상 차별화
   let colorClass = "text-gray-500"; // default
@@ -37,11 +47,11 @@ export function AnimatedMatchScore({ rank, score }: AnimatedMatchScoreProps) {
   else if (rank === 3) colorClass = "text-gray-400"; // 그레이 톤 그린
 
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-xs font-medium text-slate-400">Match:</span>
-      <span className={`text-lg font-bold transition-all duration-300 ${colorClass}`}>
+    <div className="flex flex-col items-end">
+      <div className="text-xs font-medium text-slate-400">Match</div>
+      <div className={`text-2xl font-bold transition-all duration-300 ${colorClass}`}>
         {displayScore}%
-      </span>
+      </div>
     </div>
   );
 }
