@@ -2,7 +2,7 @@
 
 import { ThemeProvider, useTheme } from "@/app/_design/providers/theme-provider";
 import Header from "@/components/layout/header";
-import { MobileBottomNav } from "./page";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
