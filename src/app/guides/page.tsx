@@ -1,64 +1,64 @@
-"use client";
+import Link from "next/link";
+import { supabaseServerClient } from "@/lib/supabase/server";
 
-import { PageShell } from "@/app/_design/components/page";
-import { useTheme } from "@/app/_design/providers/theme-provider";
-import { cn } from "@/lib/utils";
-import { FileText } from "lucide-react";
+type GuideRecord = {
+  id: string;
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  created_at: string;
+};
 
-export default function GuidesPage() {
-  const { theme } = useTheme();
+export default async function GuidesPage() {
+  const { data, error } = await supabaseServerClient
+    .from("guides")
+    .select("id, slug, title, excerpt, created_at")
+    .order("created_at", { ascending: false });
+
+  if (error || !data) {
+    return (
+      <div className="px-4 py-12 text-center text-slate-400">
+        Failed to load guides.
+      </div>
+    );
+  }
 
   return (
-    <PageShell>
-      <div className="mx-auto max-w-3xl px-4 py-16 text-center">
-        {/* Header */}
-        <div className="mb-10">
-          <div className="mb-4 flex justify-center">
-            <div className="rounded-full bg-emerald-500/10 p-4">
-              <FileText className={cn(
-                "h-8 w-8",
-                theme === "day" ? "text-emerald-600" : "text-emerald-400"
-              )} />
-            </div>
-          </div>
-          <h1 className="text-2xl font-bold sm:text-3xl">
-            Guides & Articles
+    <div className="min-h-[calc(100vh-80px)] px-4 pb-24 pt-3">
+      <div className="mx-auto flex max-w-5xl flex-col gap-6">
+        <header className="space-y-2">
+          <h1 className="text-2xl font-semibold text-slate-50 sm:text-3xl">
+            Guides
           </h1>
-          <p className={cn(
-            "mt-3 text-sm sm:text-base",
-            theme === "day" ? "text-slate-600" : "text-slate-400"
-          )}>
-            AI 트렌드, 툴 리뷰, 사용 가이드 아티클을 모아둘 예정입니다.
+          <p className="text-sm text-slate-400 sm:text-base">
+            Practical guides to help you choose the right AI tools faster.
           </p>
-        </div>
+        </header>
 
-        {/* Placeholder Cards */}
-        <div className="space-y-4">
-          {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className={cn(
-                "flex h-24 items-center justify-center rounded-2xl border border-dashed text-sm",
-                theme === "day"
-                  ? "border-slate-300 bg-slate-100/50 text-slate-500"
-                  : "border-slate-700/70 bg-slate-900/30 text-slate-500"
-              )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {data.map((guide: GuideRecord) => (
+            <Link
+              key={guide.id}
+              href={`/guides/${guide.slug}`}
+              className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition hover:border-slate-700 hover:bg-slate-900/40"
             >
-              Guide {i} — Coming soon...
-            </div>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-base font-semibold text-slate-100 group-hover:text-white sm:text-lg">
+                  {guide.title}
+                </h2>
+                {guide.excerpt && (
+                  <p className="text-sm text-slate-400 line-clamp-3">
+                    {guide.excerpt}
+                  </p>
+                )}
+                <span className="mt-2 text-xs text-slate-500">
+                  {new Date(guide.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            </Link>
           ))}
         </div>
-
-        {/* Footer note */}
-        <p className={cn(
-          "mt-10 text-xs",
-          theme === "day" ? "text-slate-500" : "text-slate-500"
-        )}>
-          💡 이 페이지는 현재 개발 중입니다. 곧 AI 관련 유용한 콘텐츠로 채워질 예정이에요!
-        </p>
       </div>
-    </PageShell>
+    </div>
   );
 }
-
-
