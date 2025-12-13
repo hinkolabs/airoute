@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ScanningBanner } from "./_components/scanning-banner";
+import { AnimatedMatchScore } from "./_components/animated-match-score";
 
 type BestPick = {
   rank: 1 | 2 | 3;
