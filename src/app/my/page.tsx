@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { PageShell } from "@/app/_design/components/page";
 import { useTheme } from "@/app/_design/providers/theme-provider";
+import { ComingSoonBanner } from "./_components/coming-soon-banner";
 import { cn } from "@/lib/utils";
 import { User, Bookmark, History, LogIn } from "lucide-react";
 
@@ -12,6 +13,8 @@ export default function MyPage() {
   return (
     <PageShell>
       <div className="mx-auto max-w-md px-4 py-16 text-center">
+        {/* Coming Soon Banner */}
+        <ComingSoonBanner />
         {/* Icon */}
         <div className="mb-6 flex justify-center">
           <div className="rounded-full bg-emerald-500/10 p-5">
@@ -51,7 +54,7 @@ export default function MyPage() {
         {/* Sign In Button */}
         <div className="mt-10">
           <Link
-            href="/login"
+            href="/my?comingSoon=1"
             className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
           >
             <LogIn className="h-4 w-4" />
