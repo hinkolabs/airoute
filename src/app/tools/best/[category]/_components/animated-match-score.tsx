@@ -40,19 +40,16 @@ export function AnimatedMatchScore({
     return () => clearTimeout(startTimer);
   }, [targetScore, delay]);
 
-  // Rank별 색상 차별화
-  let colorClass = "text-gray-500"; // default
-  if (rank === 1) colorClass = "text-emerald-400"; // 네온 그린
-  else if (rank === 2) colorClass = "text-emerald-300"; // 민트
-  else if (rank === 3) colorClass = "text-gray-400"; // 그레이 톤 그린
+  // Rank별 색상 차별화 (인라인 버전)
+  let colorClass = "text-emerald-400"; // 기본 emerald
+  if (rank === 1) colorClass = "text-emerald-400";
+  else if (rank === 2) colorClass = "text-emerald-300";
+  else if (rank === 3) colorClass = "text-emerald-300";
 
   return (
-    <div className="flex flex-col items-end">
-      <div className="text-xs font-medium text-slate-400">Match</div>
-      <div className={`text-2xl font-bold transition-all duration-300 ${colorClass}`}>
-        {displayScore}%
-      </div>
-    </div>
+    <span className={`flex items-center gap-1 ${colorClass}`}>
+      <span>✓</span>
+      <span>{displayScore}% match</span>
+    </span>
   );
 }
-

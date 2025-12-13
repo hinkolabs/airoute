@@ -182,7 +182,7 @@ const CATEGORY_META: Record<
   "image-design": {
     title: "Image & Design",
     description:
-      "Based on usage patterns in visual content creation and design workflows.",
+      "Logo, thumbnails, posters, UI – the best tools for visual work.",
   },
   writing: {
     title: "Writing",

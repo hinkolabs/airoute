@@ -2,11 +2,8 @@
 
 import { useState } from "react";
 import { Copy, Check } from "lucide-react";
-import { useTheme } from "@/app/_design/providers/theme-provider";
-import { cn } from "@/lib/utils";
 
 export function CopyLinkButton() {
-  const { theme } = useTheme();
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
@@ -23,19 +20,11 @@ export function CopyLinkButton() {
     <button
       type="button"
       onClick={handleCopy}
-      className={cn(
-        "inline-flex items-center justify-center gap-2 rounded-xl border px-6 py-3 text-sm font-medium transition",
-        theme === "day"
-          ? "border-slate-300 bg-white text-slate-700 hover:border-slate-400 hover:text-slate-900"
-          : "border-slate-700 bg-slate-900/60 text-slate-200 hover:border-slate-600 hover:text-slate-100"
-      )}
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-600 hover:text-slate-100"
     >
       {copied ? (
         <>
-          <Check className={cn(
-            "h-4 w-4",
-            theme === "day" ? "text-emerald-600" : "text-emerald-400"
-          )} />
+          <Check className="h-4 w-4 text-emerald-400" />
           Copied!
         </>
       ) : (
@@ -47,4 +36,3 @@ export function CopyLinkButton() {
     </button>
   );
 }
-

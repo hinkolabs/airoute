@@ -2,8 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { PageShell, SearchBar, ToolCard, ToolCardProps } from "@/app/_design/components/page";
-import { useTheme } from "@/app/_design/providers/theme-provider";
-import { cn } from "@/lib/utils";
 import type { ToolRecord } from "@/lib/tools";
 import { Search } from "lucide-react";
 
@@ -37,7 +35,6 @@ type ToolsListClientProps = {
 // Component
 // ============================================================
 export function ToolsListClient({ tools }: ToolsListClientProps) {
-  const { theme } = useTheme();
   const [search, setSearch] = useState("");
 
   // Local filtering
@@ -86,13 +83,10 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-2xl font-bold sm:text-3xl">
+          <h1 className="text-2xl font-bold text-slate-50 sm:text-3xl">
             All tools
           </h1>
-          <p className={cn(
-            "mt-2 text-sm sm:text-base",
-            theme === "day" ? "text-slate-600" : "text-slate-400"
-          )}>
+          <p className="mt-2 text-sm text-slate-400 sm:text-base">
             Browse all AI tools listed on Airoute.
           </p>
         </header>
@@ -105,43 +99,27 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tools by name, description, or tags..."
-              className={cn(
-                "w-full rounded-xl border px-4 py-3 pl-10 text-sm shadow-sm outline-none ring-0 focus:border-emerald-400",
-                theme === "day"
-                  ? "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
-                  : "border-slate-700/70 bg-slate-900/70 text-slate-100 placeholder:text-slate-400"
-              )}
+              className="w-full rounded-xl border border-slate-700/70 bg-slate-900/70 px-4 py-3 pl-10 text-sm text-slate-100 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-emerald-400"
             />
-            <div className={cn(
-              "pointer-events-none absolute inset-y-0 left-3 flex items-center",
-              theme === "day" ? "text-slate-400" : "text-slate-500"
-            )}>
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500">
               <Search className="h-4 w-4" />
             </div>
           </div>
         </div>
 
         {/* Results count */}
-        <div className={cn(
-          "mb-4 text-xs sm:text-sm",
-          theme === "day" ? "text-slate-500" : "text-slate-400"
-        )}>
+        <div className="mb-4 text-xs text-slate-400 sm:text-sm">
           {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
           {search && (
             <span className="ml-2">
-              for &quot;<span className={theme === "day" ? "text-slate-700" : "text-slate-200"}>{search}</span>&quot;
+              for &quot;<span className="text-slate-200">{search}</span>&quot;
             </span>
           )}
         </div>
 
         {/* Tools Grid */}
         {toolCards.length === 0 ? (
-          <div className={cn(
-            "flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed px-4 text-center",
-            theme === "day"
-              ? "border-slate-300 bg-slate-100/50 text-slate-500"
-              : "border-slate-700/70 bg-slate-900/30 text-slate-400"
-          )}>
+          <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30 px-4 text-center text-slate-400">
             <div>
               {tools.length === 0 ? (
                 <p>No tools available yet.</p>
@@ -151,10 +129,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
                   <br />
                   <button
                     onClick={() => setSearch("")}
-                    className={cn(
-                      "mt-2 hover:underline",
-                      theme === "day" ? "text-emerald-600" : "text-emerald-400"
-                    )}
+                    className="mt-2 text-emerald-400 hover:underline"
                   >
                     Clear search
                   </button>
@@ -173,5 +148,3 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
     </PageShell>
   );
 }
-
-

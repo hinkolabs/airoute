@@ -10,7 +10,7 @@ export function ScanningBanner() {
       setText("Filtering...");
     }, 500);
     const timer2 = setTimeout(() => {
-      setText("Found 3 best routes");
+      setText("✓ Found 3 best routes.");
     }, 1000);
 
     return () => {
@@ -25,4 +25,5 @@ export function ScanningBanner() {
     </div>
   );
 }
+
 

@@ -8,7 +8,7 @@ type NormalModePageProps = {
 };
 
 // ===========================
-// CATEGORY DATA (Only 4 shown on home)
+// CATEGORY DATA
 // ===========================
 const CATEGORIES = [
   {
@@ -34,6 +34,18 @@ const CATEGORIES = [
     title: "Audio",
     description: "Music, podcast, BGM",
     icon: "🎵",
+  },
+  {
+    id: "voice",
+    title: "Voice",
+    description: "TTS, dubbing, cloning",
+    icon: "🎙️",
+  },
+  {
+    id: "coding",
+    title: "Coding",
+    description: "Code assist, debug",
+    icon: "💻",
   },
 ];
 
