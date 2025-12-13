@@ -30,7 +30,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
   const { title, excerpt, content } = data;
 
   return (
-    <div className="min-h-[calc(100vh-80px)] px-4 pb-24 pt-3">
+    <div className="min-h-[calc(100vh-80px)] bg-slate-950 px-4 pb-24 pt-3">
       <div className="mx-auto flex max-w-3xl flex-col gap-6">
         {/* 헤더 영역 */}
         <header className="space-y-3">
