@@ -1,7 +1,5 @@
-"use client";
-
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { ScanningBanner } from "./_components/scanning-banner";
 
 // ============================================================
 // Types
@@ -335,32 +333,7 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
-// ============================================================
-// Scanning Banner Component
-// ============================================================
-function ScanningBanner() {
-  const [text, setText] = useState("Scanning 5,230 tools...");
-
-  useEffect(() => {
-    const timer1 = setTimeout(() => {
-      setText("Filtering...");
-    }, 500);
-    const timer2 = setTimeout(() => {
-      setText("Found 3 best routes");
-    }, 1000);
-
-    return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
-    };
-  }, []);
-
-  return (
-    <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-center">
-      <p className="text-sm font-medium text-emerald-300">{text}</p>
-    </div>
-  );
-}
+// ScanningBanner moved to separate file (_components/scanning-banner.tsx)
 
 // ============================================================
 // Match Score Component (with color differentiation)
@@ -382,12 +355,13 @@ function MatchScore({ rank, score }: { rank: number; score: number }) {
 // ============================================================
 // Page Component
 // ============================================================
-export default function BestCategoryPage({
+export default async function BestCategoryPage({
   params,
 }: {
-  params: { category: string };
+  params: Promise<{ category: string }>;
 }) {
-  const config = CATEGORY_CONFIG[params.category];
+  const { category } = await params;
+  const config = CATEGORY_CONFIG[category];
 
   // Not Found
   if (!config) {
@@ -396,7 +370,7 @@ export default function BestCategoryPage({
         <section className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-center">
           <h1 className="text-2xl font-bold text-white">Category Not Found</h1>
           <p className="mt-2 text-slate-300">
-            The category &quot;{params.category}&quot; does not exist.
+            The category &quot;{category}&quot; does not exist.
           </p>
           <Link
             href="/"
