@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
@@ -12,9 +14,20 @@ export default function Footer() {
             <span className="text-sm font-semibold text-zinc-400">Airoute</span>
           </div>
           
-          <p className="text-sm text-zinc-500">
-            © {currentYear} HinkoLabs. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-4">
+            <p className="text-sm text-zinc-500">
+              © {currentYear} HinkoLabs
+            </p>
+            <div className="flex items-center gap-3 text-xs">
+              <Link href="/privacy" className="text-gray-500 hover:underline">
+                Privacy Policy
+              </Link>
+              <span className="text-gray-700">·</span>
+              <Link href="/terms" className="text-gray-500 hover:underline">
+                Terms of Service
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </footer>

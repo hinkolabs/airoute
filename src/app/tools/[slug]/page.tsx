@@ -1,6 +1,7 @@
 import { Metadata } from "next";
 import { getToolBySlug } from "@/lib/tools";
 import { ToolDetailContent, ToolNotFoundContent } from "./tool-detail-content";
+import { RelatedGuides } from "./related-guides";
 
 // ============================================================
 // Types
@@ -49,6 +50,11 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
     return <ToolNotFoundContent />;
   }
 
-  return <ToolDetailContent tool={tool} />;
+  return (
+    <>
+      <ToolDetailContent tool={tool} />
+      <RelatedGuides />
+    </>
+  );
 }
 
