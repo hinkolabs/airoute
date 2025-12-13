@@ -1,7 +1,7 @@
 "use client";
 
 import { ThemeProvider, useTheme } from "@/app/_design/providers/theme-provider";
-import { HeaderClient } from "./header-client";
+import Header from "@/components/layout/header";
 import { MobileBottomNav } from "./page";
 import { cn } from "@/lib/utils";
 
@@ -25,7 +25,7 @@ function AppShellContent({ children }: AppShellProps) {
       )}
     >
       {/* Global Header */}
-      <HeaderClient />
+      <Header />
 
       {/* Main Content */}
       <main className="flex-1 pb-16 sm:pb-0">{children}</main>
