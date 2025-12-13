@@ -24,7 +24,7 @@ export default async function GuidesPage() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-80px)] px-4 pb-24 pt-3">
+    <div className="min-h-[calc(100vh-80px)] bg-slate-950 px-4 pb-24 pt-3">
       <div className="mx-auto flex max-w-5xl flex-col gap-6">
         <header className="space-y-2">
           <h1 className="text-2xl font-semibold text-slate-50 sm:text-3xl">
