@@ -10,9 +10,6 @@ import {
   ArrowLeft,
   Layers,
 } from "lucide-react";
-import { PageShell } from "@/app/_design/components/page";
-import { useTheme } from "@/app/_design/providers/theme-provider";
-import { cn } from "@/lib/utils";
 import { CopyLinkButton } from "./copy-link-button";
 import type { ToolRecord } from "@/lib/tools";
 
@@ -39,17 +36,12 @@ function filterDisplayTags(tags: string[] | null | undefined): string[] {
 // Not Found Content
 // ============================================================
 export function ToolNotFoundContent() {
-  const { theme } = useTheme();
-
   return (
-    <PageShell>
-      <div className="mx-auto flex min-h-[60vh] max-w-4xl flex-col items-center justify-center px-4 py-20 text-center">
+    <div className="min-h-screen bg-slate-950 px-4 py-20 text-slate-50">
+      <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
         <div className="mb-4 text-6xl">🔍</div>
         <h1 className="mb-2 text-2xl font-bold">Tool Not Found</h1>
-        <p className={cn(
-          "mb-6",
-          theme === "day" ? "text-slate-600" : "text-slate-400"
-        )}>
+        <p className="mb-6 text-slate-400">
           This tool does not exist or has been removed.
         </p>
         <Link
@@ -60,7 +52,7 @@ export function ToolNotFoundContent() {
           Back to home
         </Link>
       </div>
-    </PageShell>
+    </div>
   );
 }
 
@@ -72,8 +64,6 @@ type ToolDetailContentProps = {
 };
 
 export function ToolDetailContent({ tool }: ToolDetailContentProps) {
-  const { theme } = useTheme();
-
   const categoryLabel = categoryLabelFromId(tool.category_id);
   const mainDescription =
     tool.desc_en ??
@@ -83,18 +73,13 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
   const visitUrl = tool.affiliate_url ?? tool.url;
 
   return (
-    <PageShell>
+    <div className="min-h-screen bg-slate-950 px-4 pb-24 pt-3">
       <div className="mx-auto max-w-4xl px-4 py-10">
         {/* Back link */}
         <div className="pb-6">
           <Link
             href="/"
-            className={cn(
-              "inline-flex items-center gap-1.5 text-sm transition",
-              theme === "day"
-                ? "text-slate-500 hover:text-emerald-600"
-                : "text-slate-400 hover:text-emerald-300"
-            )}
+            className="inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-emerald-300"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to all tools
@@ -106,12 +91,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
           <div className="flex flex-col items-center gap-3 md:flex-row md:items-start md:justify-between">
             <h1 className="text-3xl font-bold md:text-4xl">{tool.name}</h1>
             {tool.badge && (
-              <span className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-wide",
-                theme === "day"
-                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-600"
-                  : "border-emerald-500/50 bg-emerald-500/10 text-emerald-400"
-              )}>
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-400">
                 <Sparkles className="h-3.5 w-3.5" />
                 {tool.badge}
               </span>
@@ -120,16 +100,8 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         </header>
 
         {/* Description Section */}
-        <section className={cn(
-          "mb-8 rounded-2xl border p-6",
-          theme === "day"
-            ? "border-slate-200 bg-white"
-            : "border-white/10 bg-slate-900/50"
-        )}>
-          <p className={cn(
-            "text-base leading-relaxed md:text-lg",
-            theme === "day" ? "text-slate-600" : "text-slate-300"
-          )}>
+        <section className="mb-8 rounded-2xl border border-white/10 bg-slate-900/50 p-6">
+          <p className="text-base leading-relaxed text-slate-300 md:text-lg">
             {mainDescription}
           </p>
         </section>
@@ -224,7 +196,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
           </div>
         </section>
       </div>
-    </PageShell>
+    </div>
   );
 }
 
@@ -240,28 +212,15 @@ function MetaCard({
   label: string;
   value: string;
 }) {
-  const { theme } = useTheme();
-
   return (
-    <div className={cn(
-      "rounded-2xl border p-5",
-      theme === "day"
-        ? "border-slate-200 bg-white"
-        : "border-white/10 bg-slate-900/50"
-    )}>
-      <div className={cn(
-        "mb-2 flex items-center gap-2",
-        theme === "day" ? "text-emerald-600" : "text-emerald-400"
-      )}>
+    <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
+      <div className="mb-2 flex items-center gap-2 text-emerald-400">
         {icon}
         <h3 className="text-xs font-semibold uppercase tracking-wider">
           {label}
         </h3>
       </div>
-      <p className={cn(
-        "text-sm leading-relaxed",
-        theme === "day" ? "text-slate-600" : "text-slate-300"
-      )}>
+      <p className="text-sm leading-relaxed text-slate-300">
         {value}
       </p>
     </div>
@@ -272,19 +231,9 @@ function MetaCard({
 // TagsCard Component
 // ============================================================
 function TagsCard({ tags }: { tags: string[] }) {
-  const { theme } = useTheme();
-
   return (
-    <div className={cn(
-      "rounded-2xl border p-5",
-      theme === "day"
-        ? "border-slate-200 bg-white"
-        : "border-white/10 bg-slate-900/50"
-    )}>
-      <div className={cn(
-        "mb-3 flex items-center gap-2",
-        theme === "day" ? "text-emerald-600" : "text-emerald-400"
-      )}>
+    <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
+      <div className="mb-3 flex items-center gap-2 text-emerald-400">
         <Tag className="h-4 w-4" />
         <h3 className="text-xs font-semibold uppercase tracking-wider">Tags</h3>
       </div>
@@ -292,12 +241,7 @@ function TagsCard({ tags }: { tags: string[] }) {
         {tags.map((tag) => (
           <span
             key={tag}
-            className={cn(
-              "rounded-full px-3 py-1 text-xs",
-              theme === "day"
-                ? "bg-slate-100 text-slate-600"
-                : "bg-slate-800 text-slate-300"
-            )}
+            className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300"
           >
             #{tag}
           </span>
