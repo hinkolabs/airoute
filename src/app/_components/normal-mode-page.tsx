@@ -81,28 +81,28 @@ const DEAL_TOOLS = [
     id: "chatgpt",
     name: "ChatGPT",
     tag: "Popular",
-    benefit: "Free GPT-4o mini available",
+    benefit: "Plans and features vary. Check official pricing.",
     icon: "✍️",
   },
   {
     id: "midjourney",
     name: "Midjourney",
     tag: "Premium",
-    benefit: "30% off first month",
+    benefit: "Pricing and promos may change. See official plans.",
     icon: "🎨",
   },
   {
     id: "runway",
     name: "Runway",
     tag: "Video AI",
-    benefit: "20% OFF first month",
+    benefit: "Limited-time deals may be available. Verify on site.",
     icon: "🎬",
   },
   {
     id: "elevenlabs",
     name: "ElevenLabs",
-    tag: "Free credits",
-    benefit: "Get 10,000 free characters",
+    tag: "Voice AI",
+    benefit: "Credits and plans vary. Confirm on official page.",
     icon: "🎙️",
   },
 ];
@@ -275,7 +275,7 @@ function DealsSection() {
                   <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
                     {tool.tag}
                   </span>
-                  <span className="text-[10px] text-slate-500">Verified offer</span>
+                  <span className="text-[10px] text-slate-500">Official link</span>
                 </div>
                 <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">{tool.benefit}</p>
               </div>
