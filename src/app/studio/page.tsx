@@ -32,7 +32,7 @@ export default function StudioPage() {
           </p>
 
           <Link
-            href="/my"
+            href="/my?comingSoon=1"
             className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 text-white text-sm font-semibold shadow hover:bg-emerald-600 transition-colors"
           >
             Sign up
