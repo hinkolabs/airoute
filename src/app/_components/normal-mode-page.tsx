@@ -362,11 +362,11 @@ function PageFooter() {
         <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
       </div>
         <div className="flex items-center justify-center gap-3 text-xs">
-          <Link href="/privacy" className="text-gray-500 hover:underline">
+          <Link href="/privacy" className="text-slate-600 hover:text-slate-400 hover:underline">
             Privacy Policy
           </Link>
-          <span className="text-gray-700">·</span>
-          <Link href="/terms" className="text-gray-500 hover:underline">
+          <span className="text-slate-700">·</span>
+          <Link href="/terms" className="text-slate-600 hover:text-slate-400 hover:underline">
             Terms of Service
           </Link>
         </div>
