@@ -339,13 +339,13 @@ function PageFooter() {
   return (
     <footer className="px-4 py-6 text-center">
       <div className="mb-4 flex justify-center gap-6 text-xs text-slate-400">
-        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="transition hover:text-emerald-300">
           Contact Us
         </a>
-        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="transition hover:text-emerald-300">
           Partner with us
         </a>
-        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="transition hover:text-emerald-300">
           Help Center
         </a>
       </div>
