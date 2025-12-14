@@ -339,15 +339,15 @@ function PageFooter() {
   return (
     <footer className="px-4 py-6 text-center">
       <div className="mb-4 flex justify-center gap-6 text-xs text-slate-400">
-        <Link href="/contact" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
           Contact Us
-        </Link>
-        <Link href="/partner" className="transition hover:text-emerald-300">
+        </a>
+        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
           Partner with us
-        </Link>
-        <Link href="/help" className="transition hover:text-emerald-300">
+        </a>
+        <a href="mailto:contact@hinkolabs.com" className="transition hover:text-emerald-300">
           Help Center
-        </Link>
+        </a>
       </div>
       <div className="mb-2">
         <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
