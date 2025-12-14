@@ -26,7 +26,7 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-gray-800 bg-background/90 backdrop-blur transition-all">
-      <div className="mx-auto flex h-full max-w-7xl items-center justify-between px-4 md:px-6">
+      <div className="mx-auto flex h-full max-w-5xl items-center justify-between px-4 md:px-6">
         {/* Left: Back Button or Logo */}
         {showBackButton ? (
           <button
