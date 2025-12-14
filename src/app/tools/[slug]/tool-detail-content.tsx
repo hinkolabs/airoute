@@ -1,15 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import {
-  ExternalLink,
-  Sparkles,
-  Target,
-  Briefcase,
-  Tag,
-  ArrowLeft,
-  Layers,
-} from "lucide-react";
+import { ExternalLink, Sparkles, Tag, ArrowLeft } from "lucide-react";
 import { CopyLinkButton } from "./copy-link-button";
 import type { ToolRecord } from "@/lib/tools";
 
@@ -64,45 +56,36 @@ type ToolDetailContentProps = {
 };
 
 export function ToolDetailContent({ tool }: ToolDetailContentProps) {
-  const categoryLabel = categoryLabelFromId(tool.category_id);
   const mainDescription =
     tool.desc_en ??
     tool.description ??
-    "We are preparing a detailed description for this tool.";
+    "Premium AI tool for your creative workflow.";
   const displayTags = filterDisplayTags(tool.tags);
   const visitUrl = tool.affiliate_url ?? tool.url;
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-24 pt-3">
-      <div className="mx-auto max-w-4xl px-4 py-10">
-        {/* Header: Tool Name + Badge */}
-        <header className="mb-8 text-center md:text-left">
-          <div className="flex flex-col items-center gap-3 md:flex-row md:items-start md:justify-between">
-            <h1 className="text-3xl font-bold md:text-4xl">{tool.name}</h1>
-            {tool.badge && (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/50 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold uppercase tracking-wide text-emerald-400">
-                <Sparkles className="h-3.5 w-3.5" />
-                {tool.badge}
-              </span>
-            )}
-          </div>
+    <div className="min-h-screen bg-slate-950 px-4 pb-24 pt-6">
+      <div className="mx-auto max-w-5xl">
+        {/* Tool Name */}
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-slate-50 lg:text-3xl">{tool.name}</h1>
         </header>
 
-        {/* Description Section */}
-        <section className="mb-8 rounded-2xl border border-white/10 bg-slate-900/50 p-6">
-          <p className="text-base leading-relaxed text-slate-300 md:text-lg">
+        {/* Description */}
+        <section className="mb-6 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-5">
+          <p className="text-sm leading-relaxed text-slate-300 lg:text-base">
             {mainDescription}
           </p>
         </section>
 
-        {/* Button Row */}
-        <section className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Buttons */}
+        <section className="mb-8 flex flex-col gap-3 sm:flex-row">
           {visitUrl && (
             <Link
               href={visitUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
             >
               <ExternalLink className="h-4 w-4" />
               Visit official site
@@ -111,70 +94,35 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
           <CopyLinkButton />
         </section>
 
-        {/* Meta Block */}
-        <section className="mb-10 space-y-4">
+        {/* Info Cards */}
+        <section className="mb-8 space-y-3">
           {tool.task_category && (
-            <MetaCard
-              icon={<Layers className="h-4 w-4" />}
-              label="Task Category"
-              value={tool.task_category}
-            />
+            <InfoCard label="TASK CATEGORY" value={tool.task_category} />
           )}
-
-          {tool.category_id && (
-            <MetaCard
-              icon={<Briefcase className="h-4 w-4" />}
-              label="Category"
-              value={categoryLabel}
-            />
-          )}
-
           {tool.best_for && (
-            <MetaCard
-              icon={<Sparkles className="h-4 w-4" />}
-              label="Best for"
-              value={tool.best_for}
-            />
+            <InfoCard label="BEST FOR" value={tool.best_for} />
           )}
-
           {tool.why_pick && (
-            <MetaCard
-              icon={<Target className="h-4 w-4" />}
-              label="Why we picked it"
-              value={tool.why_pick}
-            />
+            <InfoCard label="WHY WE PICKED IT" value={tool.why_pick} />
           )}
-
-          {tool.related_gear && (
-            <MetaCard
-              icon={<Briefcase className="h-4 w-4" />}
-              label="Related gear"
-              value={tool.related_gear}
-            />
-          )}
-
-          {/* Tags */}
-          {displayTags.length > 0 && <TagsCard tags={displayTags} />}
-        </section>
-
-        {/* Divider */}
-        <hr className="mb-10 border-white/10" />
-
-        {/* More Tools Placeholder */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold">
-            More tools you may like
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="flex h-32 items-center justify-center rounded-2xl border border-dashed border-white/10 bg-slate-900/30 text-sm text-slate-500"
-              >
-                Coming soon...
+          {displayTags.length > 0 && (
+            <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4">
+              <div className="mb-2 flex items-center gap-2 text-emerald-400">
+                <Tag className="h-4 w-4" />
+                <h3 className="text-xs font-semibold uppercase tracking-wider">TAGS</h3>
               </div>
-            ))}
-          </div>
+              <div className="flex flex-wrap gap-2">
+                {displayTags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-slate-800 px-2.5 py-1 text-xs text-slate-300"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
         </section>
       </div>
     </div>
@@ -182,52 +130,15 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
 }
 
 // ============================================================
-// MetaCard Component
+// InfoCard Component
 // ============================================================
-function MetaCard({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-}) {
+function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
-      <div className="mb-2 flex items-center gap-2 text-emerald-400">
-        {icon}
-        <h3 className="text-xs font-semibold uppercase tracking-wider">
-          {label}
-        </h3>
-      </div>
-      <p className="text-sm leading-relaxed text-slate-300">
-        {value}
-      </p>
-    </div>
-  );
-}
-
-// ============================================================
-// TagsCard Component
-// ============================================================
-function TagsCard({ tags }: { tags: string[] }) {
-  return (
-    <div className="rounded-2xl border border-white/10 bg-slate-900/50 p-5">
-      <div className="mb-3 flex items-center gap-2 text-emerald-400">
-        <Tag className="h-4 w-4" />
-        <h3 className="text-xs font-semibold uppercase tracking-wider">Tags</h3>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {tags.map((tag) => (
-          <span
-            key={tag}
-            className="rounded-full bg-slate-800 px-3 py-1 text-xs text-slate-300"
-          >
-            #{tag}
-          </span>
-        ))}
-      </div>
+    <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+        {label}
+      </h3>
+      <p className="text-sm leading-relaxed text-slate-300">{value}</p>
     </div>
   );
 }
