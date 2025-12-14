@@ -257,7 +257,10 @@ function DealsSection() {
   return (
     <section className="px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <SectionHeader title="Tools with special offers" moreHref="/deals" />
+        <SectionHeader title="Deals & Official Links" moreHref="/deals" />
+        <p className="mb-4 text-xs leading-relaxed text-slate-400">
+          Promotions may vary by region and time. Always verify details on the official pricing page.
+        </p>
         <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {DEAL_TOOLS.map((tool) => (
           <Link
