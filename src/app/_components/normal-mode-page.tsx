@@ -58,18 +58,21 @@ const TRENDING_TOOLS = [
     name: "Midjourney",
     description: "AI art generation",
     icon: "🎨",
+    websiteUrl: "https://www.midjourney.com",
   },
   {
     id: "chatgpt",
     name: "ChatGPT",
     description: "AI writing assistant",
     icon: "✍️",
+    websiteUrl: "https://chat.openai.com",
   },
   {
     id: "runway",
     name: "Runway",
     description: "Video editing & generation",
     icon: "🎬",
+    websiteUrl: "https://runwayml.com",
   },
 ];
 
@@ -227,9 +230,11 @@ function TrendingSection() {
         <SectionHeader title="Trending AI tools" moreHref="/tools/trending" />
         <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {TRENDING_TOOLS.map((tool) => (
-          <Link
+          <a
             key={tool.id}
-            href={`/tools/${tool.id}`}
+            href={tool.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex min-h-[60px] items-center gap-3 rounded-xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 shadow-sm transition hover:border-emerald-400/30"
           >
             <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-lg">
@@ -242,7 +247,7 @@ function TrendingSection() {
               </div>
               <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">{tool.description}</p>
             </div>
-          </Link>
+          </a>
         ))}
         </div>
       </div>
@@ -263,9 +268,11 @@ function DealsSection() {
         </p>
         <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {DEAL_TOOLS.map((tool) => (
-          <Link
+          <a
             key={tool.id}
-            href={`/tools/${tool.id}`}
+            href={tool.websiteUrl}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex min-h-[60px] items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 shadow-sm transition hover:border-emerald-400/30"
           >
             <div className="flex items-center gap-3">
@@ -284,7 +291,7 @@ function DealsSection() {
               </div>
             </div>
             <div className="flex-shrink-0 text-slate-500">→</div>
-          </Link>
+          </a>
         ))}
         </div>
       </div>

@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { ScanningBanner } from "./_components/scanning-banner";
 import { AnimatedMatchScore } from "./_components/animated-match-score";
+import { supabaseServerClient } from "@/lib/supabase/server";
 
 type BestPick = {
   rank: 1 | 2 | 3;
@@ -549,6 +549,18 @@ export default async function BestCategoryPage({
   const meta = CATEGORY_META[categoryKey];
   const picks = BEST_PICKS[categoryKey] ?? [];
 
+  // Fetch affiliate URLs from Supabase for each pick
+  const slugs = picks.map((p) => p.slug);
+  const { data: toolsData } = await supabaseServerClient
+    .from("tools")
+    .select("id, slug, affiliate_url")
+    .in("slug", slugs);
+
+  // Create a slug -> affiliate_url map
+  const urlMap = new Map(
+    toolsData?.map((t) => [t.slug, t.affiliate_url]) ?? []
+  );
+
   return (
     <main className="min-h-screen bg-[#020617]">
       <div className="mx-auto flex max-w-md flex-col px-4 pt-1 pb-24 text-slate-50">
@@ -583,10 +595,15 @@ export default async function BestCategoryPage({
             };
             const badge = badgeConfig[proof.badgeType];
 
+            // Get affiliate URL from Supabase, fallback to internal link
+            const affiliateUrl = urlMap.get(pick.slug);
+
             return (
-              <Link
+              <a
                 key={pick.slug}
-                href={`/tools/${pick.slug}`}
+                href={affiliateUrl || `/tools/${pick.slug}`}
+                target={affiliateUrl ? "_blank" : undefined}
+                rel={affiliateUrl ? "noopener noreferrer" : undefined}
                 className="block"
               >
                 <article
@@ -683,7 +700,7 @@ export default async function BestCategoryPage({
                     </div>
                   </div>
                 </article>
-              </Link>
+              </a>
             );
           })}
         </section>

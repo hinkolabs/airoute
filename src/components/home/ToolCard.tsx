@@ -13,7 +13,12 @@ export function ToolCard({ tool }: ToolCardProps) {
   const description = tool.desc_en || tool.why_pick || 'No description available.';
 
   return (
-    <article className="group flex w-full flex-col rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-lg md:p-5">
+    <a
+      href={tool.affiliate_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex w-full flex-col rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-lg md:p-5"
+    >
       {/* 상단: 이름 + 카테고리 배지 */}
       <div className="flex items-start justify-between gap-2">
         <h3 className="text-sm font-bold text-white transition-colors group-hover:text-emerald-300 md:text-base">
@@ -36,29 +41,14 @@ export function ToolCard({ tool }: ToolCardProps) {
         </p>
       )}
 
-      {/* 하단: 버튼들 - 모바일: 세로 스택 / md: 가로 배치 */}
-      <div className="mt-4 flex flex-col gap-2 border-t border-slate-800/60 pt-4 md:flex-row">
-        {/* Visit 버튼 - primary */}
-        <a
-          href={tool.affiliate_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex h-10 flex-1 items-center justify-center rounded-full bg-emerald-500 text-center text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
-        >
-          Visit
+      {/* 하단: Visit 버튼 */}
+      <div className="mt-4 flex border-t border-slate-800/60 pt-4">
+        <div className="flex h-10 w-full items-center justify-center rounded-full bg-emerald-500 text-center text-sm font-semibold text-slate-950 transition group-hover:bg-emerald-400">
+          Visit Tool
           <ExternalLinkIcon />
-        </a>
-        
-        {/* Details 버튼 - secondary */}
-        {/* TODO: /tools/[id] 페이지 구현 필요 */}
-        <Link
-          href={`/tools/${tool.id}`}
-          className="flex h-10 flex-1 items-center justify-center rounded-full border border-slate-600 text-sm text-slate-200 transition hover:border-emerald-400 hover:text-emerald-200"
-        >
-          Details
-        </Link>
+        </div>
       </div>
-    </article>
+    </a>
   );
 }
 

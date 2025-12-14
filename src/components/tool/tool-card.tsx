@@ -9,7 +9,12 @@ export default function ToolCard({ tool }: ToolCardProps) {
   const description = tool.desc_simple_en || tool.desc_ko || tool.desc_en || 'AI 도구';
 
   return (
-    <article className="group flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all duration-300 hover:border-emerald-500/50 hover:bg-zinc-900">
+    <a
+      href={tool.affiliate_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="group flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all duration-300 hover:border-emerald-500/50 hover:bg-zinc-900"
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <h3 className="text-lg font-semibold text-white group-hover:text-emerald-400 transition-colors">
           {tool.name}
@@ -39,10 +44,10 @@ export default function ToolCard({ tool }: ToolCardProps) {
         ))}
       </div>
 
-      <Button href={tool.affiliate_url} size="sm" className="w-full">
-        바로가기
-      </Button>
-    </article>
+      <div className="flex h-10 w-full items-center justify-center rounded-lg bg-emerald-500 text-sm font-semibold text-slate-950 transition group-hover:bg-emerald-400">
+        Visit Tool →
+      </div>
+    </a>
   );
 }
 
