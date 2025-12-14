@@ -86,6 +86,7 @@ const DEAL_TOOLS = [
     tag: "Popular",
     benefit: "Plans and features vary. Check official pricing.",
     icon: "✍️",
+    websiteUrl: "https://chat.openai.com",
   },
   {
     id: "midjourney",
@@ -93,6 +94,7 @@ const DEAL_TOOLS = [
     tag: "Premium",
     benefit: "Pricing and promos may change. See official plans.",
     icon: "🎨",
+    websiteUrl: "https://www.midjourney.com",
   },
   {
     id: "runway",
@@ -100,6 +102,7 @@ const DEAL_TOOLS = [
     tag: "Video AI",
     benefit: "Limited-time deals may be available. Verify on site.",
     icon: "🎬",
+    websiteUrl: "https://runwayml.com",
   },
   {
     id: "elevenlabs",
@@ -107,6 +110,7 @@ const DEAL_TOOLS = [
     tag: "Voice AI",
     benefit: "Credits and plans vary. Confirm on official page.",
     icon: "🎙️",
+    websiteUrl: "https://elevenlabs.io",
   },
 ];
 
