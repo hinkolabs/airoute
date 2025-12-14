@@ -7,7 +7,10 @@ import { usePathname } from "next/navigation";
 export default function MobileBottomNav() {
   const pathname = usePathname();
 
-  const isActive = (path: string) => pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/my') return pathname.startsWith('/my');
+    return pathname === path;
+  };
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 block md:hidden bg-slate-950/90 backdrop-blur border-t border-gray-800 pb-safe">
@@ -24,7 +27,7 @@ export default function MobileBottomNav() {
           <Sparkles size={24} />
           <span className="text-xs font-medium">Studio</span>
         </Link>
-        <Link href="/my" className={`flex flex-col items-center space-y-1 transition-colors ${isActive('/my') ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
+        <Link href="/my?comingSoon=1" className={`flex flex-col items-center space-y-1 transition-colors ${isActive('/my') ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
           <User size={24} />
           <span className="text-xs font-medium">My</span>
         </Link>
