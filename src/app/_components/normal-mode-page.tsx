@@ -14,37 +14,37 @@ const CATEGORIES = [
   {
     id: "image-design",
     title: "Image & Design",
-    description: "Logo, poster, UI design",
+    description: "Create logos, posters, and polished UI designs",
     icon: "🖼️",
   },
   {
     id: "writing",
     title: "Writing",
-    description: "Blog, copy, scripts",
+    description: "Write blogs, marketing copy, and scripts faster",
     icon: "✏️",
   },
   {
     id: "video",
     title: "Video",
-    description: "Edit, generate videos",
+    description: "Edit and generate professional videos easily",
     icon: "🎬",
   },
   {
     id: "audio",
     title: "Audio",
-    description: "Music, podcast, BGM",
+    description: "Produce music, podcasts, and background tracks",
     icon: "🎵",
   },
   {
     id: "voice",
     title: "Voice",
-    description: "TTS, dubbing, cloning",
+    description: "Generate realistic voice and dubbing instantly",
     icon: "🎙️",
   },
   {
     id: "coding",
     title: "Coding",
-    description: "Code assist, debug",
+    description: "Get code assistance and debug efficiently",
     icon: "💻",
   },
 ];
@@ -156,14 +156,19 @@ function HeroSection() {
         </div>
 
         {/* Headline */}
-        <h1 className="mb-3 text-2xl font-semibold leading-tight text-slate-50">
+        <h1 className="mb-3 text-2xl font-semibold leading-tight text-slate-50 lg:text-3xl">
           <span className="block">Too many AI tools?</span>
           <span className="block">We find the best route for you.</span>
         </h1>
 
         {/* Subtext */}
-        <p className="text-sm leading-relaxed text-slate-300">
+        <p className="text-sm leading-relaxed text-slate-300 lg:text-base lg:leading-7">
           No more endless searching. Choose your goal, and we'll show you the top 3 AI tools.
+        </p>
+
+        {/* Trust Line */}
+        <p className="mt-3 text-xs leading-relaxed text-slate-400">
+          Rankings based on real usage data, expert curation, and tool popularity.
         </p>
       </div>
     </section>
@@ -199,7 +204,7 @@ function CategorySection() {
             </div>
 
             {/* Bottom CTA (single line) */}
-            <div className="flex items-center justify-between text-[11px] font-medium text-emerald-300">
+            <div className="flex items-center justify-between text-[10px] font-medium text-emerald-400/70">
               <span>View best 3 tools</span>
               <span className="transition group-hover:translate-x-0.5">→</span>
             </div>
@@ -230,8 +235,11 @@ function TrendingSection() {
               {tool.icon}
             </div>
             <div className="flex-1">
-              <h3 className="text-sm font-semibold text-slate-50">{tool.name}</h3>
-              <p className="text-xs text-slate-400">{tool.description}</p>
+              <div className="mb-1 flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-slate-50">{tool.name}</h3>
+                <span className="text-[10px] text-slate-500">Most used this week</span>
+              </div>
+              <p className="text-xs leading-relaxed text-slate-400">{tool.description}</p>
             </div>
           </Link>
         ))}
@@ -261,13 +269,14 @@ function DealsSection() {
                 {tool.icon}
               </div>
               <div className="flex-1">
-                <div className="mb-0.5 flex items-center gap-2">
+                <div className="mb-1 flex items-center gap-2">
                   <h3 className="text-sm font-semibold text-slate-50">{tool.name}</h3>
-                  <span className="rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold text-emerald-300">
+                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
                     {tool.tag}
                   </span>
+                  <span className="text-[10px] text-slate-500">Verified offer</span>
                 </div>
-                <p className="text-xs text-slate-400">{tool.benefit}</p>
+                <p className="text-xs leading-relaxed text-slate-400">{tool.benefit}</p>
               </div>
             </div>
             <div className="flex-shrink-0 text-slate-500">→</div>
@@ -287,7 +296,7 @@ function GuidesSection() {
     <section className="px-4 py-6">
       <div className="mx-auto max-w-5xl">
         <SectionHeader title="Guides for beginners" moreHref="/guides" />
-        <p className="mb-4 text-xs text-slate-400">
+        <p className="mb-4 text-xs leading-relaxed text-slate-400">
           Learn the basics and get the most out of AI tools.
         </p>
 
@@ -296,9 +305,9 @@ function GuidesSection() {
           <Link
             key={guide.slug}
             href={`/guides/${guide.slug}`}
-            className="block rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 shadow-sm transition hover:border-emerald-400/30"
+            className="block rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-4 shadow-sm transition hover:border-emerald-400/30"
           >
-            <h3 className="mb-1 text-sm font-semibold text-slate-50">{guide.title}</h3>
+            <h3 className="mb-2 text-sm font-semibold leading-snug text-slate-50">{guide.title}</h3>
             <p className="text-xs leading-relaxed text-slate-400">{guide.description}</p>
           </Link>
         ))}
@@ -322,17 +331,17 @@ function StudioTeaser() {
         </div>
 
         {/* Title */}
-        <h2 className="mb-2 text-lg font-bold text-slate-50">
+        <h2 className="mb-2 text-lg font-bold text-slate-50 lg:text-xl">
           Airoute <span className="text-emerald-300">Studio</span>
         </h2>
 
         {/* Subtitle */}
-        <p className="mb-4 text-xs leading-relaxed text-slate-400">
+        <p className="mb-5 text-sm leading-relaxed text-slate-400 lg:text-base">
           One-screen workflow automation for scripts, images, and videos.
         </p>
 
         {/* Pill */}
-        <div className="inline-flex rounded-full border border-slate-700 bg-slate-800/50 px-5 py-1.5 text-xs font-semibold text-slate-500">
+        <div className="inline-flex cursor-not-allowed rounded-full border border-slate-700 bg-slate-800/50 px-5 py-1.5 text-xs font-medium text-slate-500">
           Launching Feb 2026
         </div>
       </div>
@@ -362,11 +371,11 @@ function PageFooter() {
         <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
       </div>
         <div className="flex items-center justify-center gap-3 text-xs">
-          <Link href="/privacy" className="text-slate-600 hover:text-slate-400 hover:underline">
+          <Link href="/privacy" className="text-slate-500 transition hover:text-slate-400">
             Privacy Policy
           </Link>
-          <span className="text-slate-700">·</span>
-          <Link href="/terms" className="text-slate-600 hover:text-slate-400 hover:underline">
+          <span className="text-slate-600">·</span>
+          <Link href="/terms" className="text-slate-500 transition hover:text-slate-400">
             Terms of Service
           </Link>
         </div>
