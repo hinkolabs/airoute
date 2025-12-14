@@ -1,9 +1,8 @@
-// AIROUTE 루트 레이아웃
-import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import AppShell from "./_design/components/app-shell";
+import Header from "@/components/layout/header";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import GaPageView from "@/app/_components/ga-pageview";
 
 const inter = Inter({
@@ -13,7 +12,7 @@ const inter = Inter({
   variable: "--font-inter",
 });
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Airoute - Confused by AI tools? Start here.",
   description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
 };
@@ -26,7 +25,7 @@ export default function RootLayout({
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
-    <html lang="en">
+    <html lang="en" className="dark">
       <head>
         {/* Google Analytics */}
         {gaId && (
@@ -52,9 +51,20 @@ export default function RootLayout({
           </>
         )}
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${inter.className} antialiased bg-background text-primary`}>
+        {/* Google Analytics Page View Tracking */}
         {gaId && <GaPageView />}
-        <AppShell>{children}</AppShell>
+        
+        {/* 🔥 전역 헤더 - Dark Mode */}
+        <Header />
+        
+        {/* 본문 (헤더 높이만큼 패딩 추가) */}
+        <main className="pb-20 md:pb-0">
+          {children}
+        </main>
+        
+        {/* 🔥 전역 하단 메뉴 - 모바일 전용 */}
+        <MobileBottomNav />
       </body>
     </html>
   );
