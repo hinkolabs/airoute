@@ -196,23 +196,23 @@ function CategorySection() {
           <Link
             key={category.id}
             href={`/tools/best/${category.id}`}
-            className="group flex h-[135px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-3.5 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+            className="group flex min-h-[145px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
           >
             {/* Icon + Title */}
-            <div>
-              <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
+            <div className="flex-1">
+              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
                 {category.icon}
               </div>
               <h3 className="mb-1.5 text-sm font-semibold leading-tight text-slate-50">
                 {category.title}
               </h3>
-              <p className="text-xs leading-relaxed text-slate-400">
+              <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
                 {category.description}
               </p>
             </div>
 
             {/* Bottom CTA (single line) */}
-            <div className="flex items-center justify-between text-[10px] font-medium text-emerald-400/80">
+            <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-emerald-400/80">
               <span>View best 3 tools</span>
               <span className="transition group-hover:translate-x-0.5">→</span>
             </div>
