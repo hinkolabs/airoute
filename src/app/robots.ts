@@ -8,7 +8,7 @@ export default function robots(): MetadataRoute.Robots {
         allow: "/",
       },
     ],
-    sitemap: "https://airoute.ai/sitemap.xml",
+    sitemap: "https://www.airoute.ai/sitemap.xml",
   };
 }
 

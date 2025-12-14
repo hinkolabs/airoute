@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import Link from "next/link";
 import { supabaseServerClient } from "@/lib/supabase/server";
 
@@ -7,6 +8,19 @@ type GuideRecord = {
   title: string;
   excerpt: string | null;
   created_at: string;
+};
+
+export const metadata: Metadata = {
+  title: "AI Tool Guides - Airoute",
+  description: "Practical guides to help you choose the right AI tools faster. Learn about image generation, video editing, writing assistants, and more.",
+  alternates: {
+    canonical: "https://www.airoute.ai/guides",
+  },
+  openGraph: {
+    title: "AI Tool Guides - Airoute",
+    description: "Practical guides to help you choose the right AI tools faster. Learn about image generation, video editing, writing assistants, and more.",
+    url: "https://www.airoute.ai/guides",
+  },
 };
 
 export default async function GuidesPage() {

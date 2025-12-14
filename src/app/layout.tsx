@@ -15,8 +15,22 @@ const inter = Inter({
 });
 
 export const metadata = {
+  metadataBase: new URL("https://www.airoute.ai"),
   title: "Airoute - Confused by AI tools? Start here.",
   description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
+  openGraph: {
+    title: "Airoute - Confused by AI tools? Start here.",
+    description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
+    url: "https://www.airoute.ai",
+    siteName: "Airoute",
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Airoute - Confused by AI tools? Start here.",
+    description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
+  },
 };
 
 export default function RootLayout({
