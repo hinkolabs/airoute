@@ -47,19 +47,9 @@ export default async function TrendingPage() {
               className="group flex items-center gap-4 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
             >
               {/* Icon/Logo */}
-              {tool.logo_url ? (
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900">
-                  <img
-                    src={tool.logo_url}
-                    alt={tool.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              ) : (
-                <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
-                  🔥
-                </div>
-              )}
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
+                🔥
+              </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">

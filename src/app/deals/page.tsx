@@ -41,6 +41,7 @@ export default async function DealsPage() {
         {/* Tool List */}
         <div className="space-y-3">
           {sortedTools.map((tool) => {
+            if (!tool.slug) return null;
             const metadata = DEAL_METADATA[tool.slug];
             return (
               <Link
@@ -50,19 +51,9 @@ export default async function DealsPage() {
               >
                 <div className="flex items-center gap-4">
                   {/* Icon/Logo */}
-                  {tool.logo_url ? (
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-800/50 bg-slate-900">
-                      <img
-                        src={tool.logo_url}
-                        alt={tool.name}
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
-                      💎
-                    </div>
-                  )}
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
+                    💎
+                  </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">

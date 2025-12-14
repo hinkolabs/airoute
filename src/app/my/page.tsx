@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { ComingSoonBanner } from "./_components/coming-soon-banner";
 import { User, Bookmark, History } from "lucide-react";
 import Link from "next/link";
@@ -9,7 +10,9 @@ export default function MyPage() {
     <div className="min-h-[calc(100vh-80px)] bg-slate-950 px-4 pt-3 pb-24 text-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col gap-6">
         {/* Coming Soon Banner */}
-        <ComingSoonBanner />
+        <Suspense fallback={null}>
+          <ComingSoonBanner />
+        </Suspense>
 
         {/* Header */}
         <header className="mt-6 space-y-2 text-center">

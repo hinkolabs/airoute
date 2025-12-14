@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/button';
 import Chip from '@/components/ui/Chip';
 
 export interface Tool {

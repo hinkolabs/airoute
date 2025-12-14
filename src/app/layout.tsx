@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import GaPageView from "@/app/_components/ga-pageview";
+import { ThemeProvider } from "@/app/_design/providers/theme-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -52,19 +54,25 @@ export default function RootLayout({
         )}
       </head>
       <body className={`${inter.className} antialiased bg-background text-primary`}>
-        {/* Google Analytics Page View Tracking */}
-        {gaId && <GaPageView />}
-        
-        {/* 🔥 전역 헤더 - Dark Mode */}
-        <Header />
-        
-        {/* 본문 (헤더 높이만큼 패딩 추가) */}
-        <main className="pb-20 md:pb-0">
-          {children}
-        </main>
-        
-        {/* 🔥 전역 하단 메뉴 - 모바일 전용 */}
-        <MobileBottomNav />
+        <ThemeProvider>
+          {/* Google Analytics Page View Tracking */}
+          {gaId && (
+            <Suspense fallback={null}>
+              <GaPageView />
+            </Suspense>
+          )}
+          
+          {/* 🔥 전역 헤더 - Dark Mode */}
+          <Header />
+          
+          {/* 본문 (헤더 높이만큼 패딩 추가) */}
+          <main className="pb-20 md:pb-0">
+            {children}
+          </main>
+          
+          {/* 🔥 전역 하단 메뉴 - 모바일 전용 */}
+          <MobileBottomNav />
+        </ThemeProvider>
       </body>
     </html>
   );

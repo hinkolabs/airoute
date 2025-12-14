@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { cn } from '@/lib/utils';
-import Button from '@/components/ui/Button';
+import Button from '@/components/ui/button';
 
 interface ToolSearchBarProps {
   onSearch?: (query: string) => void;
