@@ -58,12 +58,6 @@ export async function getActiveTools(): Promise<ToolRecord[]> {
 export async function getToolBySlug(slug: string): Promise<ToolRecord | null> {
   const supabase = supabaseServerClient;
 
-  // Convert slug to name (e.g., "midjourney" -> "Midjourney")
-  const toolName = slug
-    .split('-')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-
   const { data, error } = await supabase
     .from("tools")
     .select(
@@ -90,7 +84,8 @@ export async function getToolBySlug(slug: string): Promise<ToolRecord | null> {
       related_gear
     `
     )
-    .eq("name", toolName)
+    .eq("slug", slug)
+    .eq("is_active", true)
     .maybeSingle();
 
   if (error) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { ExternalLink, Sparkles, Tag, ArrowLeft } from "lucide-react";
 import { CopyLinkButton } from "./copy-link-button";
@@ -28,6 +29,11 @@ function filterDisplayTags(tags: string[] | null | undefined): string[] {
 // Not Found Content
 // ============================================================
 export function ToolNotFoundContent() {
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-20 text-slate-50">
       <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
@@ -63,8 +69,13 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
   const displayTags = filterDisplayTags(tool.tags);
   const visitUrl = tool.affiliate_url ?? tool.url;
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-24 pt-6">
+    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6">
       <div className="mx-auto max-w-5xl">
         {/* Tool Name */}
         <header className="mb-6">

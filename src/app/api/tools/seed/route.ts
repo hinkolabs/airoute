@@ -6,6 +6,7 @@ const SEED_TOOLS = [
   // Image & Design
   {
     name: 'Midjourney',
+    slug: 'midjourney',
     affiliate_url: 'https://www.midjourney.com',
     desc_en: 'Premium-quality image generation with the most stable results. The default choice for many creators.',
     desc_simple_en: 'AI art generation with premium quality',
@@ -18,6 +19,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Leonardo AI',
+    slug: 'leonardo-ai',
     affiliate_url: 'https://leonardo.ai',
     desc_en: 'Great for concept art and game assets with lots of presets and templates to start from.',
     desc_simple_en: 'AI-powered image generation for game assets and concept art',
@@ -30,6 +32,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Canva',
+    slug: 'canva',
     affiliate_url: 'https://www.canva.com',
     desc_en: 'Template-based design tool that makes thumbnails and posters easy, even if you\'re not a designer.',
     desc_simple_en: 'Beginner-friendly design tool with AI-powered templates',
@@ -43,6 +46,7 @@ const SEED_TOOLS = [
   // Writing
   {
     name: 'ChatGPT',
+    slug: 'chatgpt',
     affiliate_url: 'https://chat.openai.com',
     desc_en: 'General-purpose writer for emails, essays, resumes, blog posts and more.',
     desc_simple_en: 'AI writing assistant for all purposes',
@@ -55,6 +59,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Claude',
+    slug: 'claude',
     affiliate_url: 'https://claude.ai',
     desc_en: 'Strong at long reports and structured documents with clear, logical reasoning.',
     desc_simple_en: 'AI assistant for long-form writing',
@@ -67,6 +72,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Notion AI',
+    slug: 'notion-ai',
     affiliate_url: 'https://www.notion.so/product/ai',
     desc_en: 'Helps you draft, summarize and reorganize notes directly inside your Notion workspace.',
     desc_simple_en: 'AI writing integrated in Notion',
@@ -80,6 +86,7 @@ const SEED_TOOLS = [
   // Video
   {
     name: 'Runway',
+    slug: 'runway',
     affiliate_url: 'https://runwayml.com',
     desc_en: 'All-in-one video creation and editing. Widely used for shorts and YouTube content.',
     desc_simple_en: 'AI video editing and generation',
@@ -92,6 +99,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Pika',
+    slug: 'pika',
     affiliate_url: 'https://pika.art',
     desc_en: 'Good for quick, fun clips and meme-style short videos with simple controls.',
     desc_simple_en: 'Fast AI video generation',
@@ -104,6 +112,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'CapCut',
+    slug: 'capcut',
     affiliate_url: 'https://www.capcut.com',
     desc_en: 'Free editor with built-in AI features. Great for subtitles and detailed timeline edits.',
     desc_simple_en: 'Free AI video editor',
@@ -117,6 +126,7 @@ const SEED_TOOLS = [
   // Audio
   {
     name: 'Suno',
+    slug: 'suno',
     affiliate_url: 'https://suno.ai',
     desc_en: 'End-to-end AI music generation – lyrics and full tracks for BGM or personal projects.',
     desc_simple_en: 'AI music generation with lyrics',
@@ -129,6 +139,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Udio',
+    slug: 'udio',
     affiliate_url: 'https://udio.com',
     desc_en: 'Another strong AI music option when you want slightly different styles and flavors.',
     desc_simple_en: 'AI music with unique styles',
@@ -141,6 +152,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'AIVA',
+    slug: 'aiva',
     affiliate_url: 'https://www.aiva.ai',
     desc_en: 'Focused on cinematic and classical-style background music for games and film.',
     desc_simple_en: 'AI cinematic music composer',
@@ -154,6 +166,7 @@ const SEED_TOOLS = [
   // Voice
   {
     name: 'ElevenLabs',
+    slug: 'elevenlabs',
     affiliate_url: 'https://elevenlabs.io',
     desc_en: 'One of the most natural-sounding TTS engines for dubbing, narration and character voices.',
     desc_simple_en: 'Natural AI voice generation',
@@ -166,6 +179,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'HeyGen',
+    slug: 'heygen',
     affiliate_url: 'https://www.heygen.com',
     desc_en: 'Generates talking-head avatar videos with synced lips and translated speech.',
     desc_simple_en: 'AI avatar video generation',
@@ -178,6 +192,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Play.ht',
+    slug: 'play-ht',
     affiliate_url: 'https://play.ht',
     desc_en: 'Large collection of multilingual voice presets, useful for international content.',
     desc_simple_en: 'Multilingual AI voice',
@@ -191,6 +206,7 @@ const SEED_TOOLS = [
   // Coding
   {
     name: 'GitHub Copilot',
+    slug: 'github-copilot',
     affiliate_url: 'https://github.com/features/copilot',
     desc_en: 'Inline AI code suggestions directly in your IDE, great for everyday development.',
     desc_simple_en: 'AI code completion in IDE',
@@ -203,6 +219,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Cursor',
+    slug: 'cursor',
     affiliate_url: 'https://cursor.sh',
     desc_en: 'AI-powered editor based on VS Code that understands your project and assists with refactors.',
     desc_simple_en: 'AI-powered code editor',
@@ -215,6 +232,7 @@ const SEED_TOOLS = [
   },
   {
     name: 'Replit Ghostwriter',
+    slug: 'replit-ghostwriter',
     affiliate_url: 'https://replit.com/ai',
     desc_en: 'AI coding assistant built into the Replit browser IDE for quick experiments and learning.',
     desc_simple_en: 'Browser-based AI coding',
@@ -244,6 +262,7 @@ export async function GET() {
         const { error: updateError } = await supabaseServerClient
           .from('tools')
           .update({
+            slug: tool.slug,
             affiliate_url: tool.affiliate_url,
             desc_en: tool.desc_en,
             desc_simple_en: tool.desc_simple_en,

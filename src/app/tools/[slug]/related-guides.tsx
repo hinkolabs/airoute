@@ -13,7 +13,7 @@ export async function RelatedGuides() {
   }
 
   return (
-    <section className="mt-12 border-t border-slate-800/50 pt-12">
+    <section className="mt-8 border-t border-slate-800/50 pt-8">
       <div className="mx-auto max-w-4xl px-4">
         <h3 className="mb-4 text-lg font-semibold text-slate-100">
           Related Guides
@@ -40,5 +40,6 @@ export async function RelatedGuides() {
     </section>
   );
 }
+
 
 
