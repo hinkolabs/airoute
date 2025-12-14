@@ -1,6 +1,6 @@
 "use client";
 
-import ComingSoonBanner from "./_components/coming-soon-banner";
+import { ComingSoonBanner } from "./_components/coming-soon-banner";
 import { User, Bookmark, History } from "lucide-react";
 import Link from "next/link";
 
