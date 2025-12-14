@@ -28,14 +28,14 @@ export default function StudioPage() {
             AI Studio
           </h1>
           <p className="mb-8 text-slate-300">
-            로그인 후 AI Studio를 사용할 수 있습니다.
+            Sign up to access AI Studio features.
           </p>
 
           <Link
             href="/my"
             className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-3 text-white text-sm font-semibold shadow hover:bg-emerald-600 transition-colors"
           >
-            로그인하러 가기
+            Sign up
           </Link>
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function StudioPage() {
           AI Studio
         </h1>
         <p className="text-slate-300">
-          Airoute의 내장 AI 기능을 한 곳에서 사용하세요.
+          Use Airoute's built-in AI features in one place.
         </p>
       </div>
 
