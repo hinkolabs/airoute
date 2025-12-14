@@ -31,13 +31,15 @@ export default function Header() {
         {showBackButton ? (
           <button
             onClick={handleBack}
-            className="flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white"
+            className="flex items-center gap-2 text-sm font-medium text-slate-300 transition hover:text-white md:hidden"
           >
             <span>←</span>
             <span>Back</span>
           </button>
-        ) : (
-          <Link href="/" className="flex items-center gap-2 shrink-0 min-w-[120px]">
+        ) : null}
+
+        {/* Logo (always visible on desktop) */}
+        <Link href="/" className="flex items-center gap-2 shrink-0 min-w-[120px]">
           {/* Logo Symbol */}
           <div className="relative h-8 w-8 shrink-0 md:h-10 md:w-10">
             <Image 
@@ -49,13 +51,48 @@ export default function Header() {
               unoptimized
             />
           </div>
-            {/* Logo Text with Neon Gradient */}
-            <span className="whitespace-nowrap text-base font-semibold tracking-tight md:text-lg">
-              <span className="text-white">AI</span>
-              <span className="text-emerald-400">ROUTE</span>
-            </span>
+          {/* Logo Text with Neon Gradient */}
+          <span className="whitespace-nowrap text-base font-semibold tracking-tight md:text-lg">
+            <span className="text-white">AI</span>
+            <span className="text-emerald-400">ROUTE</span>
+          </span>
+        </Link>
+
+        {/* Center: Desktop Navigation Menu */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link
+            href="/"
+            className={`text-sm font-medium transition ${
+              pathname === "/" ? "text-emerald-400" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            Home
           </Link>
-        )}
+          <Link
+            href="/guides"
+            className={`text-sm font-medium transition ${
+              pathname.startsWith("/guides") ? "text-emerald-400" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            Guides
+          </Link>
+          <Link
+            href="/studio"
+            className={`text-sm font-medium transition ${
+              pathname === "/studio" ? "text-emerald-400" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            Studio
+          </Link>
+          <Link
+            href="/my?comingSoon=1"
+            className={`text-sm font-medium transition ${
+              pathname.startsWith("/my") ? "text-emerald-400" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            My
+          </Link>
+        </nav>
 
         {/* Right: Sign Up CTA */}
         <div className="flex items-center gap-4">
