@@ -356,14 +356,14 @@ function PageFooter() {
   return (
     <footer className="px-4 py-6 text-center">
       <div className="mx-auto max-w-5xl">
-        <div className="mb-4 flex justify-center gap-6 text-xs text-slate-400">
-        <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="transition hover:text-emerald-300">
+        <div className="mb-4 flex justify-center gap-6 text-xs">
+        <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
           Contact Us
         </a>
-        <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
           Partner with us
         </a>
-        <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="transition hover:text-emerald-300">
+        <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
           Help Center
         </a>
       </div>
@@ -371,11 +371,11 @@ function PageFooter() {
         <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
       </div>
         <div className="flex items-center justify-center gap-3 text-xs">
-          <Link href="/privacy" className="text-slate-500 transition-colors hover:text-slate-400">
+          <Link href="/privacy" className="text-slate-600 transition-colors hover:text-slate-400">
             Privacy Policy
           </Link>
-          <span className="text-slate-500">·</span>
-          <Link href="/terms" className="text-slate-500 transition-colors hover:text-slate-400">
+          <span className="text-slate-600">·</span>
+          <Link href="/terms" className="text-slate-600 transition-colors hover:text-slate-400">
             Terms of Service
           </Link>
         </div>
