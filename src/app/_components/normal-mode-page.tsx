@@ -148,7 +148,7 @@ function SectionHeader({ title, moreHref }: { title: string; moreHref: string })
 function HeroSection() {
   return (
     <section className="px-4 pt-3 pb-5">
-      <div className="rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-6 shadow-sm">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-6 shadow-sm lg:px-8 lg:py-10">
         {/* Badge */}
         <div className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/30">
           <span>✦</span>
@@ -176,8 +176,9 @@ function HeroSection() {
 function CategorySection() {
   return (
     <section className="px-4 py-6">
-      <SectionHeader title="Categories" moreHref="/categories" />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="mx-auto max-w-5xl">
+        <SectionHeader title="Categories" moreHref="/categories" />
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         {CATEGORIES.map((category) => (
           <Link
             key={category.id}
@@ -204,6 +205,7 @@ function CategorySection() {
             </div>
           </Link>
         ))}
+        </div>
       </div>
     </section>
   );
@@ -215,8 +217,9 @@ function CategorySection() {
 function TrendingSection() {
   return (
     <section className="px-4 py-6">
-      <SectionHeader title="Trending AI tools" moreHref="/tools/trending" />
-      <div className="space-y-2">
+      <div className="mx-auto max-w-5xl">
+        <SectionHeader title="Trending AI tools" moreHref="/tools/trending" />
+        <div className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {TRENDING_TOOLS.map((tool) => (
           <Link
             key={tool.id}
@@ -232,6 +235,7 @@ function TrendingSection() {
             </div>
           </Link>
         ))}
+        </div>
       </div>
     </section>
   );
@@ -243,8 +247,9 @@ function TrendingSection() {
 function DealsSection() {
   return (
     <section className="px-4 py-6">
-      <SectionHeader title="Tools with special offers" moreHref="/deals" />
-      <div className="space-y-2">
+      <div className="mx-auto max-w-5xl">
+        <SectionHeader title="Tools with special offers" moreHref="/deals" />
+        <div className="space-y-2 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {DEAL_TOOLS.map((tool) => (
           <Link
             key={tool.id}
@@ -268,6 +273,7 @@ function DealsSection() {
             <div className="flex-shrink-0 text-slate-500">→</div>
           </Link>
         ))}
+        </div>
       </div>
     </section>
   );
@@ -279,12 +285,13 @@ function DealsSection() {
 function GuidesSection() {
   return (
     <section className="px-4 py-6">
-      <SectionHeader title="Guides for beginners" moreHref="/guides" />
-      <p className="mb-4 text-xs text-slate-400">
-        Learn the basics and get the most out of AI tools.
-      </p>
+      <div className="mx-auto max-w-5xl">
+        <SectionHeader title="Guides for beginners" moreHref="/guides" />
+        <p className="mb-4 text-xs text-slate-400">
+          Learn the basics and get the most out of AI tools.
+        </p>
 
-      <div className="space-y-3">
+        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
         {GUIDES.map((guide) => (
           <Link
             key={guide.slug}
@@ -295,6 +302,7 @@ function GuidesSection() {
             <p className="text-xs leading-relaxed text-slate-400">{guide.description}</p>
           </Link>
         ))}
+        </div>
       </div>
     </section>
   );
@@ -306,7 +314,7 @@ function GuidesSection() {
 function StudioTeaser() {
   return (
     <section className="px-4 py-6">
-      <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 px-5 py-6 text-center shadow-sm">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-slate-900/70 px-5 py-6 text-center shadow-sm lg:px-8 lg:py-10">
         {/* Badge */}
         <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-black/40 px-3 py-1 text-xs font-medium text-emerald-300">
           <span>✨</span>
@@ -338,7 +346,8 @@ function StudioTeaser() {
 function PageFooter() {
   return (
     <footer className="px-4 py-6 text-center">
-      <div className="mb-4 flex justify-center gap-6 text-xs text-slate-400">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-4 flex justify-center gap-6 text-xs text-slate-400">
         <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="transition hover:text-emerald-300">
           Contact Us
         </a>
@@ -352,14 +361,15 @@ function PageFooter() {
       <div className="mb-2">
         <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
       </div>
-      <div className="flex items-center justify-center gap-3 text-xs">
-        <Link href="/privacy" className="text-gray-500 hover:underline">
-          Privacy Policy
-        </Link>
-        <span className="text-gray-700">·</span>
-        <Link href="/terms" className="text-gray-500 hover:underline">
-          Terms of Service
-        </Link>
+        <div className="flex items-center justify-center gap-3 text-xs">
+          <Link href="/privacy" className="text-gray-500 hover:underline">
+            Privacy Policy
+          </Link>
+          <span className="text-gray-700">·</span>
+          <Link href="/terms" className="text-gray-500 hover:underline">
+            Terms of Service
+          </Link>
+        </div>
       </div>
     </footer>
   );
