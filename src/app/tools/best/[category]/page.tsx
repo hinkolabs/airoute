@@ -550,15 +550,15 @@ export default async function BestCategoryPage({
   const picks = BEST_PICKS[categoryKey] ?? [];
 
   // Fetch affiliate URLs from Supabase for each pick
-  const slugs = picks.map((p) => p.slug);
+  const names = picks.map((p) => p.name);
   const { data: toolsData } = await supabaseServerClient
     .from("tools")
-    .select("id, slug, affiliate_url")
-    .in("slug", slugs);
+    .select("id, name, affiliate_url")
+    .in("name", names);
 
-  // Create a slug -> affiliate_url map
+  // Create a slug -> affiliate_url map (using name for lookup)
   const urlMap = new Map(
-    toolsData?.map((t) => [t.slug, t.affiliate_url]) ?? []
+    toolsData?.map((t) => [t.name, t.affiliate_url]) ?? []
   );
 
   return (
@@ -595,8 +595,8 @@ export default async function BestCategoryPage({
             };
             const badge = badgeConfig[proof.badgeType];
 
-            // Get affiliate URL from Supabase, fallback to internal link
-            const affiliateUrl = urlMap.get(pick.slug);
+            // Get affiliate URL from Supabase by name, fallback to internal link
+            const affiliateUrl = urlMap.get(pick.name);
 
             return (
               <a
