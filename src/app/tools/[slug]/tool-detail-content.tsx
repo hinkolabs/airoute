@@ -75,17 +75,6 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
   return (
     <div className="min-h-screen bg-slate-950 px-4 pb-24 pt-3">
       <div className="mx-auto max-w-4xl px-4 py-10">
-        {/* Back link */}
-        <div className="pb-6">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 text-sm text-slate-400 transition hover:text-emerald-300"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to all tools
-          </Link>
-        </div>
-
         {/* Header: Tool Name + Badge */}
         <header className="mb-8 text-center md:text-left">
           <div className="flex flex-col items-center gap-3 md:flex-row md:items-start md:justify-between">
