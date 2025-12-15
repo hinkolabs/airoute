@@ -226,7 +226,7 @@ export function ToolCard({
       <div className={cn("mt-auto flex gap-2")}>
         {/* Visit button - disabled if no href */}
         {href ? (
-          <Link href={href} target="_blank" rel="noreferrer" className="flex-1">
+          <Link href={href} target="_blank" rel="noopener noreferrer sponsored" className="flex-1">
             <Button
               variant="primary"
               className={cn(

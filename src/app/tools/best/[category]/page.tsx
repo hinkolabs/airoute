@@ -609,7 +609,7 @@ export default async function BestCategoryPage({
                 key={pick.slug}
                 href={affiliateUrl || `/tools/${pick.slug}`}
                 target={affiliateUrl ? "_blank" : undefined}
-                rel={affiliateUrl ? "noopener noreferrer" : undefined}
+                rel={affiliateUrl ? "noopener noreferrer sponsored" : undefined}
                 className="block"
               >
                 <article

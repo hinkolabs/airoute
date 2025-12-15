@@ -95,7 +95,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
             <Link
               href={visitUrl}
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer sponsored"
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
             >
               <ExternalLink className="h-4 w-4" />

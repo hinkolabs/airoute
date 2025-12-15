@@ -52,7 +52,7 @@ export function Button({
       <a
         href={href}
         target="_blank"
-        rel="noopener noreferrer"
+        rel="noopener noreferrer sponsored"
         className={baseStyles}
       >
         {children}
