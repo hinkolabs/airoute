@@ -69,7 +69,7 @@ export default async function GuidePage({ params }: GuidePageProps) {
                 View Trending Tools
               </Link>
               <Link
-                href="/#categories"
+                href="/categories"
                 className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-transparent px-4 py-2 text-base font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-slate-100"
               >
                 See Best 3 by Category
