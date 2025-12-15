@@ -29,11 +29,14 @@ export const metadata = {
     title: "Airoute - Confused by AI tools? Start here.",
     description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
   },
-  ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION && {
-    verification: {
+  verification: {
+    ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION && {
       google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    }),
+    other: {
+      'impact-site-verification': '55bfca1d-814a-424a-bcf8-f8411c1cad71',
     },
-  }),
+  },
 };
 
 export default function RootLayout({
