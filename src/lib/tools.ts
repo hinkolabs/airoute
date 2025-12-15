@@ -38,9 +38,15 @@ export async function getActiveTools(): Promise<ToolRecord[]> {
       tags,
       badge,
       url,
+      affiliate_url,
       is_active,
       manual_rank,
-      rank_in_task
+      rank_in_task,
+      desc_en,
+      desc_ko,
+      desc_simple_en,
+      task_category,
+      best_for
     `
     )
     .eq("is_active", true)

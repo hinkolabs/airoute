@@ -87,6 +87,12 @@ const RANKING_PROOF: Record<string, RankingProof> = {
     reason: "Growing usage in social media content creation with positive retention signals",
     sourceHint: "Editorial",
   },
+  "opus-clip": {
+    badgeType: "BEGINNER",
+    metrics: { rating: 4.5, ratingSource: "Editorial", visitsRange: "5M+" },
+    reason: "Popular among creators for turning long videos into viral Shorts with automated highlights and captions",
+    sourceHint: "Editorial",
+  },
   "descript": {
     badgeType: "BEGINNER",
     metrics: { rating: 4.6, ratingSource: "G2", visitsRange: "6M+" },
@@ -322,7 +328,7 @@ const BEST_PICKS: Record<CategoryKey, BestPick[]> = {
   video: [
     {
       rank: 1,
-      slug: "runway-ml",
+      slug: "runway",
       name: "Runway",
       label: "Most popular",
       tagline:
@@ -356,18 +362,18 @@ const BEST_PICKS: Record<CategoryKey, BestPick[]> = {
     },
     {
       rank: 3,
-      slug: "capcut",
-      name: "CapCut",
-      label: "Editor",
+      slug: "opus-clip",
+      name: "Opus Clip",
+      label: "Shorts",
       tagline:
-        "Free editor with built-in AI features. Great for subtitles and detailed timeline edits.",
+        "Turn long videos into viral Shorts automatically with AI highlights, captions, and templates.",
       ranking: {
         rankPosition: 3,
         badgeType: "BEGINNER",
-        monthlyVisits: "6M+",
-        rating: 4.7,
-        ratingSource: "G2",
-        reason: "Chosen for free access to professional editing features",
+        monthlyVisits: "5M+",
+        rating: 4.5,
+        ratingSource: "Editorial",
+        reason: "Auto-picks highlights + adds captions for social-ready clips",
         matchScore: 88,
       },
     },

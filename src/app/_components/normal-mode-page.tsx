@@ -68,6 +68,13 @@ const TRENDING_TOOLS = [
     websiteUrl: "https://chat.openai.com",
   },
   {
+    id: "opus-clip",
+    name: "Opus Clip",
+    description: "Turn long videos into viral Shorts automatically",
+    icon: "✂️",
+    websiteUrl: "https://www.opus.pro/?via=165d30",
+  },
+  {
     id: "runway",
     name: "Runway",
     description: "Video editing & generation",

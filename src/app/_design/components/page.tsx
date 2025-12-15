@@ -108,6 +108,28 @@ export type ToolCardProps = {
   variant?: "default" | "compact";
 };
 
+// Helper: Generate "Key use" text from category/tags
+function getKeyUseText(category: string, tags?: string[]): string {
+  // If category is meaningful, use it
+  if (category && category !== "Other") {
+    return `Best for: ${category}`;
+  }
+  
+  // If tags exist, use top 2
+  if (tags && tags.length > 0) {
+    const readableTags = tags.slice(0, 2).map(tag => {
+      // Convert hashtag-style to readable (remove # if present)
+      const cleaned = tag.replace(/^#/, '');
+      // Capitalize first letter
+      return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+    });
+    return `Best for: ${readableTags.join(', ')}`;
+  }
+  
+  // Fallback
+  return "Best for: AI workflows";
+}
+
 export function ToolCard({
   name,
   description,
@@ -120,19 +142,27 @@ export function ToolCard({
 }: ToolCardProps) {
   const { theme } = useTheme();
   const isCompact = variant === "compact";
+  const keyUse = getKeyUseText(category, tags);
+  
+  // Improve empty description text
+  const displayDescription = description === "No description available." 
+    ? "Short summary coming soon."
+    : description;
 
   return (
     <article
       className={cn(
-        "flex flex-col rounded-2xl border shadow-sm transition hover:border-emerald-400/70 hover:shadow-md",
+        "flex flex-col rounded-2xl border shadow-sm transition-all duration-200",
+        "hover:-translate-y-0.5 hover:shadow-md",
         isCompact ? "p-4 sm:p-5" : "p-5",
         theme === "day"
-          ? "border-slate-200 bg-white"
-          : "border-slate-800/80 bg-[#0F172A]/90"
+          ? "border-slate-200 bg-white hover:border-emerald-400/70"
+          : "border-slate-800/80 bg-slate-950/35 hover:border-slate-700 hover:bg-slate-900/40"
       )}
     >
+      {/* Header: Name + Badge */}
       <div className={cn("flex items-start justify-between gap-3", isCompact ? "mb-2" : "mb-3")}>
-        <div className="space-y-1">
+        <div className="flex-1 space-y-1.5">
           <h3
             className={cn(
               "font-semibold",
@@ -142,14 +172,15 @@ export function ToolCard({
           >
             {name}
           </h3>
+          
+          {/* Key use line */}
           <p
             className={cn(
-              "leading-relaxed",
-              isCompact ? "text-xs line-clamp-2" : "text-xs sm:text-sm",
-              theme === "day" ? "text-slate-600" : "text-slate-400"
+              "text-xs font-medium",
+              theme === "day" ? "text-slate-700" : "text-slate-200"
             )}
           >
-            {description}
+            {keyUse}
           </p>
         </div>
         {badge && (
@@ -159,73 +190,79 @@ export function ToolCard({
         )}
       </div>
 
-      <div className={cn("mt-auto space-y-3", isCompact ? "pt-2" : "pt-4")}>
-        <div
-          className={cn(
-            "flex items-center justify-between gap-2 text-xs",
-            isCompact && "hidden sm:flex",
-            theme === "day" ? "text-slate-500" : "text-slate-400"
-          )}
-        >
-          <span
-            className={cn(
-              "rounded-full px-2 py-1 text-[11px]",
-              theme === "day"
-                ? "bg-slate-100 text-slate-700"
-                : "bg-slate-900/60 text-slate-200"
-            )}
-          >
-            {category}
-          </span>
-          {tags && tags.length > 0 && (
-            <div className="flex flex-wrap justify-end gap-1">
-              {tags.slice(0, 3).map((tag) => (
-                <span
-                  key={tag}
-                  className={cn(
-                    "rounded-full px-2 py-0.5 text-[10px]",
-                    theme === "day"
-                      ? "bg-slate-100 text-slate-500"
-                      : "bg-slate-900/40 text-slate-400"
-                  )}
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
-          )}
-        </div>
+      {/* Description */}
+      <p
+        className={cn(
+          "mb-3 flex-1 leading-relaxed line-clamp-2",
+          isCompact ? "text-xs" : "text-xs sm:text-sm",
+          theme === "day" ? "text-slate-600" : "text-slate-400"
+        )}
+      >
+        {displayDescription}
+      </p>
 
-        {(href || detailsHref) && (
-          <div className={cn("flex flex-wrap items-center gap-2", isCompact && "mt-2")}>
-            {href && (
-              <Link href={href} target="_blank" rel="noreferrer">
-                <Button
-                  variant="primary"
-                  className={cn(
-                    "font-semibold",
-                    isCompact ? "h-7 px-2.5 text-xs" : "h-8 px-3 text-xs"
-                  )}
-                >
-                  Visit
-                </Button>
-              </Link>
-            )}
-            {detailsHref && (
-              <Link
-                href={detailsHref}
+      {/* Tags */}
+      <div className={cn("mb-4", isCompact && "hidden sm:block")}>
+        {tags && tags.length > 0 && (
+          <div className="flex flex-wrap gap-1">
+            {tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
                 className={cn(
-                  "underline-offset-2 hover:underline",
-                  isCompact ? "text-[11px]" : "text-xs",
+                  "rounded-full px-2 py-0.5 text-[10px]",
                   theme === "day"
-                    ? "text-slate-600 hover:text-emerald-600"
-                    : "text-slate-300 hover:text-emerald-300"
+                    ? "bg-slate-100 text-slate-500"
+                    : "bg-slate-900/40 text-slate-500"
                 )}
               >
-                Details
-              </Link>
-            )}
+                #{tag}
+              </span>
+            ))}
           </div>
+        )}
+      </div>
+
+      {/* Action buttons - Always show both */}
+      <div className={cn("mt-auto flex gap-2")}>
+        {/* Visit button - disabled if no href */}
+        {href ? (
+          <Link href={href} target="_blank" rel="noreferrer" className="flex-1">
+            <Button
+              variant="primary"
+              className={cn(
+                "w-full font-semibold",
+                isCompact ? "h-8 text-xs" : "h-9 text-sm"
+              )}
+            >
+              Visit
+            </Button>
+          </Link>
+        ) : (
+          <Button
+            variant="primary"
+            disabled
+            className={cn(
+              "flex-1 cursor-not-allowed font-semibold opacity-50",
+              isCompact ? "h-8 text-xs" : "h-9 text-sm"
+            )}
+          >
+            Visit
+          </Button>
+        )}
+
+        {/* Details button - always enabled if detailsHref exists */}
+        {detailsHref && (
+          <Link href={detailsHref} className="flex-1">
+            <Button
+              variant="secondary"
+              className={cn(
+                "w-full font-medium",
+                isCompact ? "h-8 text-xs" : "h-9 text-sm"
+              )}
+            >
+              Details
+            </Button>
+          </Link>
         )}
       </div>
     </article>

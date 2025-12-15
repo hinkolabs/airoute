@@ -72,7 +72,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
         category: categoryLabelFromId(tool.category_id),
         tags: displayTags,
         badge: tool.badge ?? undefined,
-        href: tool.url ?? undefined,
+        href: tool.affiliate_url ?? tool.url ?? undefined,
         detailsHref: tool.slug ? `/tools/${tool.slug}` : undefined,
       };
     }
