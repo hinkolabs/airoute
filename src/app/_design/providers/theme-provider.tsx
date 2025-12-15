@@ -21,27 +21,27 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "airoute-theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Default to "day" theme - no dark flash on first load
-  const [theme, setTheme] = useState<Theme>(() => {
-    // Server-side or first render: default to "day"
-    if (typeof window === "undefined") return "day";
-    // Client-side: check localStorage
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored === "day" || stored === "night") return stored as Theme;
-    return "day";
-  });
+  // Always start with "night" for SSR consistency
+  const [theme, setTheme] = useState<Theme>("night");
+  const [mounted, setMounted] = useState(false);
 
-  // Sync theme to localStorage when it changes
-  // (removed the initial load effect since we now use lazy initializer)
-
-  // theme 변경 시 html data-theme + localStorage 동기화
+  // Load theme from localStorage after mount (client-side only)
   useEffect(() => {
-    if (typeof document === "undefined") return;
+    setMounted(true);
+    // For now, always use night mode (dark mode)
+    // Uncomment below to use localStorage:
+    // const stored = window.localStorage.getItem(STORAGE_KEY);
+    // if (stored === "day" || stored === "night") {
+    //   setTheme(stored as Theme);
+    // }
+  }, []);
+
+  // Sync theme to localStorage and DOM when it changes
+  useEffect(() => {
+    if (!mounted) return;
     document.documentElement.dataset.theme = theme;
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, theme);
-    }
-  }, [theme]);
+    window.localStorage.setItem(STORAGE_KEY, theme);
+  }, [theme, mounted]);
 
   const toggleTheme = () => {
     setTheme((prev) => (prev === "day" ? "night" : "day"));

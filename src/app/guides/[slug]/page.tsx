@@ -1,5 +1,6 @@
 import { supabaseServerClient } from "@/lib/supabase/server";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 type GuideRecord = {
   id: string;
@@ -48,6 +49,34 @@ export default async function GuidePage({ params }: GuidePageProps) {
             {content}
           </div>
         </article>
+
+        {/* CTA Section */}
+        <section className="mt-10 rounded-xl border border-slate-800 bg-slate-900/40 p-6">
+          <div className="flex flex-col gap-4">
+            <div>
+              <h2 className="text-base font-semibold text-slate-100">
+                Continue with the best AI tools
+              </h2>
+              <p className="mt-2 text-sm text-slate-400">
+                Explore trending tools and curated recommendations on Airoute.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/tools"
+                className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-4 py-2 text-base font-medium text-white transition-colors hover:bg-emerald-600"
+              >
+                View Trending Tools
+              </Link>
+              <Link
+                href="/#categories"
+                className="inline-flex items-center justify-center rounded-full border border-slate-700 bg-transparent px-4 py-2 text-base font-medium text-slate-300 transition-colors hover:bg-slate-800 hover:text-slate-100"
+              >
+                See Best 3 by Category
+              </Link>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   );

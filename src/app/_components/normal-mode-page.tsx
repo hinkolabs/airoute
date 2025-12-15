@@ -188,7 +188,7 @@ function HeroSection() {
 // ===========================
 function CategorySection() {
   return (
-    <section className="px-4 py-8">
+    <section id="categories" className="px-4 py-8">
       <div className="mx-auto max-w-5xl">
         <SectionHeader title="Categories" moreHref="/categories" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
