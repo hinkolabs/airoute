@@ -1,10 +1,8 @@
-import { Suspense } from "react";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import Header from "@/components/layout/header";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
-import GaPageView from "@/app/_components/ga-pageview";
 import { ThemeProvider } from "@/app/_design/providers/theme-provider";
 
 const inter = Inter({
@@ -31,6 +29,11 @@ export const metadata = {
     title: "Airoute - Confused by AI tools? Start here.",
     description: "Too many AI tools? Airoute finds the best route for you. Choose your goal, and we navigate you to the best AI workflow.",
   },
+  ...(process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION && {
+    verification: {
+      google: process.env.NEXT_PUBLIC_GOOGLE_VERIFICATION,
+    },
+  }),
 };
 
 export default function RootLayout({
@@ -38,44 +41,32 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const gaId = process.env.NEXT_PUBLIC_GA_ID;
+  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
 
   return (
     <html lang="en" className="dark">
-      <head>
+      <body className={`${inter.className} antialiased bg-background text-primary`}>
         {/* Google Analytics */}
-        {gaId && (
+        {GA_ID && (
           <>
             <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
               strategy="afterInteractive"
-              src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
             />
-            <Script
-              id="google-analytics"
-              strategy="afterInteractive"
-              dangerouslySetInnerHTML={{
-                __html: `
-                  window.dataLayer = window.dataLayer || [];
-                  function gtag(){dataLayer.push(arguments);}
-                  gtag('js', new Date());
-                  gtag('config', '${gaId}', {
-                    send_page_view: false
-                  });
-                `,
-              }}
-            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_path: window.location.pathname,
+                });
+              `}
+            </Script>
           </>
         )}
-      </head>
-      <body className={`${inter.className} antialiased bg-background text-primary`}>
+
         <ThemeProvider>
-          {/* Google Analytics Page View Tracking */}
-          {gaId && (
-            <Suspense fallback={null}>
-              <GaPageView />
-            </Suspense>
-          )}
-          
           {/* 🔥 전역 헤더 - Dark Mode */}
           <Header />
           
