@@ -1,6 +1,17 @@
 import { ScanningBanner } from "./_components/scanning-banner";
 import { AnimatedMatchScore } from "./_components/animated-match-score";
+import { SaveRouteButton } from "./_components/save-route-button";
 import { supabaseServerClient } from "@/lib/supabase/server";
+import AffiliateLinkButton from "@/components/AffiliateLinkButton";
+
+// Force external links for these tools (no internal detail)
+const FORCE_EXTERNAL_SLUGS = new Set(["filmora", "prowritingaid"]);
+
+// Affiliate URL overrides (in case DB doesn't have them)
+const AFFILIATE_URL_OVERRIDES: Record<string, string> = {
+  "filmora": "https://tidd.ly/44vL1oI",
+  "prowritingaid": "https://tidd.ly/48Y1lQu",
+};
 
 type BestPick = {
   rank: 1 | 2 | 3;
@@ -309,18 +320,18 @@ const BEST_PICKS: Record<CategoryKey, BestPick[]> = {
     },
     {
       rank: 3,
-      slug: "notion-ai",
-      name: "Notion AI",
-      label: "Workspace",
+      slug: "prowritingaid",
+      name: "ProWritingAid",
+      label: "Professional",
       tagline:
-        "Helps you draft, summarize and reorganize notes directly inside your Notion workspace.",
+        "Deep writing feedback for clarity, style, and readability that goes beyond basic grammar checks.",
       ranking: {
         rankPosition: 3,
         badgeType: "BEGINNER",
-        monthlyVisits: "6M+",
-        rating: 4.7,
+        monthlyVisits: "5M+",
+        rating: 4.6,
         ratingSource: "G2",
-        reason: "Chosen for seamless integration with existing workflow",
+        reason: "Great for polishing long-form and professional writing",
         matchScore: 88,
       },
     },
@@ -345,18 +356,18 @@ const BEST_PICKS: Record<CategoryKey, BestPick[]> = {
     },
     {
       rank: 2,
-      slug: "pika",
-      name: "Pika",
-      label: "Fast",
+      slug: "filmora",
+      name: "Filmora",
+      label: "Easy to Use",
       tagline:
-        "Good for quick, fun clips and meme-style short videos with simple controls.",
+        "Intuitive video editor with AI features, auto-captions, and effects for fast content creation.",
       ranking: {
         rankPosition: 2,
         badgeType: "VALUE",
-        monthlyVisits: "8M+",
-        rating: 4.6,
+        monthlyVisits: "10M+",
+        rating: 4.5,
         ratingSource: "G2",
-        reason: "Chosen for fastest turnaround on viral-style content creation",
+        reason: "Intuitive interface with powerful AI tools for creators at all levels",
         matchScore: 91,
       },
     },
@@ -601,16 +612,20 @@ export default async function BestCategoryPage({
             };
             const badge = badgeConfig[proof.badgeType];
 
-            // Get affiliate URL from Supabase by name, fallback to internal link
-            const affiliateUrl = urlMap.get(pick.name);
+            // Get affiliate URL: force external for specific slugs, otherwise DB
+            let affiliateUrl = urlMap.get(pick.name);
+            if (FORCE_EXTERNAL_SLUGS.has(pick.slug)) {
+              affiliateUrl = AFFILIATE_URL_OVERRIDES[pick.slug] || affiliateUrl;
+            }
 
-            return (
-              <a
+            return affiliateUrl ? (
+              <AffiliateLinkButton
                 key={pick.slug}
-                href={affiliateUrl || `/tools/${pick.slug}`}
-                target={affiliateUrl ? "_blank" : undefined}
-                rel={affiliateUrl ? "noopener noreferrer sponsored" : undefined}
-                className="block"
+                href={affiliateUrl}
+                partnerName={pick.name}
+                placement="best3"
+                toolSlug={pick.slug}
+                className="!p-0 !rounded-none !bg-transparent !text-inherit !font-normal block"
               >
                 <article
                   className={
@@ -706,9 +721,37 @@ export default async function BestCategoryPage({
                     </div>
                   </div>
                 </article>
+              </AffiliateLinkButton>
+            ) : (
+              <a
+                key={pick.slug}
+                href={`/tools/${pick.slug}`}
+                className="block"
+              >
+                <article
+                  className={
+                    "relative flex gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-colors " +
+                    (pick.rank === 1
+                      ? "border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/15"
+                      : "border-slate-700/70 bg-slate-900/80 hover:bg-slate-800/60")
+                  }
+                >
+                  {/* Same content as above - to be filled */}
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-200">
+                    #{pick.rank}
+                  </div>
+                  <div className="flex flex-1 flex-col gap-2">
+                    <div className="text-sm font-semibold text-slate-50">{pick.name}</div>
+                  </div>
+                </article>
               </a>
             );
           })}
+        </section>
+
+        {/* Save Route Button */}
+        <section className="mt-6">
+          <SaveRouteButton routeSlug={categoryKey} routeName={meta.title} />
         </section>
 
       </div>

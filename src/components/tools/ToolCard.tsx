@@ -1,7 +1,12 @@
+'use client';
+
 import { cn } from '@/lib/utils';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/button';
 import Chip from '@/components/ui/Chip';
+import AffiliateLinkButton from '@/components/AffiliateLinkButton';
+import { ToolLogo } from '@/components/tool-logo';
+import { getToolLogoUrl } from '@/lib/logo';
 
 export interface Tool {
   id: string;
@@ -37,14 +42,21 @@ export default function ToolCard({
         className
       )}
     >
-      {/* Header with badge */}
-      <div className="mb-3 flex items-start justify-between">
-        <h3 className="text-lg font-semibold text-slate-100">{tool.name}</h3>
-        {tool.badge && (
-          <Badge tone="emerald" className="ml-2 flex-shrink-0">
-            {tool.badge}
-          </Badge>
-        )}
+      {/* Header with logo & badge */}
+      <div className="mb-3 flex items-start gap-3">
+        <ToolLogo
+          src={getToolLogoUrl({ link: tool.link } as any)}
+          name={tool.name}
+          size={48}
+        />
+        <div className="flex flex-1 items-start justify-between">
+          <h3 className="text-lg font-semibold text-slate-100">{tool.name}</h3>
+          {tool.badge && (
+            <Badge tone="emerald" className="ml-2 flex-shrink-0">
+              {tool.badge}
+            </Badge>
+          )}
+        </div>
       </div>
 
       {/* Category chip */}
@@ -70,9 +82,15 @@ export default function ToolCard({
       {/* Action buttons */}
       <div className="flex gap-2">
         {tool.link && (
-          <Button variant="primary" size="sm" href={tool.link}>
+          <AffiliateLinkButton 
+            href={tool.link}
+            placement="tool_card"
+            toolSlug={tool.id}
+            variant="primary" 
+            size="sm"
+          >
             Visit
-          </Button>
+          </AffiliateLinkButton>
         )}
         <Button variant="secondary" size="sm">
           Details

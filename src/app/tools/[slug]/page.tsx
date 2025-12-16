@@ -2,6 +2,7 @@ import { Metadata } from "next";
 import { getToolBySlug } from "@/lib/tools";
 import { ToolDetailContent, ToolNotFoundContent } from "./tool-detail-content";
 import { RelatedGuides } from "./related-guides";
+import { getFallbackTool } from "@/lib/tool-fallback-data";
 
 // ============================================================
 // Types
@@ -17,7 +18,12 @@ export async function generateMetadata({
   params,
 }: ToolDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const tool = await getToolBySlug(slug);
+  let tool = await getToolBySlug(slug);
+
+  // Try fallback if not in DB
+  if (!tool) {
+    tool = getFallbackTool(slug);
+  }
 
   if (!tool) {
     return {
@@ -43,7 +49,12 @@ export async function generateMetadata({
 // ============================================================
 export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
   const { slug } = await params;
-  const tool = await getToolBySlug(slug);
+  let tool = await getToolBySlug(slug);
+
+  // Try fallback if not in DB
+  if (!tool) {
+    tool = getFallbackTool(slug);
+  }
 
   // Not Found State
   if (!tool || tool.is_active === false) {

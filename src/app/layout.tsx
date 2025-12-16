@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/layout/header";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import { ThemeProvider } from "@/app/_design/providers/theme-provider";
+import { AuthProvider } from "@/app/_providers/auth-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -69,18 +70,20 @@ export default function RootLayout({
           </>
         )}
 
-        <ThemeProvider>
-          {/* 🔥 전역 헤더 - Dark Mode */}
-          <Header />
-          
-          {/* 본문 (헤더 높이만큼 패딩 추가) */}
-          <main className="pb-20 md:pb-0">
-            {children}
-          </main>
-          
-          {/* 🔥 전역 하단 메뉴 - 모바일 전용 */}
-          <MobileBottomNav />
-        </ThemeProvider>
+        <AuthProvider>
+          <ThemeProvider>
+            {/* 🔥 전역 헤더 - Dark Mode */}
+            <Header />
+            
+            {/* 본문 (헤더 높이만큼 패딩 추가) */}
+            <main className="pb-20 md:pb-0">
+              {children}
+            </main>
+            
+            {/* 🔥 전역 하단 메뉴 - 모바일 전용 */}
+            <MobileBottomNav />
+          </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );

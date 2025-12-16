@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import type { ToolRecord } from "@/lib/tools";
+import { BestRoutesSection } from "./home/best-routes-section";
+import { MyToolboxSection } from "./home/my-toolbox-section";
 
 type NormalModePageProps = {
   tools: ToolRecord[];
@@ -50,78 +52,6 @@ const CATEGORIES = [
 ];
 
 // ===========================
-// TRENDING TOOLS DATA
-// ===========================
-const TRENDING_TOOLS = [
-  {
-    id: "midjourney",
-    name: "Midjourney",
-    description: "AI art generation",
-    icon: "🎨",
-    websiteUrl: "https://www.midjourney.com",
-  },
-  {
-    id: "chatgpt",
-    name: "ChatGPT",
-    description: "AI writing assistant",
-    icon: "✍️",
-    websiteUrl: "https://chat.openai.com",
-  },
-  {
-    id: "opus-clip",
-    name: "Opus Clip",
-    description: "Turn long videos into viral Shorts automatically",
-    icon: "✂️",
-    websiteUrl: "https://www.opus.pro/?via=165d30",
-  },
-  {
-    id: "runway",
-    name: "Runway",
-    description: "Video editing & generation",
-    icon: "🎬",
-    websiteUrl: "https://runwayml.com",
-  },
-];
-
-// ===========================
-// DEAL TOOLS DATA
-// ===========================
-const DEAL_TOOLS = [
-  {
-    id: "chatgpt",
-    name: "ChatGPT",
-    tag: "Popular",
-    benefit: "Plans and features vary. Check official pricing.",
-    icon: "✍️",
-    websiteUrl: "https://chat.openai.com",
-  },
-  {
-    id: "midjourney",
-    name: "Midjourney",
-    tag: "Premium",
-    benefit: "Pricing and promos may change. See official plans.",
-    icon: "🎨",
-    websiteUrl: "https://www.midjourney.com",
-  },
-  {
-    id: "runway",
-    name: "Runway",
-    tag: "Video AI",
-    benefit: "Limited-time deals may be available. Verify on site.",
-    icon: "🎬",
-    websiteUrl: "https://runwayml.com",
-  },
-  {
-    id: "elevenlabs",
-    name: "ElevenLabs",
-    tag: "Voice AI",
-    benefit: "Credits and plans vary. Confirm on official page.",
-    icon: "🎙️",
-    websiteUrl: "https://elevenlabs.io",
-  },
-];
-
-// ===========================
 // GUIDES DATA
 // ===========================
 const GUIDES = [
@@ -158,7 +88,7 @@ function SectionHeader({ title, moreHref }: { title: string; moreHref: string })
 // Header is now global (in layout.tsx)
 
 // ===========================
-// 1. HERO SECTION
+// 1. HERO SECTION (Text Only)
 // ===========================
 function HeroSection() {
   return (
@@ -177,13 +107,8 @@ function HeroSection() {
         </h1>
 
         {/* Subtext */}
-        <p className="mb-3 text-sm leading-relaxed text-slate-300 lg:text-base lg:leading-7">
+        <p className="text-sm leading-relaxed text-slate-300 lg:text-base lg:leading-7">
           No more endless searching. Choose your goal, and we'll show you the top 3 AI tools.
-        </p>
-
-        {/* Trust Line */}
-        <p className="text-xs leading-relaxed text-slate-400">
-          Rankings based on real usage data, expert curation, and tool popularity.
         </p>
       </div>
     </section>
@@ -232,82 +157,7 @@ function CategorySection() {
 }
 
 // ===========================
-// 3. TRENDING SECTION
-// ===========================
-function TrendingSection() {
-  return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-5xl">
-        <SectionHeader title="Trending AI tools" moreHref="/tools/trending" />
-        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-        {TRENDING_TOOLS.map((tool) => (
-          <Link
-            key={tool.id}
-            href={`/tools/${tool.id}`}
-            className="flex min-h-[60px] items-center gap-3 rounded-xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 shadow-sm transition hover:border-emerald-400/30"
-          >
-            <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-lg">
-              {tool.icon}
-            </div>
-            <div className="flex-1">
-              <div className="mb-1 flex items-center gap-2">
-                <h3 className="text-sm font-semibold text-slate-50">{tool.name}</h3>
-                <span className="text-[10px] text-slate-500">Most used this week</span>
-              </div>
-              <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">{tool.description}</p>
-            </div>
-          </Link>
-        ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ===========================
-// 4. DEALS SECTION
-// ===========================
-function DealsSection() {
-  return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-5xl">
-        <SectionHeader title="Deals & Official Links" moreHref="/deals" />
-        <p className="mb-4 text-xs leading-relaxed text-slate-400">
-          Promotions may vary by region and time. Always verify details on the official pricing page.
-        </p>
-        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-        {DEAL_TOOLS.map((tool) => (
-          <Link
-            key={tool.id}
-            href={`/tools/${tool.id}`}
-            className="flex min-h-[60px] items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/70 px-4 py-3 shadow-sm transition hover:border-emerald-400/30"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-lg">
-                {tool.icon}
-              </div>
-              <div className="flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <h3 className="text-sm font-semibold text-slate-50">{tool.name}</h3>
-                  <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
-                    {tool.tag}
-                  </span>
-                  <span className="text-[10px] text-slate-500">Official link</span>
-                </div>
-                <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">{tool.benefit}</p>
-              </div>
-            </div>
-            <div className="flex-shrink-0 text-slate-500">→</div>
-          </Link>
-        ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ===========================
-// 5. GUIDES SECTION
+// 3. GUIDES SECTION
 // ===========================
 function GuidesSection() {
   return (
@@ -336,7 +186,7 @@ function GuidesSection() {
 }
 
 // ===========================
-// 6. STUDIO TEASER
+// 4. STUDIO TEASER
 // ===========================
 function StudioTeaser() {
   return (
@@ -368,7 +218,7 @@ function StudioTeaser() {
 }
 
 // ===========================
-// 7. FOOTER
+// 5. FOOTER
 // ===========================
 function PageFooter() {
   return (
@@ -413,8 +263,8 @@ export default function NormalModePage({ tools }: NormalModePageProps) {
       <main className="pb-20">
         <HeroSection />
         <CategorySection />
-        <TrendingSection />
-        <DealsSection />
+        <BestRoutesSection />
+        <MyToolboxSection />
         <GuidesSection />
         <StudioTeaser />
         <PageFooter />

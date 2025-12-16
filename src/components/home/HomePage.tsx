@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react';
 import { Tool, TASK_CATEGORIES, TaskCategory } from '@/types/tool';
 import Link from 'next/link';
+import AffiliateLinkButton from '@/components/AffiliateLinkButton';
 
 type HomePageProps = {
   initialTools: Tool[];
@@ -223,14 +224,14 @@ function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }
 
       {/* 버튼 영역 */}
       <div className="flex gap-2.5 mt-auto pt-4 border-t border-slate-800/80">
-        <a
+        <AffiliateLinkButton
           href={tool.affiliate_url}
-          target="_blank"
-          rel="noopener noreferrer"
+          placement="tool_card"
+          toolSlug={tool.id}
           className="flex-1 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-sm font-semibold transition-all duration-200 hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20"
         >
           Visit
-        </a>
+        </AffiliateLinkButton>
         <Link
           href={`/tools/${tool.id}`}
           className="flex-1 h-10 flex items-center justify-center rounded-full border border-slate-600 text-slate-300 text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5"

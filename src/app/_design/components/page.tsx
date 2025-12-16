@@ -9,8 +9,9 @@ import { SectionTitle as BaseSectionTitle } from "./ui/section-title";
 import { Chip } from "./ui/chip";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
-import { Home, FileText, Sparkles, User } from "lucide-react";
+import { Home, FileText, Sparkles, User, Star } from "lucide-react";
 import { useTheme, type Theme } from "@/app/_design/providers/theme-provider";
+import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 
 // Re-export for easy use in pages
 export const PageShell = BasePageShell;
@@ -98,6 +99,8 @@ export function CategoryChips({
 // ToolCard - Spacious, relaxed typography, with CTAs (Theme-aware)
 // ============================================================
 export type ToolCardProps = {
+  id: string; // tool id
+  slug: string; // tool slug
   name: string;
   description: string;
   category: string;
@@ -106,6 +109,8 @@ export type ToolCardProps = {
   href?: string; // external official site
   detailsHref?: string; // internal detail page
   variant?: "default" | "compact";
+  isFavorited?: boolean; // for favorite toggle
+  onFavoriteToggle?: () => void; // favorite toggle handler
 };
 
 // Helper: Generate "Key use" text from category/tags
@@ -131,6 +136,8 @@ function getKeyUseText(category: string, tags?: string[]): string {
 }
 
 export function ToolCard({
+  id,
+  slug,
   name,
   description,
   category,
@@ -139,6 +146,8 @@ export function ToolCard({
   href,
   detailsHref,
   variant = "default",
+  isFavorited = false,
+  onFavoriteToggle,
 }: ToolCardProps) {
   const { theme } = useTheme();
   const isCompact = variant === "compact";
@@ -152,7 +161,7 @@ export function ToolCard({
   return (
     <article
       className={cn(
-        "flex flex-col rounded-2xl border shadow-sm transition-all duration-200",
+        "relative flex flex-col rounded-2xl border shadow-sm transition-all duration-200",
         "hover:-translate-y-0.5 hover:shadow-md",
         isCompact ? "p-4 sm:p-5" : "p-5",
         theme === "day"
@@ -160,8 +169,36 @@ export function ToolCard({
           : "border-slate-800/80 bg-slate-950/35 hover:border-slate-700 hover:bg-slate-900/40"
       )}
     >
+      {/* Favorite Star Button (top-right) */}
+      {onFavoriteToggle && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onFavoriteToggle();
+          }}
+          className={cn(
+            "absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full transition-colors",
+            theme === "day"
+              ? "hover:bg-slate-100"
+              : "hover:bg-slate-800/50"
+          )}
+          aria-label={isFavorited ? "Unsave tool" : "Save tool"}
+        >
+          <Star
+            className={cn(
+              "h-4 w-4 transition-all",
+              isFavorited
+                ? "fill-emerald-400 stroke-emerald-400"
+                : theme === "day"
+                ? "stroke-slate-400"
+                : "stroke-slate-500"
+            )}
+          />
+        </button>
+      )}
+
       {/* Header: Name + Badge */}
-      <div className={cn("flex items-start justify-between gap-3", isCompact ? "mb-2" : "mb-3")}>
+      <div className={cn("flex items-start justify-between gap-3", isCompact ? "mb-2" : "mb-3", onFavoriteToggle && "pr-8")}>
         <div className="flex-1 space-y-1.5">
           <h3
             className={cn(
@@ -226,17 +263,20 @@ export function ToolCard({
       <div className={cn("mt-auto flex gap-2")}>
         {/* Visit button - disabled if no href */}
         {href ? (
-          <Link href={href} target="_blank" rel="noopener noreferrer sponsored" className="flex-1">
-            <Button
-              variant="primary"
-              className={cn(
-                "w-full font-semibold",
-                isCompact ? "h-8 text-xs" : "h-9 text-sm"
-              )}
-            >
-              Visit
-            </Button>
-          </Link>
+          <AffiliateLinkButton
+            href={href}
+            partnerName={name}
+            placement="tool_card"
+            toolSlug={slug}
+            variant="primary"
+            size={isCompact ? "sm" : "md"}
+            className={cn(
+              "flex-1 font-semibold",
+              isCompact ? "h-8 text-xs" : "h-9 text-sm"
+            )}
+          >
+            Visit
+          </AffiliateLinkButton>
         ) : (
           <Button
             variant="primary"

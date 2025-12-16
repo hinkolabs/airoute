@@ -1,8 +1,13 @@
 // 개별 도구 카드 컴포넌트
 // 도구 정보 표시 및 Visit/Details 버튼 포함
 // w-full로 grid cell에 맞게 꽉 차도록 설정
+'use client';
+
 import Link from 'next/link';
 import { Tool } from '@/types/tool';
+import AffiliateLinkButton from '@/components/AffiliateLinkButton';
+import { ToolLogo } from '@/components/tool-logo';
+import { getToolLogoUrl } from '@/lib/logo';
 
 type ToolCardProps = {
   tool: Tool;
@@ -13,20 +18,27 @@ export function ToolCard({ tool }: ToolCardProps) {
   const description = tool.desc_en || tool.why_pick || 'No description available.';
 
   return (
-    <a
+    <AffiliateLinkButton
       href={tool.affiliate_url}
-      target="_blank"
-      rel="noopener noreferrer"
+      placement="tool_card"
+      toolSlug={tool.id}
       className="group flex w-full flex-col rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-lg md:p-5"
     >
-      {/* 상단: 이름 + 카테고리 배지 */}
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-bold text-white transition-colors group-hover:text-emerald-300 md:text-base">
-          {tool.name}
-        </h3>
-        <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
-          {tool.task_category}
-        </span>
+      {/* 상단: 로고 + 이름 + 카테고리 배지 */}
+      <div className="mb-3 flex items-start gap-3">
+        <ToolLogo
+          src={getToolLogoUrl(tool)}
+          name={tool.name}
+          size={40}
+        />
+        <div className="flex flex-1 items-start justify-between gap-2">
+          <h3 className="text-sm font-bold text-white transition-colors group-hover:text-emerald-300 md:text-base">
+            {tool.name}
+          </h3>
+          <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] uppercase tracking-wide text-slate-400">
+            {tool.task_category}
+          </span>
+        </div>
       </div>
 
       {/* 중간: 설명 - 2~3줄 제한 */}
@@ -48,7 +60,7 @@ export function ToolCard({ tool }: ToolCardProps) {
           <ExternalLinkIcon />
         </div>
       </div>
-    </a>
+    </AffiliateLinkButton>
   );
 }
 

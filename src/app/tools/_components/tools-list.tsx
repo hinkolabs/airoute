@@ -1,9 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { PageShell, SearchBar, ToolCard, ToolCardProps } from "@/app/_design/components/page";
 import type { ToolRecord } from "@/lib/tools";
 import { Search } from "lucide-react";
+import { getFavorites, toggleToolFavorite } from "@/lib/favorites";
+import { useAuth } from "@/app/_providers/auth-provider";
+import { Toast } from "@/components/toast";
 
 // ============================================================
 // Helpers
@@ -35,7 +38,23 @@ type ToolsListClientProps = {
 // Component
 // ============================================================
 export function ToolsListClient({ tools }: ToolsListClientProps) {
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
+  const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+
+  // Load favorites
+  useEffect(() => {
+    async function loadFavorites() {
+      try {
+        const favorites = await getFavorites();
+        setFavoriteSlugs(favorites.tools);
+      } catch (error) {
+        console.error("Error loading favorites:", error);
+      }
+    }
+    loadFavorites();
+  }, [user]);
 
   // Local filtering
   const filteredTools = useMemo(() => {
@@ -57,13 +76,59 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
     });
   }, [tools, search]);
 
+  // Handle favorite toggle
+  const handleFavoriteToggle = async (toolSlug: string) => {
+    const wasFavorited = favoriteSlugs.includes(toolSlug);
+    
+    // Optimistic update
+    setFavoriteSlugs(prev =>
+      wasFavorited
+        ? prev.filter(s => s !== toolSlug)
+        : [...prev, toolSlug]
+    );
+    setToast({
+      message: wasFavorited ? "Removed from Toolbox" : "Added to Toolbox",
+      type: "success",
+    });
+
+    try {
+      const result = await toggleToolFavorite(toolSlug);
+      
+      if (result.blocked) {
+        // Rollback
+        setFavoriteSlugs(prev =>
+          wasFavorited
+            ? [...prev, toolSlug]
+            : prev.filter(s => s !== toolSlug)
+        );
+        setToast({
+          message: "Guest can save up to 3 tools. Sign in to save more.",
+          type: "error",
+        });
+      } else {
+        // Update with server state
+        setFavoriteSlugs(result.tools);
+      }
+    } catch (error) {
+      // Rollback on error
+      setFavoriteSlugs(prev =>
+        wasFavorited
+          ? [...prev, toolSlug]
+          : prev.filter(s => s !== toolSlug)
+      );
+      setToast({ message: "Failed to update toolbox", type: "error" });
+    }
+  };
+
   // Map to ToolCardProps
-  const toolCards: (ToolCardProps & { id: string })[] = filteredTools.map(
+  const toolCards: (ToolCardProps & { id: string; slug: string })[] = filteredTools.map(
     (tool) => {
       const displayTags = filterDisplayTags(tool.tags);
+      const toolSlug = tool.slug || tool.id;
 
       return {
         id: tool.id,
+        slug: toolSlug,
         name: tool.name,
         description:
           tool.desc_en ??
@@ -74,6 +139,8 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
         badge: tool.badge ?? undefined,
         href: tool.affiliate_url ?? tool.url ?? undefined,
         detailsHref: tool.slug ? `/tools/${tool.slug}` : undefined,
+        isFavorited: favoriteSlugs.includes(toolSlug),
+        onFavoriteToggle: () => handleFavoriteToggle(toolSlug),
       };
     }
   );
@@ -143,6 +210,15 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
               <ToolCard key={tool.id} {...tool} />
             ))}
           </div>
+        )}
+
+        {/* Toast */}
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
         )}
       </div>
     </PageShell>

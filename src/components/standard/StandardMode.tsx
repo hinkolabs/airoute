@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react';
 import { Tool } from '@/types/tool';
 import Link from 'next/link';
+import AffiliateLinkButton from '@/components/AffiliateLinkButton';
 
 type StandardModeProps = {
   tools: Tool[];
@@ -168,14 +169,14 @@ function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }
       </p>
       
       {/* View 버튼 */}
-      <a
+      <AffiliateLinkButton
         href={tool.affiliate_url}
-        target="_blank"
-        rel="noopener noreferrer"
+        placement="tool_card"
+        toolSlug={tool.id}
         className="btn-mint mt-auto py-2 text-center text-sm font-medium"
       >
         View
-      </a>
+      </AffiliateLinkButton>
     </div>
   );
 }
