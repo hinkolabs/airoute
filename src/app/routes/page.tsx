@@ -4,14 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Search, Star } from "lucide-react";
 import type { DbRoute } from "@/lib/db/routes";
-import { getFavorites, toggleRouteFavorite } from "@/lib/favorites";
+import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
 
 export default function RoutesPage() {
   const { user } = useAuth();
+  const { routeSlugs: favoriteSlugs, isSaved, toggle, count, limit, isLoading: favoritesLoading } = useSavedRoutes();
   const [searchQuery, setSearchQuery] = useState("");
   const [routes, setRoutes] = useState<DbRoute[]>([]);
-  const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -33,19 +33,6 @@ export default function RoutesPage() {
     loadRoutes();
   }, []);
 
-  // Load favorites
-  useEffect(() => {
-    async function loadFavorites() {
-      try {
-        const favorites = await getFavorites();
-        setFavoriteSlugs(favorites.routes);
-      } catch (error) {
-        console.error("Error loading favorites:", error);
-      }
-    }
-    loadFavorites();
-  }, [user]);
-
   // Filter routes by search query
   const filteredRoutes = useMemo(() => {
     if (!searchQuery.trim()) return routes;
@@ -62,27 +49,17 @@ export default function RoutesPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    const isCurrentlyFavorited = favoriteSlugs.includes(routeSlug);
-    const previousState = favoriteSlugs;
-
-    // Optimistic update
-    setFavoriteSlugs(prev =>
-      isCurrentlyFavorited ? prev.filter(slug => slug !== routeSlug) : [...prev, routeSlug]
-    );
-
     try {
-      const result = await toggleRouteFavorite(routeSlug);
+      const result = await toggle(routeSlug);
       if (result.blocked) {
-        setFavoriteSlugs(previousState); // Rollback
         const limitMessage = user
-          ? "You reached your save limit."
+          ? `You reached your save limit (${limit} routes).`
           : "Guest can save up to 1 route. Sign in to save more.";
         setToast({ message: limitMessage, type: "error" });
         setTimeout(() => setToast(null), 3000);
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      setFavoriteSlugs(previousState); // Rollback
       setToast({ message: "Failed to update favorites", type: "error" });
       setTimeout(() => setToast(null), 3000);
     }
@@ -133,7 +110,7 @@ export default function RoutesPage() {
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
             {filteredRoutes.map((route) => {
-              const isFavorited = favoriteSlugs.includes(route.slug);
+              const isFavorited = isSaved(route.slug);
               return (
                 <Link
                   key={route.slug}
@@ -189,10 +166,10 @@ export default function RoutesPage() {
           </div>
         )}
 
-        {/* Toast */}
+        {/* Toast - positioned at top to avoid mobile bottom nav overlap */}
         {toast && (
           <div
-            className={`fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md ${
+            className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md ${
               toast.type === "error"
                 ? "border-red-700 bg-red-900/80 text-red-100"
                 : "border-emerald-700 bg-emerald-900/80 text-emerald-100"

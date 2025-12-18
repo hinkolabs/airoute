@@ -34,19 +34,23 @@ async function getCurrentUser() {
 
 /**
  * Get favorites for current user (logged in or guest)
+ * Guest: localStorage only (NO DB calls)
+ * User: Supabase DB
  */
 export async function getFavorites(): Promise<FavoritesData> {
   const user = await getCurrentUser();
 
   if (!user) {
-    // Guest user - use localStorage
-    const guestFavs = loadGuestFavorites();
-    return guestFavs;
+    // =============================
+    // GUEST: localStorage ONLY (no DB calls)
+    // =============================
+    return loadGuestFavorites();
   }
 
-  // Logged-in user - fetch from Supabase
+  // =============================
+  // USER: Supabase DB
+  // =============================
   const supabase = getSupabaseBrowserClient();
-
   const [toolsRes, routesRes] = await Promise.all([
     supabase
       .from('favorites_tools')
@@ -127,12 +131,16 @@ export async function toggleToolFavorite(toolSlug: string): Promise<FavoritesDat
 
 /**
  * Toggle a route favorite (add or remove)
+ * Guest: localStorage only (NO DB calls), limit = 1
+ * User: Supabase favorites_routes table, limit = 3
  */
 export async function toggleRouteFavorite(routeSlug: string): Promise<FavoritesData> {
   const user = await getCurrentUser();
 
   if (!user) {
-    // Guest user - use localStorage
+    // =============================
+    // GUEST: localStorage ONLY (no DB calls)
+    // =============================
     const guestFavs = loadGuestFavorites();
     const isCurrentlyFavorited = guestFavs.routes.includes(routeSlug);
 
@@ -143,7 +151,7 @@ export async function toggleRouteFavorite(routeSlug: string): Promise<FavoritesD
       saveGuestFavorites(newFavs);
       return newFavs;
     } else {
-      // Add - check limit
+      // Add - check limit (guest limit = 1)
       if (!canAddRoute(guestFavs.routes)) {
         return { ...guestFavs, blocked: true };
       }
@@ -154,7 +162,9 @@ export async function toggleRouteFavorite(routeSlug: string): Promise<FavoritesD
     }
   }
 
-  // Logged-in user - use Supabase
+  // =============================
+  // USER: Supabase DB
+  // =============================
   const supabase = getSupabaseBrowserClient();
 
   // Check if already favorited

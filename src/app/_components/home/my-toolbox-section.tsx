@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { getFavorites, toggleToolFavorite, type FavoritesData } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
@@ -8,21 +8,16 @@ import { ToolLogo } from "@/components/tool-logo";
 import { Toast } from "@/components/toast";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getLimits, clampFavorites } from "@/lib/limits";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
+import { useSavedRoutes, USER_ROUTE_LIMIT } from "@/lib/hooks/use-saved-routes";
 
 // ===========================
-// ROUTE METADATA
+// ROUTE TYPE
 // ===========================
-const ROUTE_META: Record<string, { title: string; icon: string }> = {
-  "turn-long-videos-into-shorts": { title: "Turn long videos into Shorts", icon: "✂️" },
-  "polish-shorts-and-reels": { title: "Polish Shorts & Reels", icon: "✨" },
-  "rewrite-email-professionally": { title: "Rewrite email professionally", icon: "✉️" },
-  "fix-grammar-and-clarity": { title: "Fix grammar and clarity", icon: "📝" },
-  "make-slides-from-notes": { title: "Make slides from notes", icon: "📊" },
-  "create-background-music": { title: "Create background music", icon: "🎵" },
-  "text-to-narrated-video": { title: "Text to narrated video", icon: "🎙️" },
-  "clip-podcasts-into-shorts": { title: "Clip podcasts", icon: "🎧" },
-  "add-captions-fast": { title: "Add captions fast", icon: "💬" },
-  "summarize-and-repurpose": { title: "Summarize & repurpose", icon: "♻️" },
+type RouteData = {
+  slug: string;
+  title: string;
+  icon: string | null;
 };
 
 // ===========================
@@ -30,47 +25,94 @@ const ROUTE_META: Record<string, { title: string; icon: string }> = {
 // ===========================
 export function MyToolboxSection() {
   const { user, authStatus } = useAuth();
-  const [favorites, setFavorites] = useState<FavoritesData>({ tools: [], routes: [] });
-  const [loading, setLoading] = useState(true);
+  
+  // Tools: use existing favorites system
+  const [toolFavorites, setToolFavorites] = useState<string[]>([]);
+  const [toolsLoading, setToolsLoading] = useState(true);
+  
+  // Routes: use new hybrid hook (localStorage for guest, DB for user)
+  const { 
+    routeSlugs: savedRouteSlugs, 
+    count: savedRoutesCount, 
+    limit: routesLimit,
+    isLoading: routesLoading 
+  } = useSavedRoutes();
+  
+  const [routesData, setRoutesData] = useState<RouteData[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   
   // Expand/collapse state
   const [toolboxExpanded, setToolboxExpanded] = useState(false);
   const [routesExpanded, setRoutesExpanded] = useState(false);
 
-  // Get current limits based on auth status
-  const limits = getLimits(authStatus);
+  // Get current limits based on auth status (memoized to prevent infinite loops)
+  const toolsLimits = useMemo(() => getLimits(authStatus), [authStatus]);
 
+  // Loading state: combined
+  const loading = toolsLoading || routesLoading;
+
+  // Load tool favorites
   useEffect(() => {
-    async function loadFavorites() {
+    async function loadToolFavorites() {
       try {
         const data = await getFavorites();
         // Clamp favorites to current user limits to prevent UI flash
-        const clamped = clampFavorites(data, limits);
-        setFavorites(clamped);
+        const currentLimits = getLimits(authStatus);
+        const clamped = clampFavorites(data, currentLimits);
+        setToolFavorites(clamped.tools);
       } catch (error) {
-        console.error("Error loading favorites:", error);
+        console.error("Error loading tool favorites:", error);
       } finally {
-        setLoading(false);
+        setToolsLoading(false);
       }
     }
-    loadFavorites();
-  }, [user, limits]);
+    loadToolFavorites();
+  }, [authStatus]);
+
+  // Load route metadata when savedRouteSlugs changes
+  useEffect(() => {
+    async function loadRouteMetadata() {
+      if (savedRouteSlugs.length === 0) {
+        setRoutesData([]);
+        return;
+      }
+
+      try {
+        const supabase = getSupabaseBrowserClient();
+        const { data: routes, error } = await supabase
+          .from('routes')
+          .select('slug, title, icon')
+          .in('slug', savedRouteSlugs);
+        
+        if (error) {
+          console.error("Error fetching routes:", error);
+          setRoutesData([]);
+        } else if (routes) {
+          // Maintain order from savedRouteSlugs
+          const orderedRoutes = savedRouteSlugs
+            .map(slug => routes.find(r => r.slug === slug))
+            .filter((r): r is RouteData => r !== undefined);
+          setRoutesData(orderedRoutes);
+        }
+      } catch (error) {
+        console.error("Error fetching routes:", error);
+        setRoutesData([]);
+      }
+    }
+    loadRouteMetadata();
+  }, [savedRouteSlugs]);
 
   const handleRemoveTool = async (toolSlug: string) => {
     // Optimistic update
-    const previousFavorites = favorites;
-    setFavorites({
-      ...favorites,
-      tools: favorites.tools.filter(t => t !== toolSlug),
-    });
+    const previousTools = toolFavorites;
+    setToolFavorites(toolFavorites.filter(t => t !== toolSlug));
     setToast({ message: "Removed from Toolbox", type: "success" });
 
     try {
       await toggleToolFavorite(toolSlug);
     } catch (error) {
       // Rollback on error
-      setFavorites(previousFavorites);
+      setToolFavorites(previousTools);
       setToast({ message: "Failed to remove tool", type: "error" });
     }
   };
@@ -81,13 +123,10 @@ export function MyToolboxSection() {
   const expandedToolSlots = 6;
   const maxToolSlots = authStatus === 'authed' && toolboxExpanded ? expandedToolSlots : baseToolSlots;
   const slots = Array.from({ length: maxToolSlots }, (_, i) => i);
-  const savedTools = favorites.tools.slice(0, maxToolSlots);
-  
-  // Routes: always show only what user is allowed to have (guest: 1, authed: up to limits.maxRoutes)
-  const savedRoutes = favorites.routes.slice(0, limits.maxRoutes);
+  const savedTools = toolFavorites.slice(0, maxToolSlots);
   
   // Show expand button only if authed user has more items
-  const canExpandTools = authStatus === 'authed' && favorites.tools.length > baseToolSlots;
+  const canExpandTools = authStatus === 'authed' && toolFavorites.length > baseToolSlots;
   const canExpandRoutes = false; // Routes expansion disabled for now
 
   return (
@@ -100,7 +139,7 @@ export function MyToolboxSection() {
             <p className="mt-0.5 text-xs text-slate-400">
               {authStatus === 'authed' 
                 ? "Your saved tools & routes" 
-                : `${savedTools.length}/${limits.maxTools} tools · ${savedRoutes.length}/${limits.maxRoutes} route`}
+                : `${savedTools.length}/${toolsLimits.maxTools} tools · ${savedRoutesCount}/${routesLimit} route`}
             </p>
           </div>
           <Link
@@ -225,7 +264,7 @@ export function MyToolboxSection() {
             {/* Routes Header */}
             <div className="mb-2 flex items-center justify-between">
               <h3 className="text-xs font-medium text-slate-400">
-                My Routes {savedRoutes.length > 0 && `(${savedRoutes.length}/${limits.maxRoutes})`}
+                My Routes {savedRoutesCount > 0 && `(${savedRoutesCount}/${routesLimit})`}
               </h3>
             </div>
             
@@ -234,38 +273,33 @@ export function MyToolboxSection() {
               <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-slate-800/70 bg-slate-900/50">
                 <div className="h-4 w-4 animate-pulse rounded-full bg-slate-700" />
               </div>
-            ) : savedRoutes.length > 0 ? (
+            ) : routesData.length > 0 ? (
               // Saved routes list
               <div className="space-y-2">
-                {savedRoutes.map((routeSlug) => {
-                  const routeMeta = ROUTE_META[routeSlug];
-                  if (!routeMeta) return null;
-                  
-                  return (
-                    <Link
-                      key={routeSlug}
-                      href={`/routes/${routeSlug}`}
-                      className="group relative block rounded-xl border border-slate-800/70 bg-slate-900/70 p-3 transition hover:border-emerald-400/30 hover:bg-slate-900"
-                    >
-                      {/* Route Info */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-base transition-transform group-hover:scale-110">
-                          {routeMeta.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="text-xs font-semibold text-slate-50 transition group-hover:text-emerald-300 truncate">
-                            {routeMeta.title}
-                          </h4>
-                        </div>
+                {routesData.map((route) => (
+                  <Link
+                    key={route.slug}
+                    href={`/routes/${route.slug}`}
+                    className="group relative block rounded-xl border border-slate-800/70 bg-slate-900/70 p-3 transition hover:border-emerald-400/30 hover:bg-slate-900"
+                  >
+                    {/* Route Info */}
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-base transition-transform group-hover:scale-110">
+                        {route.icon || "🚀"}
                       </div>
-                    </Link>
-                  );
-                })}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-semibold text-slate-50 transition group-hover:text-emerald-300 truncate">
+                          {route.title}
+                        </h4>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
                 
                 {/* Guest message */}
-                {!user && savedRoutes.length > 0 && (
+                {!user && routesData.length > 0 && (
                   <p className="mt-2 text-center text-[10px] text-slate-500">
-                    Sign in to save up to {getLimits('authed').maxRoutes} routes
+                    Sign in to save up to {USER_ROUTE_LIMIT} routes
                   </p>
                 )}
               </div>

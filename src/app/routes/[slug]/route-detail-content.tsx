@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Bookmark, ExternalLink } from "lucide-react";
+import { Star, ExternalLink } from "lucide-react";
 import type { DbRoute, DbRouteTool } from "@/lib/db/routes";
-import { getFavorites, toggleRouteFavorite } from "@/lib/favorites";
+import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { ToolLogo } from "@/components/tool-logo";
@@ -27,22 +27,12 @@ interface RouteDetailContentProps {
 
 export default function RouteDetailContent({ route, best3Tools }: RouteDetailContentProps) {
   const { user } = useAuth();
-  const [isFavorited, setIsFavorited] = useState(false);
+  const { isSaved, toggle, limit } = useSavedRoutes();
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  // Load initial favorite state
-  useEffect(() => {
-    async function checkFavorite() {
-      try {
-        const favorites = await getFavorites();
-        setIsFavorited(favorites.routes.includes(route.slug));
-      } catch (error) {
-        console.error("Error checking favorite:", error);
-      }
-    }
-    checkFavorite();
-  }, [route.slug, user]);
+  // Check if this route is saved
+  const isFavorited = isSaved(route.slug);
 
   // Scroll to top on mount
   useEffect(() => {
@@ -51,28 +41,24 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
 
   const handleToggleFavorite = async () => {
     setIsLoading(true);
-    const previousState = isFavorited;
-    setIsFavorited(!previousState); // Optimistic UI update
 
     try {
-      const result = await toggleRouteFavorite(route.slug);
+      const result = await toggle(route.slug);
       if (result.blocked) {
-        setIsFavorited(previousState); // Rollback
         const limitMessage = user
-          ? "You reached your save limit."
+          ? `You reached your save limit (${limit} routes).`
           : "Guest can save up to 1 route. Sign in to save more.";
         setToast({ message: limitMessage, type: "error" });
         setTimeout(() => setToast(null), 3000);
       } else {
         setToast({
-          message: previousState ? "Removed from favorites" : "Added to favorites",
+          message: isFavorited ? "Removed from favorites" : "Added to favorites",
           type: "success",
         });
         setTimeout(() => setToast(null), 3000);
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
-      setIsFavorited(previousState); // Rollback on error
       setToast({ message: "Failed to update favorites", type: "error" });
       setTimeout(() => setToast(null), 3000);
     } finally {
@@ -85,31 +71,38 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
       <div className="mx-auto max-w-4xl">
         {/* Header */}
         <header className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-          <div className="mb-4 flex items-start justify-between gap-4">
-            {/* Icon & Title */}
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-3xl">
-                {route.icon || "🚀"}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-slate-50 lg:text-3xl">{route.title}</h1>
-              </div>
+          {/* Icon + Save Button Row */}
+          <div className="mb-4 flex items-center gap-3">
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-3xl">
+              {route.icon || "🚀"}
             </div>
-
-            {/* Save Button */}
+            {/* Save Button - Star icon to match All Routes page */}
             <button
               onClick={handleToggleFavorite}
               disabled={isLoading}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition ${
-                isFavorited
-                  ? "bg-slate-700 text-slate-100 hover:bg-slate-600"
-                  : "bg-emerald-600 text-white hover:bg-emerald-500"
-              } disabled:cursor-not-allowed disabled:opacity-50`}
+              className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-50"
+              aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+              title={isFavorited ? "Saved" : "Save route"}
             >
-              <Bookmark className={`h-4 w-4 ${isFavorited ? "fill-current" : ""}`} />
-              {isFavorited ? "Saved" : "Save"}
+              <Star
+                className={`h-5 w-5 transition-colors ${
+                  isFavorited
+                    ? "fill-emerald-400 stroke-emerald-400"
+                    : "stroke-slate-500 hover:stroke-slate-300"
+                }`}
+              />
             </button>
+            {route.featured && (
+              <span className="rounded-full bg-emerald-500/20 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">
+                Featured
+              </span>
+            )}
           </div>
+          
+          {/* Title - no line break */}
+          <h1 className="mb-4 text-xl font-bold text-slate-50 sm:text-2xl lg:text-3xl">
+            {route.title}
+          </h1>
 
           {/* Description */}
           <p className="text-sm leading-relaxed text-slate-300 lg:text-base">{route.description}</p>
@@ -146,7 +139,10 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-slate-50">{step.step_title}</h3>
                     {step.tool && (
-                      <div className="mt-2 flex items-center gap-2">
+                      <Link
+                        href={`/tools/${step.tool.slug || step.tool.id}`}
+                        className="mt-2 inline-flex items-center gap-2 transition-colors hover:text-emerald-300"
+                      >
                         <ToolLogo
                           tool={{
                             name: step.tool.name,
@@ -156,7 +152,7 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
                           size={24}
                         />
                         <span className="text-sm font-medium text-slate-300">{step.tool.name}</span>
-                      </div>
+                      </Link>
                     )}
                   </div>
                 </div>
@@ -228,14 +224,15 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
           </Link>
         </section>
 
-        {/* Toast */}
+        {/* Toast - positioned at top to avoid mobile nav */}
         {toast && (
           <div
-            className={`fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md ${
+            className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md ${
               toast.type === "error"
                 ? "border-red-700 bg-red-900/80 text-red-100"
                 : "border-emerald-700 bg-emerald-900/80 text-emerald-100"
             }`}
+            style={{ top: 'calc(env(safe-area-inset-top, 0px) + 16px)' }}
           >
             <span className="text-sm font-medium">{toast.message}</span>
           </div>
