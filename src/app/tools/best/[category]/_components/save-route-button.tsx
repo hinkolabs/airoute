@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { Bookmark } from 'lucide-react';
-import { setRouteFavorite, getFavorites } from '@/lib/favorites';
+import { toggleRouteFavorite, getFavorites } from '@/lib/favorites';
 import { useAuth } from '@/app/_providers/auth-provider';
+import { getLimits } from '@/lib/limits';
 
 type SaveRouteButtonProps = {
   routeSlug: string;
@@ -11,10 +12,11 @@ type SaveRouteButtonProps = {
 };
 
 export function SaveRouteButton({ routeSlug, routeName }: SaveRouteButtonProps) {
-  const { user } = useAuth();
+  const { user, authStatus } = useAuth();
   const [isSaved, setIsSaved] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  const [warningMessage, setWarningMessage] = useState('');
 
   // Load initial saved state
   useEffect(() => {
@@ -34,13 +36,19 @@ export function SaveRouteButton({ routeSlug, routeName }: SaveRouteButtonProps) 
     setShowWarning(false);
 
     try {
-      // Toggle: if currently saved, remove it; otherwise set it
-      const newRouteSlug = isSaved ? null : routeSlug;
-      const result = await setRouteFavorite(newRouteSlug);
+      // Use toggleRouteFavorite which properly enforces limits
+      const result = await toggleRouteFavorite(routeSlug);
 
       if (result.blocked) {
+        // Get current limits to show in warning
+        const limits = getLimits(authStatus);
+        const limitText = user 
+          ? `You can save up to ${limits.maxRoutes} routes. Remove one to add another.`
+          : `Guest limit: ${limits.maxRoutes} route. Sign in for more!`;
+        
+        setWarningMessage(limitText);
         setShowWarning(true);
-        setTimeout(() => setShowWarning(false), 3000);
+        setTimeout(() => setShowWarning(false), 4000);
       } else {
         setIsSaved(result.routes.includes(routeSlug));
       }
@@ -66,10 +74,10 @@ export function SaveRouteButton({ routeSlug, routeName }: SaveRouteButtonProps) 
         {isSaved ? `Saved: ${routeName}` : `Save this route`}
       </button>
 
-      {/* Guest warning */}
-      {showWarning && !user && (
+      {/* Limit warning */}
+      {showWarning && (
         <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-xs text-amber-400 text-center">
-          Guest limit: 1 route. Sign in for more!
+          {warningMessage}
         </div>
       )}
     </div>

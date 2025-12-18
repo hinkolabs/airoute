@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
-type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide';
+type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom';
 
 interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'> {
   href: string;

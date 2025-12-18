@@ -2,6 +2,10 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { supabaseServerClient } from "@/lib/supabase/server";
 
+// Force dynamic rendering - always fetch fresh data from Supabase
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 type GuideRecord = {
   id: string;
   slug: string;
