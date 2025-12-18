@@ -18,6 +18,7 @@ export type DbRoute = {
   featured: boolean;
   tags: string[] | null;
   guide_bullets: string[] | null;
+  manual_order: number | null;
   created_at: string;
   updated_at: string | null;
 };
@@ -175,6 +176,7 @@ export async function getAllRoutes(): Promise<DbRoute[]> {
 
 /**
  * Get featured routes (for home page)
+ * Ordered by: manual_order asc (nulls last), then created_at desc
  */
 export async function getFeaturedRoutes(): Promise<DbRoute[]> {
   const supabase = supabaseServerClient;
@@ -183,6 +185,7 @@ export async function getFeaturedRoutes(): Promise<DbRoute[]> {
     .from("routes")
     .select("*")
     .eq("featured", true)
+    .order("manual_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });
 
   if (error) {
