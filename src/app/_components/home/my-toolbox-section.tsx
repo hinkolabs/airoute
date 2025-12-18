@@ -14,9 +14,16 @@ import { getLimits, clampFavorites } from "@/lib/limits";
 // ROUTE METADATA
 // ===========================
 const ROUTE_META: Record<string, { title: string; icon: string }> = {
-  "brand-logo-kit": { title: "Brand Logo Kit", icon: "🎨" },
-  "shorts-factory": { title: "Shorts Factory", icon: "🎬" },
-  "resume-polish": { title: "Resume Polish", icon: "📝" },
+  "turn-long-videos-into-shorts": { title: "Turn long videos into Shorts", icon: "✂️" },
+  "polish-shorts-and-reels": { title: "Polish Shorts & Reels", icon: "✨" },
+  "rewrite-email-professionally": { title: "Rewrite email professionally", icon: "✉️" },
+  "fix-grammar-and-clarity": { title: "Fix grammar and clarity", icon: "📝" },
+  "make-slides-from-notes": { title: "Make slides from notes", icon: "📊" },
+  "create-background-music": { title: "Create background music", icon: "🎵" },
+  "text-to-narrated-video": { title: "Text to narrated video", icon: "🎙️" },
+  "clip-podcasts-into-shorts": { title: "Clip podcasts", icon: "🎧" },
+  "add-captions-fast": { title: "Add captions fast", icon: "💬" },
+  "summarize-and-repurpose": { title: "Summarize & repurpose", icon: "♻️" },
 };
 
 // ===========================
@@ -79,8 +86,6 @@ export function MyToolboxSection() {
   
   // Routes: always show only what user is allowed to have (guest: 1, authed: up to limits.maxRoutes)
   const savedRoutes = favorites.routes.slice(0, limits.maxRoutes);
-  const savedRoute = savedRoutes.length > 0 ? savedRoutes[0] : null;
-  const routeMeta = savedRoute ? ROUTE_META[savedRoute] : null;
   
   // Show expand button only if authed user has more items
   const canExpandTools = authStatus === 'authed' && favorites.tools.length > baseToolSlots;
@@ -217,13 +222,13 @@ export function MyToolboxSection() {
             )}
           </div>
 
-          {/* RIGHT: My Route (1/3 on desktop) */}
+          {/* RIGHT: My Routes (1/3 on desktop) */}
           <div className="md:col-span-1">
             {/* Routes Header */}
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-medium text-slate-400">My Route</h3>
-              
-              {/* Note: Routes expansion disabled for now (max 1 item) */}
+              <h3 className="text-xs font-medium text-slate-400">
+                My Routes {savedRoutes.length > 0 && `(${savedRoutes.length}/${limits.maxRoutes})`}
+              </h3>
             </div>
             
             {loading ? (
@@ -231,25 +236,41 @@ export function MyToolboxSection() {
               <div className="flex min-h-[120px] items-center justify-center rounded-xl border border-slate-800/70 bg-slate-900/50">
                 <div className="h-4 w-4 animate-pulse rounded-full bg-slate-700" />
               </div>
-            ) : savedRoute && routeMeta ? (
-              // Saved route - entire card is clickable (no remove button)
-              <Link
-                href={`/routes/${savedRoute}`}
-                className="group relative block rounded-xl border border-slate-800/70 bg-slate-900/70 p-4 transition hover:border-emerald-400/30 hover:bg-slate-900"
-              >
-                {/* Route Info */}
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-xl transition-transform group-hover:scale-110">
-                    {routeMeta.icon}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className="text-sm font-semibold text-slate-50 transition group-hover:text-emerald-300">
-                      {routeMeta.title}
-                    </h4>
-                    <p className="mt-0.5 text-[10px] text-slate-500">Click to open</p>
-                  </div>
-                </div>
-              </Link>
+            ) : savedRoutes.length > 0 ? (
+              // Saved routes list
+              <div className="space-y-2">
+                {savedRoutes.map((routeSlug) => {
+                  const routeMeta = ROUTE_META[routeSlug];
+                  if (!routeMeta) return null;
+                  
+                  return (
+                    <Link
+                      key={routeSlug}
+                      href={`/routes/${routeSlug}`}
+                      className="group relative block rounded-xl border border-slate-800/70 bg-slate-900/70 p-3 transition hover:border-emerald-400/30 hover:bg-slate-900"
+                    >
+                      {/* Route Info */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-base transition-transform group-hover:scale-110">
+                          {routeMeta.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-xs font-semibold text-slate-50 transition group-hover:text-emerald-300 truncate">
+                            {routeMeta.title}
+                          </h4>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+                
+                {/* Guest message */}
+                {!user && savedRoutes.length > 0 && (
+                  <p className="mt-2 text-center text-[10px] text-slate-500">
+                    Sign in to save up to {getLimits('authed').maxRoutes} routes
+                  </p>
+                )}
+              </div>
             ) : (
               // Empty state - Browse routes CTA
               <Link

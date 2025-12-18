@@ -1,6 +1,5 @@
 import { ScanningBanner } from "./_components/scanning-banner";
 import { AnimatedMatchScore } from "./_components/animated-match-score";
-import { SaveRouteButton } from "./_components/save-route-button";
 import { supabaseServerClient } from "@/lib/supabase/server";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 
@@ -747,11 +746,6 @@ export default async function BestCategoryPage({
               </a>
             );
           })}
-        </section>
-
-        {/* Save Route Button */}
-        <section className="mt-6">
-          <SaveRouteButton routeSlug={categoryKey} routeName={meta.title} />
         </section>
 
       </div>

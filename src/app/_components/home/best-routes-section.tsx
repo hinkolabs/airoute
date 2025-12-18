@@ -7,22 +7,22 @@ import Link from "next/link";
 // ===========================
 const BEST_ROUTES = [
   {
-    id: "brand-logo-kit",
-    title: "Brand Logo Kit",
-    icon: "🎨",
-    href: "/routes/brand-logo-kit",
+    id: "turn-long-videos-into-shorts",
+    title: "Turn long videos into Shorts",
+    icon: "✂️",
+    href: "/routes/turn-long-videos-into-shorts",
   },
   {
-    id: "shorts-factory",
-    title: "Shorts Factory",
-    icon: "🎬",
-    href: "/routes/shorts-factory",
-  },
-  {
-    id: "resume-polish",
-    title: "Resume Polish",
+    id: "fix-grammar-and-clarity",
+    title: "Fix grammar and clarity",
     icon: "📝",
-    href: "/routes/resume-polish",
+    href: "/routes/fix-grammar-and-clarity",
+  },
+  {
+    id: "add-captions-fast",
+    title: "Add captions fast",
+    icon: "💬",
+    href: "/routes/add-captions-fast",
   },
 ];
 
