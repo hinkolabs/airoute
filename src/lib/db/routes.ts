@@ -173,3 +173,23 @@ export async function getAllRoutes(): Promise<DbRoute[]> {
   return data ?? [];
 }
 
+/**
+ * Get featured routes (for home page)
+ */
+export async function getFeaturedRoutes(): Promise<DbRoute[]> {
+  const supabase = supabaseServerClient;
+
+  const { data, error } = await supabase
+    .from("routes")
+    .select("*")
+    .eq("featured", true)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getFeaturedRoutes] Error:", error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
