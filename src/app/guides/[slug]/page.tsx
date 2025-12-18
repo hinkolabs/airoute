@@ -82,10 +82,15 @@ export default async function GuidePage({ params }: GuidePageProps) {
     cta_partner 
   } = data;
 
-  // Normalize content: replace \n with actual newlines and strip CTA section
+  // Normalize content: replace \n with actual newlines and strip only CTA patterns (not entire sections)
   const normalizedContent = (content ?? "")
     .replace(/\\n/g, "\n")
-    .replace(/^##\s*CTA[\s\S]*$/mi, "")  // Remove ## CTA section to end
+    // Remove specific CTA patterns only (preserve Conclusion and tool mentions)
+    .replace(/\n## CTA\nTry This Tool\.\n?/g, "\n")
+    .replace(/\n## CTA\nTry this Tool\.\n?/g, "\n")
+    .replace(/\nCTA\nTry this Tool\.\n?/g, "\n")
+    .replace(/\nReady to apply this method\?\n/g, "")
+    .replace(/\n## Ready to (apply this method|get started|start)\?\n/g, "")
     .trim();
 
   // Fetch tool data if cta_type includes 'tool'

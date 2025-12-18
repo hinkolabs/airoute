@@ -892,6 +892,151 @@ Airoute helps you pick tools by task, not hype:
 - ElevenLabs
 - Suno`,
   },
+
+  "turn-long-videos-into-shorts": {
+    slug: "turn-long-videos-into-shorts",
+    title: "How to turn long videos into viral Shorts (without manual editing)",
+    excerpt:
+      "A decision-focused guide to turning long videos into Shorts quickly using Opus Clip. Learn how to pick the right moments, avoid random clips, and export fast without complex editing.",
+    content: `# How to turn long videos into viral Shorts (without manual editing)
+
+## Purpose
+This guide shows you how to repurpose long-form content into short vertical clips without spending hours on manual editing. If you want to publish Shorts consistently, Opus Clip automates clip selection and vertical formatting.
+
+## What you'll do (in 5 minutes)
+1. Upload your long video (podcast, webinar, or YouTube video).
+2. Let AI identify the most engaging 30-90 second segments.
+3. Review suggested clips and pick the best ones.
+4. Adjust captions and framing if needed.
+5. Export directly to Shorts, Reels, or TikTok format.
+
+## Common Mistakes
+1. Uploading videos without clear talking points or structure.
+2. Accepting every suggested clip without checking the hook.
+3. Ignoring caption readability on mobile screens.
+4. Mixing multiple topics in one short clip.
+
+## Good vs Bad Criteria
+**Good:** strong hook in first 2 seconds, one clear idea, tight pacing, readable captions.  
+**Bad:** weak opening, unclear message, slow pacing, caption text too small.
+
+## Safety & Official Notice
+Popular tools often attract fake sites and unofficial download pages. Airoute links to official websites only. Always verify the domain before entering payment details.
+
+## Conclusion
+Repurposing long videos into Shorts is not about cutting random clips. It is about finding moments with strong hooks and clear payoffs. Opus Clip detects these moments automatically, saving hours of manual scrubbing and cutting.
+
+Want to try the recommended tool? Use Opus Clip to turn long videos into Shorts automatically.`,
+  },
+
+  "why-ai-shorts-fail": {
+    slug: "why-ai-shorts-fail",
+    title: "Why most AI Shorts fail (and how to fix them)",
+    excerpt:
+      "A problem-focused guide explaining why AI-generated Shorts often fail to perform. Learn what causes random clips, weak hooks, and poor retention—and how to fix them using Opus Clip.",
+    content: `# Why most AI Shorts fail (and how to fix them)
+
+## Purpose
+This guide identifies the most common reasons AI-generated Shorts underperform and shows you how to fix them before publishing. Understanding these patterns helps you use tools like Opus Clip more effectively.
+
+## What you'll do (in 5 minutes)
+1. Check if your clip opens with a question, claim, or visual hook.
+2. Remove any segment that does not directly support the main idea.
+3. Verify captions are synchronized and readable on mobile.
+4. Confirm the clip delivers a clear payoff or insight by the end.
+5. Test pacing by watching without sound—does it hold attention?
+
+## Common Mistakes
+1. Trusting AI-selected clips without checking for narrative flow.
+2. Publishing clips with weak or missing hooks in the first 3 seconds.
+3. Keeping filler words, long pauses, or tangents that kill retention.
+4. Ignoring platform-specific aspect ratios and safe zones.
+
+## Good vs Bad Criteria
+**Good:** strong hook, single focused message, tight pacing, clear payoff.  
+**Bad:** no hook, scattered ideas, slow cuts, unclear ending.
+
+## Safety & Official Notice
+Popular tools often attract fake sites and unofficial download pages. Airoute links to official websites only. Always verify the domain before entering payment details.
+
+## Conclusion
+AI Shorts fail when creators skip the review step. Even the best AI cannot guess your content strategy. Use Opus Clip to find potential moments, then refine them to match your audience and message.
+
+Want to try the recommended tool? Use Opus Clip to detect viral moments and format Shorts automatically.`,
+  },
+
+  "beginner-video-editing-workflow": {
+    slug: "beginner-video-editing-workflow",
+    title:
+      "A beginner-friendly way to edit videos without learning complex software",
+    excerpt:
+      "A workflow-focused guide for beginners who want to edit videos fast without mastering complex software. Learn how to use Filmora to trim, add text, and export videos quickly.",
+    content: `# A beginner-friendly way to edit videos without learning complex software
+
+## Purpose
+This guide walks you through a simple video editing workflow that prioritizes speed over mastery. If you need clean results without a steep learning curve, Filmora offers templates and presets that work immediately.
+
+## What you'll do (in 10 minutes)
+1. Import your raw footage and arrange clips on the timeline.
+2. Cut out mistakes, long pauses, and unnecessary intros.
+3. Add text overlays or lower thirds for names and key points.
+4. Choose one color grade or filter and apply it consistently.
+5. Export using a platform preset (YouTube 1080p, Instagram Reel, etc.).
+
+## Common Mistakes
+1. Choosing professional software like Premiere Pro for simple trimming tasks.
+2. Applying multiple conflicting filters or color grades in one video.
+3. Mixing too many fonts, colors, or transitions in one video.
+4. Rendering in 4K when your platform only supports 1080p.
+
+## Good vs Bad Criteria
+**Good:** clean cuts, readable text, consistent style, correct export format.  
+**Bad:** over-edited, mixed fonts, incompatible aspect ratio, excessive effects.
+
+## Safety & Official Notice
+Popular tools often attract fake sites and unofficial download pages. Airoute links to official websites only. Always verify the domain before entering payment details.
+
+## Conclusion
+Beginner-friendly video editing is not about choosing the simplest tool. It is about matching the tool to your actual output needs. If you only need trimming, text overlays, and clean exports, Filmora provides templates and platform presets that save setup time.
+
+Want to try the recommended tool? Use Filmora to edit videos quickly with templates and presets.`,
+  },
+
+  "polish-ai-written-text": {
+    slug: "polish-ai-written-text",
+    title: "How to polish AI-written text so it sounds human",
+    excerpt:
+      "A refinement-focused guide for turning AI drafts into natural, readable writing. Learn how to fix repetition, awkward phrasing, and robotic tone using ProWritingAid.",
+    content: `# How to polish AI-written text so it sounds human
+
+## Purpose
+This guide teaches you how to take AI-generated drafts and refine them into writing that sounds natural and confident. If you want to ship polished content faster, ProWritingAid flags the exact issues that make text feel robotic.
+
+## What you'll do (in 10 minutes)
+1. Paste your AI-generated draft into a writing checker or editor.
+2. Identify and rewrite sentences with repeated words or phrases.
+3. Simplify any sentence flagged as overly complex or hard to read.
+4. Delete filler phrases like "it is important to note" or "as mentioned earlier."
+5. Read the final version aloud to confirm it sounds conversational.
+
+## Common Mistakes
+1. Publishing AI-generated text without checking for repetitive phrasing.
+2. Rewriting entire paragraphs when only 2-3 sentences need fixing.
+3. Ignoring readability scores and sentence rhythm.
+4. Adding too many casual phrases, making formal content sound unprofessional.
+
+## Good vs Bad Criteria
+**Good:** clear sentences, varied rhythm, no repetition, natural tone.  
+**Bad:** robotic phrasing, repeated transitions, dense paragraphs, cliché phrases.
+
+## Safety & Official Notice
+Popular tools often attract fake sites and unofficial download pages. Airoute links to official websites only. Always verify the domain before entering payment details.
+
+## Conclusion
+Polishing AI-written text is not about rewriting from scratch. It is about targeting specific weaknesses like repetition, awkward transitions, and readability. Use AI to generate the first draft, then use ProWritingAid to flag issues so you can focus edits where they matter most.
+
+Want to try the recommended tool? Use ProWritingAid to catch repetition and improve readability.`,
+  },
 };
 
 
