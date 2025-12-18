@@ -2,6 +2,8 @@ import { ScanningBanner } from "./_components/scanning-banner";
 import { AnimatedMatchScore } from "./_components/animated-match-score";
 import { supabaseServerClient } from "@/lib/supabase/server";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
+import { ToolLogo } from "@/components/tool-logo";
+import { getToolLogoUrl } from "@/lib/logo";
 
 // Force external links for these tools (no internal detail)
 const FORCE_EXTERNAL_SLUGS = new Set(["filmora", "prowritingaid"]);
@@ -628,7 +630,7 @@ export default async function BestCategoryPage({
               >
                 <article
                   className={
-                    "relative flex gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-colors " +
+                    "relative flex gap-2.5 rounded-2xl border px-3 py-2.5 shadow-sm transition-colors " +
                     (pick.rank === 1
                       ? "border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/15"
                       : "border-slate-700/70 bg-slate-900/80 hover:bg-slate-800/60")
@@ -646,15 +648,25 @@ export default async function BestCategoryPage({
                     #{pick.rank}
                   </div>
 
+                  {/* Tool Logo */}
+                  <div className="shrink-0">
+                    <ToolLogo
+                      src={getToolLogoUrl({ slug: pick.slug, name: pick.name } as any)}
+                      name={pick.name}
+                      size={32}
+                      className="mt-0.5"
+                    />
+                  </div>
+
                   {/* Main Content */}
-                  <div className="flex flex-1 flex-col gap-2">
+                  <div className="flex flex-1 flex-col gap-1.5 min-w-0">
                     {/* Header with Badge */}
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <h2 className="text-sm font-semibold text-slate-50">
+                      <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                        <h2 className="text-sm font-semibold text-slate-50 truncate">
                           {pick.name}
                         </h2>
-                        <span className="rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-300">
+                        <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-300">
                           {pick.label}
                         </span>
                       </div>
@@ -676,20 +688,17 @@ export default async function BestCategoryPage({
                     </div>
 
                     {/* Tagline */}
-                    <p className="text-xs text-slate-300">{pick.tagline}</p>
+                    <p className="text-xs leading-snug text-slate-300">{pick.tagline}</p>
 
-                    {/* Why Top 3? (Mobile Always Visible) */}
-                    <div className="mt-1 sm:hidden">
-                      <p className="text-[10px] font-medium text-emerald-300">
-                        Why Top 3?
-                      </p>
-                      <p className="text-[10px] text-slate-400">
+                    {/* Why Top 3? (Mobile Only - Condensed) */}
+                    <div className="sm:hidden">
+                      <p className="text-[10px] leading-relaxed text-slate-400">
                         {proof.reason}
                       </p>
                     </div>
 
                     {/* Metrics Row */}
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10px] text-slate-400">
+                    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[10px] text-slate-400">
                       {proof.metrics.rating && (
                         <span className="flex items-center gap-1">
                           <span>⭐</span>
@@ -702,7 +711,7 @@ export default async function BestCategoryPage({
                       {proof.metrics.visitsRange && (
                         <span className="flex items-center gap-1">
                           <span>👥</span>
-                          <span>{proof.metrics.visitsRange} visits/mo</span>
+                          <span>{proof.metrics.visitsRange}</span>
                         </span>
                       )}
                       {pick.ranking?.matchScore && (
@@ -715,7 +724,7 @@ export default async function BestCategoryPage({
                     </div>
 
                     {/* Source Hint */}
-                    <div className="mt-1 text-[9px] text-slate-500">
+                    <div className="text-[9px] text-slate-500">
                       Source: {proof.sourceHint}
                     </div>
                   </div>
@@ -729,18 +738,43 @@ export default async function BestCategoryPage({
               >
                 <article
                   className={
-                    "relative flex gap-3 rounded-2xl border px-4 py-3 shadow-sm transition-colors " +
+                    "relative flex gap-2.5 rounded-2xl border px-3 py-2.5 shadow-sm transition-colors " +
                     (pick.rank === 1
                       ? "border-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/15"
                       : "border-slate-700/70 bg-slate-900/80 hover:bg-slate-800/60")
                   }
                 >
-                  {/* Same content as above - to be filled */}
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-200">
+                  {/* Rank Badge */}
+                  <div
+                    className={
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold " +
+                      (pick.rank === 1
+                        ? "bg-emerald-500 text-white"
+                        : "bg-emerald-500/15 text-emerald-200")
+                    }
+                  >
                     #{pick.rank}
                   </div>
-                  <div className="flex flex-1 flex-col gap-2">
-                    <div className="text-sm font-semibold text-slate-50">{pick.name}</div>
+
+                  {/* Tool Logo */}
+                  <div className="shrink-0">
+                    <ToolLogo
+                      src={getToolLogoUrl({ slug: pick.slug, name: pick.name } as any)}
+                      name={pick.name}
+                      size={32}
+                      className="mt-0.5"
+                    />
+                  </div>
+
+                  {/* Main Content */}
+                  <div className="flex flex-1 flex-col gap-1.5 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                      <h2 className="text-sm font-semibold text-slate-50 truncate">{pick.name}</h2>
+                      <span className="shrink-0 rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-300">
+                        {pick.label}
+                      </span>
+                    </div>
+                    <p className="text-xs leading-snug text-slate-300">{pick.tagline}</p>
                   </div>
                 </article>
               </a>
