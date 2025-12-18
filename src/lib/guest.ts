@@ -19,19 +19,25 @@ export type GuestFavorites = {
 };
 
 /**
- * Get or create a unique guest ID
+ * Get or create a unique guest ID (SSR-safe)
+ * Returns null during SSR instead of throwing
  */
-export function getOrCreateGuestId(): string {
+export function getOrCreateGuestId(): string | null {
   if (typeof window === 'undefined') {
-    throw new Error('getOrCreateGuestId can only be used in browser');
+    return null; // SSR-safe: return null instead of throwing
   }
 
-  let guestId = localStorage.getItem(GUEST_ID_KEY);
-  if (!guestId) {
-    guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-    localStorage.setItem(GUEST_ID_KEY, guestId);
+  try {
+    let guestId = localStorage.getItem(GUEST_ID_KEY);
+    if (!guestId) {
+      guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      localStorage.setItem(GUEST_ID_KEY, guestId);
+    }
+    return guestId;
+  } catch (error) {
+    console.error('Error accessing localStorage for guest ID:', error);
+    return null;
   }
-  return guestId;
 }
 
 /**

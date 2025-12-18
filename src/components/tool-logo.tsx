@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { getToolLogoUrl, getToolInitial } from "@/lib/getToolLogoUrl";
 
 type ToolForLogo = {
@@ -12,18 +12,23 @@ type ToolForLogo = {
 };
 
 type ToolLogoProps = {
-  tool: ToolForLogo;
+  tool: ToolForLogo | null | undefined;
   size?: number;
   className?: string;
 };
 
 /**
- * ToolLogo - Automatic logo loading with fallback
+ * ToolLogo - Automatic logo loading with fallback (SSR-safe)
  * 
  * Priority:
  * 1. tool.image (manual)
  * 2. logo.dev based on tool.website_url domain
  * 3. On error or missing data, shows placeholder (first letter)
+ * 
+ * SSR Safety:
+ * - Returns null during SSR (typeof window === 'undefined')
+ * - All URL parsing is in try/catch
+ * - Never throws
  * 
  * Usage:
  * <ToolLogo tool={tool} size={40} />
@@ -34,12 +39,17 @@ export function ToolLogo({
   className = "",
 }: ToolLogoProps) {
   const [imageError, setImageError] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
+  // SSR safety: only render after client mount
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Safe getters that never throw
   const logoUrl = useMemo(() => getToolLogoUrl(tool), [tool]);
   const initial = useMemo(() => getToolInitial(tool), [tool]);
-
-  // Show placeholder if no logoUrl or image failed
-  const showPlaceholder = !logoUrl || imageError;
+  const toolName = tool?.name ?? tool?.slug ?? "tool";
 
   const boxStyle = {
     width: size,
@@ -47,6 +57,20 @@ export function ToolLogo({
     minWidth: size,
     minHeight: size,
   } as const;
+
+  // SSR: return placeholder skeleton to avoid hydration mismatch
+  if (!isMounted) {
+    return (
+      <div
+        className={`flex items-center justify-center rounded-lg bg-slate-800/50 ${className}`}
+        style={boxStyle}
+        aria-label={`${toolName} logo`}
+      />
+    );
+  }
+
+  // Show placeholder if no logoUrl or image failed
+  const showPlaceholder = !logoUrl || imageError;
 
   if (showPlaceholder) {
     // Fallback: First letter placeholder
@@ -57,7 +81,7 @@ export function ToolLogo({
           ...boxStyle,
           fontSize: Math.round(size * 0.4),
         }}
-        aria-label={`${tool.name ?? tool.slug ?? "tool"} logo`}
+        aria-label={`${toolName} logo`}
       >
         {initial}
       </div>
@@ -69,7 +93,7 @@ export function ToolLogo({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={logoUrl}
-      alt={`${tool.name ?? tool.slug ?? "tool"} logo`}
+      alt={`${toolName} logo`}
       loading="lazy"
       referrerPolicy="no-referrer"
       onError={() => setImageError(true)}
