@@ -3,16 +3,37 @@
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { Search, Star } from "lucide-react";
-import { ROUTES, searchRoutes } from "@/lib/routes";
+import type { DbRoute } from "@/lib/db/routes";
 import { getFavorites, toggleRouteFavorite } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 
 export default function RoutesPage() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
+  const [routes, setRoutes] = useState<DbRoute[]>([]);
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Load routes from DB
+  useEffect(() => {
+    async function loadRoutes() {
+      try {
+        const response = await fetch("/api/routes/list");
+        if (response.ok) {
+          const data = await response.json();
+          setRoutes(data);
+        }
+      } catch (error) {
+        console.error("Error loading routes:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadRoutes();
+  }, []);
+
+  // Load favorites
   useEffect(() => {
     async function loadFavorites() {
       try {
@@ -25,9 +46,17 @@ export default function RoutesPage() {
     loadFavorites();
   }, [user]);
 
+  // Filter routes by search query
   const filteredRoutes = useMemo(() => {
-    return searchRoutes(searchQuery);
-  }, [searchQuery]);
+    if (!searchQuery.trim()) return routes;
+    
+    const query = searchQuery.toLowerCase();
+    return routes.filter(route =>
+      route.title.toLowerCase().includes(query) ||
+      route.description?.toLowerCase().includes(query) ||
+      route.tags?.some(tag => tag.toLowerCase().includes(query))
+    );
+  }, [routes, searchQuery]);
 
   const handleToggleFavorite = async (routeSlug: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -90,10 +119,16 @@ export default function RoutesPage() {
         </p>
 
         {/* Routes Grid */}
-        {filteredRoutes.length === 0 ? (
+        {isLoading ? (
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/40 p-8 text-center">
+            <p className="text-lg font-medium text-slate-400">Loading routes...</p>
+          </div>
+        ) : filteredRoutes.length === 0 ? (
           <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/40 p-8 text-center">
             <p className="text-lg font-medium text-slate-400">No routes found</p>
-            <p className="mt-2 text-sm text-slate-500">Try a different search term</p>
+            <p className="mt-2 text-sm text-slate-500">
+              {searchQuery ? "Try a different search term" : "No routes available"}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

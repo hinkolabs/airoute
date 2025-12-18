@@ -187,7 +187,7 @@ export async function GET(request: Request) {
             if (existing?.id) {
               routeDetail.status = "exists";
               routeDetail.route_id = existing.id;
-              insertedRoute.id = existing.id; // Use existing ID for steps
+              // Use existing route for steps
             } else {
               routeDetail.status = "error";
               routeDetail.error = "Already exists but cannot fetch ID";
@@ -211,7 +211,7 @@ export async function GET(request: Request) {
         }
 
         // 2) Insert route_tools for each step
-        const routeId = insertedRoute?.id || routeDetail.route_id;
+        const routeId = routeDetail.route_id || insertedRoute?.id;
         routeDetail.steps = [];
 
         if (routeId && route.steps) {

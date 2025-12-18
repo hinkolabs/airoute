@@ -3,19 +3,29 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Bookmark, ExternalLink } from "lucide-react";
-import type { RouteRecord } from "@/lib/routes";
-import type { ToolRecord } from "@/lib/tools";
+import type { DbRoute, DbRouteTool } from "@/lib/db/routes";
 import { getFavorites, toggleRouteFavorite } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { ToolLogo } from "@/components/tool-logo";
 
 interface RouteDetailContentProps {
-  route: RouteRecord;
-  allTools: ToolRecord[];
+  route: DbRoute;
+  best3Tools: Array<
+    DbRouteTool & {
+      tool: {
+        id: string;
+        name: string;
+        slug: string | null;
+        website_url: string | null;
+        image: string | null;
+        affiliate_url: string | null;
+      };
+    }
+  >;
 }
 
-export default function RouteDetailContent({ route, allTools }: RouteDetailContentProps) {
+export default function RouteDetailContent({ route, best3Tools }: RouteDetailContentProps) {
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,12 +80,6 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
     }
   };
 
-  // Find tools for each step
-  const stepsWithTools = route.steps.map((step) => {
-    const tool = allTools.find((t) => t.slug === step.toolSlug || t.id === step.toolSlug);
-    return { ...step, tool };
-  });
-
   return (
     <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6">
       <div className="mx-auto max-w-4xl">
@@ -129,22 +133,26 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
         <section className="mb-8">
           <h2 className="mb-4 text-xl font-bold text-slate-50">Workflow Steps</h2>
           <div className="space-y-6">
-            {stepsWithTools.map((step, index) => (
+            {best3Tools.map((step, index) => (
               <div
-                key={index}
+                key={step.id}
                 className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6"
               >
                 {/* Step Number & Title */}
                 <div className="mb-4 flex items-start gap-4">
                   <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-sm font-bold text-emerald-300">
-                    {index + 1}
+                    {step.position}
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-slate-50">{step.title}</h3>
+                    <h3 className="text-lg font-semibold text-slate-50">{step.step_title}</h3>
                     {step.tool && (
                       <div className="mt-2 flex items-center gap-2">
                         <ToolLogo
-                          tool={step.tool}
+                          tool={{
+                            name: step.tool.name,
+                            image: step.tool.image,
+                            website_url: step.tool.website_url,
+                          }}
                           size={24}
                         />
                         <span className="text-sm font-medium text-slate-300">{step.tool.name}</span>
@@ -154,22 +162,24 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
                 </div>
 
                 {/* Why */}
-                <p className="mb-4 text-sm leading-relaxed text-slate-400">{step.why}</p>
+                {step.step_why && (
+                  <p className="mb-4 text-sm leading-relaxed text-slate-400">{step.step_why}</p>
+                )}
 
                 {/* Prompt Example */}
-                {step.promptExample && (
+                {step.step_prompt_example && (
                   <div className="mb-4 rounded-lg bg-slate-950/50 p-4">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-400">
                       Prompt Example
                     </p>
-                    <p className="text-sm leading-relaxed text-slate-300">{step.promptExample}</p>
+                    <p className="text-sm leading-relaxed text-slate-300">{step.step_prompt_example}</p>
                   </div>
                 )}
 
                 {/* CTA */}
-                {step.tool && (step.tool.affiliate_url || step.tool.url) && (
+                {step.tool && (step.tool.affiliate_url || step.tool.website_url) && (
                   <AffiliateLinkButton
-                    href={step.tool.affiliate_url || step.tool.url || "#"}
+                    href={step.tool.affiliate_url || step.tool.website_url || "#"}
                     placement="route_detail"
                     toolSlug={step.tool.slug || step.tool.id}
                     variant="primary"
@@ -177,7 +187,7 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
                     className="w-full sm:w-auto"
                   >
                     <ExternalLink className="mr-2 h-4 w-4" />
-                    {step.ctaLabel || `Visit ${step.tool.name}`}
+                    {step.step_cta_label || `Visit ${step.tool.name}`}
                   </AffiliateLinkButton>
                 )}
               </div>
@@ -186,19 +196,21 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
         </section>
 
         {/* Guide Section */}
-        <section className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-          <h2 className="mb-4 text-xl font-bold text-slate-50">Pro Tips</h2>
-          <ul className="space-y-3">
-            {route.guide.bullets.map((bullet, index) => (
-              <li key={index} className="flex gap-3">
-                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">
-                  ✓
-                </span>
-                <span className="text-sm leading-relaxed text-slate-300">{bullet}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
+        {route.guide_bullets && route.guide_bullets.length > 0 && (
+          <section className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
+            <h2 className="mb-4 text-xl font-bold text-slate-50">Pro Tips</h2>
+            <ul className="space-y-3">
+              {route.guide_bullets.map((bullet, index) => (
+                <li key={index} className="flex gap-3">
+                  <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">
+                    ✓
+                  </span>
+                  <span className="text-sm leading-relaxed text-slate-300">{bullet}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {/* Related Guides CTA */}
         <section className="rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 to-slate-900/70 p-6 text-center">
