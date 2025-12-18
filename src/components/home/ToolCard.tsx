@@ -7,7 +7,6 @@ import Link from 'next/link';
 import { Tool } from '@/types/tool';
 import AffiliateLinkButton from '@/components/AffiliateLinkButton';
 import { ToolLogo } from '@/components/tool-logo';
-import { getToolLogoUrl } from '@/lib/logo';
 
 type ToolCardProps = {
   tool: Tool;
@@ -27,8 +26,7 @@ export function ToolCard({ tool }: ToolCardProps) {
       {/* 상단: 로고 + 이름 + 카테고리 배지 */}
       <div className="mb-3 flex items-start gap-3">
         <ToolLogo
-          src={getToolLogoUrl(tool)}
-          name={tool.name}
+          tool={tool}
           size={40}
         />
         <div className="flex flex-1 items-start justify-between gap-2">

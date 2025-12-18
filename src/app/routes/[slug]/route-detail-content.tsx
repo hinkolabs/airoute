@@ -9,7 +9,6 @@ import { getFavorites, toggleRouteFavorite } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { ToolLogo } from "@/components/tool-logo";
-import { getToolLogoUrl } from "@/lib/logo";
 
 interface RouteDetailContentProps {
   route: RouteRecord;
@@ -145,8 +144,7 @@ export default function RouteDetailContent({ route, allTools }: RouteDetailConte
                     {step.tool && (
                       <div className="mt-2 flex items-center gap-2">
                         <ToolLogo
-                          name={step.tool.name}
-                          src={getToolLogoUrl(step.tool)}
+                          tool={step.tool}
                           size={24}
                         />
                         <span className="text-sm font-medium text-slate-300">{step.tool.name}</span>

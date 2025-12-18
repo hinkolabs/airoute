@@ -14,6 +14,9 @@ export type Tool = {
   why_pick: string | null;
   tags: string[] | null;
   related_gear: string | null;
+  // For logo rendering
+  image?: string | null;
+  website_url?: string | null;
 };
 
 // 카테고리 필터용 상수

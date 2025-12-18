@@ -4,7 +4,6 @@ import { DbTool } from '@/types/db-tool';
 import Button from '@/components/ui/button';
 import AffiliateLinkButton from '@/components/AffiliateLinkButton';
 import { ToolLogo } from '@/components/tool-logo';
-import { getToolLogoUrl } from '@/lib/logo';
 
 interface ToolCardProps {
   tool: DbTool;
@@ -22,8 +21,7 @@ export default function ToolCard({ tool }: ToolCardProps) {
     >
       <div className="mb-3 flex items-start gap-3">
         <ToolLogo
-          src={getToolLogoUrl(tool)}
-          name={tool.name}
+          tool={tool}
           size={48}
         />
         <div className="flex flex-1 items-start justify-between gap-3">

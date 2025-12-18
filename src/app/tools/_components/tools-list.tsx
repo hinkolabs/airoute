@@ -141,6 +141,9 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
         detailsHref: tool.slug ? `/tools/${tool.slug}` : undefined,
         isFavorited: favoriteSlugs.includes(toolSlug),
         onFavoriteToggle: () => handleFavoriteToggle(toolSlug),
+        // For logo rendering
+        image: tool.image,
+        website_url: tool.websiteUrl || tool.url,
       };
     }
   );

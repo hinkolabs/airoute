@@ -21,6 +21,10 @@ export type ToolRecord = {
   best_for?: string | null;
   why_pick?: string | null;
   related_gear?: string | null;
+  // For logo rendering
+  image?: string | null;
+  websiteUrl?: string | null;
+  website_url?: string | null;
 };
 
 export async function getActiveTools(): Promise<ToolRecord[]> {
@@ -46,7 +50,9 @@ export async function getActiveTools(): Promise<ToolRecord[]> {
       desc_ko,
       desc_simple_en,
       task_category,
-      best_for
+      best_for,
+      image,
+      website_url
     `
     )
     .eq("is_active", true)
@@ -87,7 +93,9 @@ export async function getToolBySlug(slug: string): Promise<ToolRecord | null> {
       task_category,
       best_for,
       why_pick,
-      related_gear
+      related_gear,
+      image,
+      website_url
     `
     )
     .eq("slug", slug)

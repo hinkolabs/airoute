@@ -8,7 +8,6 @@ import type { ToolRecord } from "@/lib/tools";
 import { toggleToolFavorite, getFavorites } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 import { ToolLogo } from "@/components/tool-logo";
-import { getToolLogoUrl } from "@/lib/logo";
 import { Toast } from "@/components/toast";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { getToolDetailContent } from "@/lib/tool-detail-content";
@@ -144,8 +143,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         {/* Tool Name & Logo */}
         <header className="mb-6 flex items-start gap-4">
           <ToolLogo
-            src={getToolLogoUrl(tool)}
-            name={tool.name}
+            tool={tool}
             size={56}
           />
           <div className="flex-1">

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { getFavorites, toggleToolFavorite, type FavoritesData } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 import { ToolLogo } from "@/components/tool-logo";
-import { getToolLogoUrl } from "@/lib/logo";
 import { Toast } from "@/components/toast";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { getLimits, clampFavorites } from "@/lib/limits";
@@ -183,8 +182,7 @@ export function MyToolboxSection() {
                           {/* Tool Logo */}
                           <div className="transition-transform group-hover:scale-110">
                             <ToolLogo
-                              src={null}
-                              name={toolSlug}
+                              tool={{ slug: toolSlug, name: toolSlug }}
                               size={40}
                             />
                           </div>

@@ -6,7 +6,6 @@ import Button from '@/components/ui/button';
 import Chip from '@/components/ui/Chip';
 import AffiliateLinkButton from '@/components/AffiliateLinkButton';
 import { ToolLogo } from '@/components/tool-logo';
-import { getToolLogoUrl } from '@/lib/logo';
 
 export interface Tool {
   id: string;
@@ -45,8 +44,7 @@ export default function ToolCard({
       {/* Header with logo & badge */}
       <div className="mb-3 flex items-start gap-3">
         <ToolLogo
-          src={getToolLogoUrl({ link: tool.link } as any)}
-          name={tool.name}
+          tool={{ name: tool.name, website_url: tool.link }}
           size={48}
         />
         <div className="flex flex-1 items-start justify-between">

@@ -12,6 +12,7 @@ import { Button } from "./ui/button";
 import { Home, FileText, Sparkles, User, Star } from "lucide-react";
 import { useTheme, type Theme } from "@/app/_design/providers/theme-provider";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
+import { ToolLogo } from "@/components/tool-logo";
 
 // Re-export for easy use in pages
 export const PageShell = BasePageShell;
@@ -111,6 +112,9 @@ export type ToolCardProps = {
   variant?: "default" | "compact";
   isFavorited?: boolean; // for favorite toggle
   onFavoriteToggle?: () => void; // favorite toggle handler
+  // For logo rendering
+  image?: string | null;
+  website_url?: string | null;
 };
 
 // Helper: Generate "Key use" text from category/tags
@@ -148,6 +152,8 @@ export function ToolCard({
   variant = "default",
   isFavorited = false,
   onFavoriteToggle,
+  image,
+  website_url,
 }: ToolCardProps) {
   const { theme } = useTheme();
   const isCompact = variant === "compact";
@@ -197,12 +203,20 @@ export function ToolCard({
         </button>
       )}
 
-      {/* Header: Name + Badge */}
-      <div className={cn("flex items-start justify-between gap-3", isCompact ? "mb-2" : "mb-3", onFavoriteToggle && "pr-8")}>
-        <div className="flex-1 space-y-1.5">
+      {/* Header: Logo + Name + Badge */}
+      <div className={cn("flex items-start gap-3", isCompact ? "mb-2" : "mb-3", onFavoriteToggle && "pr-8")}>
+        {/* Tool Logo */}
+        <div className="shrink-0">
+          <ToolLogo
+            tool={{ image, website_url, name, slug }}
+            size={40}
+          />
+        </div>
+        
+        <div className="flex-1 space-y-1.5 min-w-0">
           <h3
             className={cn(
-              "font-semibold",
+              "font-semibold truncate",
               isCompact ? "text-sm sm:text-base" : "text-base",
               theme === "day" ? "text-slate-900" : "text-slate-50"
             )}

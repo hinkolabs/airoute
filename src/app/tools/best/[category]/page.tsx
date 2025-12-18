@@ -3,7 +3,6 @@ import { AnimatedMatchScore } from "./_components/animated-match-score";
 import { supabaseServerClient } from "@/lib/supabase/server";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { ToolLogo } from "@/components/tool-logo";
-import { getToolLogoUrl } from "@/lib/logo";
 
 // Force external links for these tools (no internal detail)
 const FORCE_EXTERNAL_SLUGS = new Set(["filmora", "prowritingaid"]);
@@ -567,16 +566,19 @@ export default async function BestCategoryPage({
   const meta = CATEGORY_META[categoryKey];
   const picks = BEST_PICKS[categoryKey] ?? [];
 
-  // Fetch affiliate URLs from Supabase for each pick
+  // Fetch tool data from Supabase for each pick
   const names = picks.map((p) => p.name);
   const { data: toolsData } = await supabaseServerClient
     .from("tools")
-    .select("id, name, affiliate_url")
+    .select("id, name, slug, affiliate_url, url, image, logoUrl, websiteUrl")
     .in("name", names);
 
-  // Create a slug -> affiliate_url map (using name for lookup)
+  // Create maps for affiliate_url and full tool data (using name for lookup)
   const urlMap = new Map(
     toolsData?.map((t) => [t.name, t.affiliate_url]) ?? []
+  );
+  const toolMap = new Map(
+    toolsData?.map((t) => [t.name, t]) ?? []
   );
 
   return (
@@ -613,7 +615,8 @@ export default async function BestCategoryPage({
             };
             const badge = badgeConfig[proof.badgeType];
 
-            // Get affiliate URL: force external for specific slugs, otherwise DB
+            // Get tool data and affiliate URL
+            const toolData = toolMap.get(pick.name);
             let affiliateUrl = urlMap.get(pick.name);
             if (FORCE_EXTERNAL_SLUGS.has(pick.slug)) {
               affiliateUrl = AFFILIATE_URL_OVERRIDES[pick.slug] || affiliateUrl;
@@ -651,8 +654,7 @@ export default async function BestCategoryPage({
                   {/* Tool Logo */}
                   <div className="shrink-0">
                     <ToolLogo
-                      src={getToolLogoUrl({ slug: pick.slug, name: pick.name } as any)}
-                      name={pick.name}
+                      tool={toolData || { name: pick.name, slug: pick.slug }}
                       size={32}
                       className="mt-0.5"
                     />
@@ -759,8 +761,7 @@ export default async function BestCategoryPage({
                   {/* Tool Logo */}
                   <div className="shrink-0">
                     <ToolLogo
-                      src={getToolLogoUrl({ slug: pick.slug, name: pick.name } as any)}
-                      name={pick.name}
+                      tool={toolData || { name: pick.name, slug: pick.slug }}
                       size={32}
                       className="mt-0.5"
                     />
