@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "path";
 
 const nextConfig: NextConfig = {
   images: {
@@ -8,6 +9,11 @@ const nextConfig: NextConfig = {
         hostname: "img.logo.dev",
       },
     ],
+  },
+  experimental: {
+    turbo: {
+      root: path.resolve(__dirname),
+    },
   },
 };
 
