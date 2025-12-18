@@ -70,6 +70,9 @@ export function MyToolboxSection() {
   }, [authStatus]);
 
   // Load route metadata when savedRouteSlugs changes
+  // Use string representation to avoid infinite loop from array reference changes
+  const savedRouteSlugsKey = savedRouteSlugs.join(',');
+  
   useEffect(() => {
     async function loadRouteMetadata() {
       if (savedRouteSlugs.length === 0) {
@@ -100,7 +103,8 @@ export function MyToolboxSection() {
       }
     }
     loadRouteMetadata();
-  }, [savedRouteSlugs]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedRouteSlugsKey]); // Use string key instead of array to prevent infinite loop
 
   const handleRemoveTool = async (toolSlug: string) => {
     // Optimistic update

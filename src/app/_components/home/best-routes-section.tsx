@@ -27,16 +27,24 @@ export function BestRoutesSection() {
   
   // Guard to prevent duplicate fetches
   const didFetchRef = useRef(false);
+  const instanceIdRef = useRef(Math.random().toString(36).substring(7));
 
   useEffect(() => {
+    const instanceId = instanceIdRef.current;
+    console.log(`[BestRoutesSection ${instanceId}] useEffect called, didFetch=${didFetchRef.current}`);
+    
     // Prevent duplicate calls
-    if (didFetchRef.current) return;
+    if (didFetchRef.current) {
+      console.log(`[BestRoutesSection ${instanceId}] Skipping - already fetched`);
+      return;
+    }
     didFetchRef.current = true;
 
     const abortController = new AbortController();
 
     (async () => {
       try {
+        console.log(`[BestRoutesSection ${instanceId}] Starting fetch to /api/routes/featured`);
         setLoading(true);
         setError(false);
 
@@ -50,13 +58,15 @@ export function BestRoutesSection() {
         }
 
         const data = await res.json();
+        console.log(`[BestRoutesSection ${instanceId}] Fetch success, routes count:`, data.routes?.length ?? 0);
         setRoutes(data.routes ?? []);
       } catch (e) {
         // Don't set error on abort
         if (e instanceof Error && e.name === "AbortError") {
+          console.log(`[BestRoutesSection ${instanceId}] Fetch aborted`);
           return;
         }
-        console.error("[BestRoutesSection] Fetch error:", e);
+        console.error(`[BestRoutesSection ${instanceId}] Fetch error:`, e);
         setError(true);
         setRoutes([]);
       } finally {
@@ -66,6 +76,7 @@ export function BestRoutesSection() {
 
     // Cleanup: abort on unmount
     return () => {
+      console.log(`[BestRoutesSection ${instanceId}] Cleanup - aborting fetch`);
       abortController.abort();
     };
   }, []); // Empty deps - only run once on mount
