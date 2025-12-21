@@ -27,7 +27,7 @@ export default async function Page() {
 
   // Fetch latest 3 guides for home page (lightweight)
   // Only select columns that exist in DB schema
-  let latestGuides = [];
+  let latestGuides: any[] = [];
   try {
     const { data, error } = await supabaseServerClient
       .from("guides_public")
