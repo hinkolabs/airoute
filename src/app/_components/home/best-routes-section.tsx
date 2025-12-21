@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Scissors, Sparkles, Layout, FileText, AudioWaveform } from "lucide-react";
 
 // ===========================
 // TYPE
@@ -15,6 +16,14 @@ type FeaturedRoute = {
 
 type BestRoutesSectionProps = {
   routes: FeaturedRoute[];
+};
+
+const ROUTE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  "✂️": Scissors,
+  "✨": Sparkles,
+  "📊": Layout,
+  "📝": FileText,
+  "🎵": AudioWaveform,
 };
 
 // ===========================
@@ -44,30 +53,33 @@ export function BestRoutesSection({ routes }: BestRoutesSectionProps) {
 
         {/* Routes Grid */}
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 lg:gap-3">
-          {routes.map((route) => (
-            <Link
-              key={route.id}
-              href={`/routes/${route.slug}`}
-              className="group relative flex min-h-[50px] items-center gap-2.5 rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2.5 transition hover:border-emerald-400/30 hover:bg-slate-900/70"
-            >
-              {/* Featured Badge */}
-              {route.featured && (
-                <span className="pointer-events-none absolute right-2 top-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
-                  Featured
-                </span>
-              )}
+          {routes.map((route) => {
+            const Icon = route.icon && ROUTE_ICON_MAP[route.icon] ? ROUTE_ICON_MAP[route.icon] : Sparkles;
+            return (
+              <Link
+                key={route.id}
+                href={`/routes/${route.slug}`}
+                className="group relative flex min-h-[50px] items-center gap-2.5 rounded-lg border border-slate-800/70 bg-slate-900/50 px-3 py-2.5 transition hover:border-emerald-400/30 hover:bg-slate-900/70"
+              >
+                {/* Featured Badge */}
+                {route.featured && (
+                  <span className="pointer-events-none absolute right-2 top-2 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+                    Featured
+                  </span>
+                )}
 
-              {/* Icon */}
-              <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-lg transition-transform group-hover:scale-105">
-                {route.icon || "🚀"}
-              </div>
+                {/* Icon */}
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
+                  <Icon className="h-4 w-4 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                </div>
 
-              {/* Title */}
-              <h3 className="flex-1 text-sm font-medium text-slate-50">
-                {route.title}
-              </h3>
-            </Link>
-          ))}
+                {/* Title */}
+                <h3 className="flex-1 text-sm font-medium text-slate-50">
+                  {route.title}
+                </h3>
+              </Link>
+            );
+          })}
         </div>
       </div>
     </section>

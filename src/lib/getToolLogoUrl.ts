@@ -25,17 +25,25 @@ type ToolForLogo = {
  * Returns null on any error - never throws
  */
 function extractDomain(url: string | null | undefined): string | null {
-  // Guard: must be a string starting with http
-  if (!url || typeof url !== 'string') return null;
-  if (!url.startsWith('http://') && !url.startsWith('https://')) return null;
+  if (!url) return null;
   
-  try {
-    const urlObj = new URL(url);
-    return urlObj.hostname.replace(/^www\./, '');
-  } catch {
-    // Invalid URL - return null, never throw
-    return null;
-  }
+  const trimmed = url.trim();
+  if (!trimmed) return null;
+
+  const tryParse = (value: string): URL | null => {
+    try { return new URL(value); } catch { return null; }
+  };
+
+  const u1 = tryParse(trimmed);
+  const u2 = u1 ?? tryParse(`https://${trimmed}`);
+  const hostname = u2?.hostname?.toLowerCase() ?? "";
+
+  if (!hostname) return null;
+  const cleaned = hostname.startsWith("www.") ? hostname.slice(4) : hostname;
+
+  // basic guard
+  if (!cleaned.includes(".")) return null;
+  return cleaned;
 }
 
 /**

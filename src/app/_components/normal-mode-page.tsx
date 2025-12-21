@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Image, PenLine, Film, Music, Mic, Code } from "lucide-react";
 import type { ToolRecord } from "@/lib/tools";
 import { BestRoutesSection } from "./home/best-routes-section";
 import { MyToolboxSection } from "./home/my-toolbox-section";
@@ -56,37 +57,37 @@ const CATEGORIES = [
     id: "image-design",
     title: "Image & Design",
     description: "Create logos, posters, and polished UI designs",
-    icon: "🖼️",
+    Icon: Image,
   },
   {
     id: "writing",
     title: "Writing",
     description: "Write blogs, marketing copy, and scripts faster",
-    icon: "✏️",
+    Icon: PenLine,
   },
   {
     id: "video",
     title: "Video",
     description: "Edit and generate professional videos easily",
-    icon: "🎬",
+    Icon: Film,
   },
   {
     id: "audio",
     title: "Audio",
     description: "Produce music, podcasts, and background tracks",
-    icon: "🎵",
+    Icon: Music,
   },
   {
     id: "voice",
     title: "Voice",
     description: "Generate realistic voice and dubbing instantly",
-    icon: "🎙️",
+    Icon: Mic,
   },
   {
     id: "coding",
     title: "Coding",
     description: "Get code assistance and debug efficiently",
-    icon: "💻",
+    Icon: Code,
   },
 ];
 
@@ -147,32 +148,35 @@ function CategorySection() {
       <div className="mx-auto max-w-5xl">
         <SectionHeader title="Categories" moreHref="/categories" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
-        {CATEGORIES.map((category) => (
-          <Link
-            key={category.id}
-            href={`/tools/best/${category.id}`}
-            className="group flex min-h-[145px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
-          >
-            {/* Icon + Title */}
-            <div className="flex-1">
-              <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
-                {category.icon}
+        {CATEGORIES.map((category) => {
+          const Icon = category.Icon;
+          return (
+            <Link
+              key={category.id}
+              href={`/tools/best/${category.id}`}
+              className="group flex min-h-[145px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+            >
+              {/* Icon + Title */}
+              <div className="flex-1">
+                <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
+                  <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                </div>
+                <h3 className="mb-1.5 text-sm font-semibold leading-tight text-slate-50">
+                  {category.title}
+                </h3>
+                <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
+                  {category.description}
+                </p>
               </div>
-              <h3 className="mb-1.5 text-sm font-semibold leading-tight text-slate-50">
-                {category.title}
-              </h3>
-              <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
-                {category.description}
-              </p>
-            </div>
 
-            {/* Bottom CTA (single line) */}
-            <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-emerald-400/80">
-              <span>View best 3 tools</span>
-              <span className="transition group-hover:translate-x-0.5">→</span>
-            </div>
-          </Link>
-        ))}
+              {/* Bottom CTA (single line) */}
+              <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-emerald-400/80">
+                <span>View best 3 tools</span>
+                <span className="transition group-hover:translate-x-0.5">→</span>
+              </div>
+            </Link>
+          );
+        })}
         </div>
       </div>
     </section>
