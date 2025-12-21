@@ -12,12 +12,18 @@ import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSavedRoutes, USER_ROUTE_LIMIT } from "@/lib/hooks/use-saved-routes";
 
 // ===========================
-// ROUTE TYPE
+// TYPES
 // ===========================
 type RouteData = {
   slug: string;
   title: string;
   icon: string | null;
+};
+
+type ToolData = {
+  slug: string;
+  name: string;
+  website_url: string | null;
 };
 
 // ===========================
@@ -28,6 +34,7 @@ export function MyToolboxSection() {
   
   // Tools: use existing favorites system
   const [toolFavorites, setToolFavorites] = useState<string[]>([]);
+  const [toolsData, setToolsData] = useState<ToolData[]>([]);
   const [toolsLoading, setToolsLoading] = useState(true);
   
   // Routes: use new hybrid hook (localStorage for guest, DB for user)
@@ -51,7 +58,7 @@ export function MyToolboxSection() {
   // Loading state: combined
   const loading = toolsLoading || routesLoading;
 
-  // Load tool favorites
+  // Load tool favorites and metadata
   useEffect(() => {
     async function loadToolFavorites() {
       try {
@@ -60,6 +67,35 @@ export function MyToolboxSection() {
         const currentLimits = getLimits(authStatus);
         const clamped = clampFavorites(data, currentLimits);
         setToolFavorites(clamped.tools);
+
+        // Fetch tool metadata from Supabase
+        if (clamped.tools.length > 0) {
+          const supabase = getSupabaseBrowserClient();
+          const { data: tools, error } = await supabase
+            .from('tools')
+            .select('slug, name, website_url')
+            .in('slug', clamped.tools);
+          
+          if (error) {
+            console.error("Error fetching tools metadata:", error);
+            setToolsData([]);
+          } else if (tools) {
+            // Dev-only: confirm website_url is present
+            if (process.env.NODE_ENV !== "production") {
+              tools.forEach(t => {
+                console.log("[MyToolbox]", t.slug, "website_url:", t.website_url);
+              });
+            }
+            
+            // Maintain order from clamped.tools
+            const orderedTools = clamped.tools
+              .map(slug => tools.find(t => t.slug === slug))
+              .filter((t): t is ToolData => t !== undefined);
+            setToolsData(orderedTools);
+          }
+        } else {
+          setToolsData([]);
+        }
       } catch (error) {
         console.error("Error loading tool favorites:", error);
       } finally {
@@ -200,6 +236,7 @@ export function MyToolboxSection() {
               ) : (
                 slots.map((i) => {
                   const toolSlug = savedTools[i];
+                  const toolData = toolsData.find(t => t.slug === toolSlug);
                   
                   if (toolSlug) {
                     // Saved tool slot with remove button
@@ -225,14 +262,14 @@ export function MyToolboxSection() {
                           {/* Tool Logo */}
                           <div className="transition-transform group-hover:scale-110">
                             <ToolLogo
-                              tool={{ slug: toolSlug, name: toolSlug }}
+                              tool={toolData ?? { slug: toolSlug, name: toolSlug, website_url: null }}
                               size={40}
                             />
                           </div>
                           
                           {/* Tool Name (truncated) */}
                           <span className="line-clamp-2 text-center text-[10px] font-medium leading-tight text-slate-300">
-                            {toolSlug}
+                            {toolData?.name ?? toolSlug}
                           </span>
                         </Link>
                       </div>

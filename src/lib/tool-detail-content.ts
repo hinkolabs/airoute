@@ -106,3 +106,7 @@ export function getToolDetailContent(slug: string): ToolDetailContent | null {
   return TOOL_DETAIL_CONTENT[slug] || null;
 }
 
+
+
+
+

@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "img.logo.dev",
+        pathname: "/**",
       },
     ],
   },

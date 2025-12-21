@@ -202,3 +202,7 @@ ALTER TABLE public.route_tools ENABLE ROW LEVEL SECURITY;
 SELECT COUNT(*) as routes_count FROM public.routes;
 SELECT COUNT(*) as route_tools_count FROM public.route_tools;
 
+
+
+
+

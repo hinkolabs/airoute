@@ -2,12 +2,20 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Star, ExternalLink } from "lucide-react";
+import { Star, ExternalLink, Scissors, Sparkles, Layout, FileText, AudioWaveform } from "lucide-react";
 import type { DbRoute, DbRouteTool } from "@/lib/db/routes";
 import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
 import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 import { ToolLogo } from "@/components/tool-logo";
+
+const ROUTE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  "✂️": Scissors,
+  "✨": Sparkles,
+  "📊": Layout,
+  "📝": FileText,
+  "🎵": AudioWaveform,
+};
 
 interface RouteDetailContentProps {
   route: DbRoute;
@@ -73,8 +81,15 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
         <header className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
           {/* Icon + Save Button Row */}
           <div className="mb-4 flex items-center gap-3">
-            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-3xl">
-              {route.icon || "🚀"}
+            <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10">
+              {route.icon && ROUTE_ICON_MAP[route.icon] ? (
+                (() => {
+                  const Icon = ROUTE_ICON_MAP[route.icon];
+                  return <Icon className="h-7 w-7 text-slate-400" />;
+                })()
+              ) : (
+                <Sparkles className="h-7 w-7 text-slate-400" />
+              )}
             </div>
             {/* Save Button - Star icon to match All Routes page */}
             <button
@@ -121,6 +136,35 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
             </div>
           )}
         </header>
+
+        {/* Best Tools Section */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-xl font-bold text-slate-50">Best Tools for This Route</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-200 border border-emerald-500/20 uppercase font-semibold tracking-wide">
+              Recommended
+            </span>
+          </div>
+          <p className="mb-4 text-sm text-slate-400">
+            The 3 tools that work best together to complete this workflow.
+          </p>
+          {best3Tools.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {best3Tools.map((item) => (
+                item.tool && (
+                  <span
+                    key={item.id}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90"
+                  >
+                    {item.tool.name}
+                  </span>
+                )
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 mt-2">Recommended tools will appear here.</p>
+          )}
+        </section>
 
         {/* Steps */}
         <section className="mb-8">

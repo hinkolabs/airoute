@@ -2,10 +2,18 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
-import { Search, Star } from "lucide-react";
+import { Search, Star, Scissors, Sparkles, Layout, FileText, AudioWaveform } from "lucide-react";
 import type { DbRoute } from "@/lib/db/routes";
 import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
+
+const ROUTE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  "✂️": Scissors,
+  "✨": Sparkles,
+  "📊": Layout,
+  "📝": FileText,
+  "🎵": AudioWaveform,
+};
 
 export default function RoutesPage() {
   const { user } = useAuth();
@@ -133,8 +141,15 @@ export default function RoutesPage() {
                   </button>
 
                   {/* Icon */}
-                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-2xl">
-                    {route.icon || "🚀"}
+                  <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-500/10">
+                    {route.icon && ROUTE_ICON_MAP[route.icon] ? (
+                      (() => {
+                        const Icon = ROUTE_ICON_MAP[route.icon];
+                        return <Icon className="h-6 w-6 text-slate-400 transition-colors group-hover:text-emerald-400" />;
+                      })()
+                    ) : (
+                      <Sparkles className="h-6 w-6 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                    )}
                   </div>
 
                   {/* Title */}

@@ -570,8 +570,15 @@ export default async function BestCategoryPage({
   const names = picks.map((p) => p.name);
   const { data: toolsData } = await supabaseServerClient
     .from("tools")
-    .select("id, name, slug, affiliate_url, url, image, logoUrl, websiteUrl")
+    .select("id, name, slug, affiliate_url, url, image, website_url")
     .in("name", names);
+
+  // Dev-only: log website_url for debugging
+  if (process.env.NODE_ENV !== "production") {
+    for (const t of toolsData ?? []) {
+      console.log("[LOGO_DEBUG]", t.slug, t.website_url);
+    }
+  }
 
   // Create maps for affiliate_url and full tool data (using name for lookup)
   const urlMap = new Map(
@@ -654,7 +661,7 @@ export default async function BestCategoryPage({
                   {/* Tool Logo */}
                   <div className="shrink-0">
                     <ToolLogo
-                      tool={toolData || { name: pick.name, slug: pick.slug }}
+                      tool={toolData || { name: pick.name, slug: pick.slug, website_url: undefined }}
                       size={32}
                       className="mt-0.5"
                     />
@@ -761,7 +768,7 @@ export default async function BestCategoryPage({
                   {/* Tool Logo */}
                   <div className="shrink-0">
                     <ToolLogo
-                      tool={toolData || { name: pick.name, slug: pick.slug }}
+                      tool={toolData || { name: pick.name, slug: pick.slug, website_url: undefined }}
                       size={32}
                       className="mt-0.5"
                     />

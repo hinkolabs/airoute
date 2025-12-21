@@ -107,6 +107,10 @@ export async function getToolBySlug(slug: string): Promise<ToolRecord | null> {
     return null;
   }
 
+  if (!data) {
+    console.log(`[getToolBySlug] Tool not found in DB: ${slug}`);
+  }
+
   return data ?? null;
 }
 

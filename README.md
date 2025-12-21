@@ -68,11 +68,29 @@ Airoute uses **5 core tables** in Supabase:
 |-------|---------|
 | `users` | User profiles, subscription plan, credits |
 | `tools` | Master data of AI tools (content, tags, badges, ranking) |
-| `saved_tools` | User bookmarks (“My Toolbox”) |
+| `routes` | Workflow/task sequences (e.g., "Turn long videos into Shorts") |
+| `route_tools` | Route → Tool mapping (Best3 steps per route) |
+| `saved_tools` | User bookmarks ("My Toolbox") |
 | `credit_logs` | Credit usage & history for premium features |
 | `prompts` | Premium prompt library connected to each tool |
 
 All schemas are stored and maintained through Supabase SQL.
+
+### Row Level Security (RLS) Policy
+
+**IMPORTANT**: The following tables are **publicly readable** (anonymous users can SELECT):
+- `tools`
+- `routes`
+- `route_tools`
+
+This is **intentional for Airoute MVP** to allow:
+- Fast public browsing without authentication
+- Server-side rendering (SSR) with anon key
+- No 404 errors for unauthenticated users
+
+⚠️ **Do NOT remove `tools_public_read`, `routes_public_read`, or `route_tools_public_read` policies** or the entire site will break (all tools/routes will return 404).
+
+Write operations (INSERT/UPDATE/DELETE) are restricted to authenticated users or service role.
 
 ---
 
