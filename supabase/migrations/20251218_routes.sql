@@ -57,6 +57,14 @@ CREATE INDEX IF NOT EXISTS idx_route_tools_tool ON public.route_tools(tool_id);
 -- ============================================================
 -- Enable Row Level Security (public read, admin write)
 -- ============================================================
+-- NOTE (RLS):
+-- routes / route_tools are publicly readable (anon SELECT allowed).
+-- This is intentional for Airoute MVP to enable:
+-- - Fast public browsing without authentication
+-- - Server-side rendering with anon key
+-- - No 404 errors for unauthenticated users
+-- Do NOT remove these public read policies or all routes will 404.
+-- ============================================================
 ALTER TABLE public.routes ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.route_tools ENABLE ROW LEVEL SECURITY;
 

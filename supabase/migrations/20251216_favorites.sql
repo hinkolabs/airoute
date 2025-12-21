@@ -65,3 +65,7 @@ CREATE INDEX IF NOT EXISTS idx_favorites_tools_created_at ON public.favorites_to
 CREATE INDEX IF NOT EXISTS idx_favorites_routes_user_id ON public.favorites_routes(user_id);
 CREATE INDEX IF NOT EXISTS idx_favorites_routes_created_at ON public.favorites_routes(created_at DESC);
 
+
+
+
+

@@ -122,6 +122,35 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
           )}
         </header>
 
+        {/* Best Tools Section */}
+        <section className="mb-8">
+          <div className="flex items-center gap-2 mb-2">
+            <h2 className="text-xl font-bold text-slate-50">Best Tools for This Route</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-200 border border-emerald-500/20 uppercase font-semibold tracking-wide">
+              Recommended
+            </span>
+          </div>
+          <p className="mb-4 text-sm text-slate-400">
+            The 3 tools that work best together to complete this workflow.
+          </p>
+          {best3Tools.length > 0 ? (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {best3Tools.map((item) => (
+                item.tool && (
+                  <span
+                    key={item.id}
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90"
+                  >
+                    {item.tool.name}
+                  </span>
+                )
+              ))}
+            </div>
+          ) : (
+            <p className="text-xs text-slate-500 mt-2">Recommended tools will appear here.</p>
+          )}
+        </section>
+
         {/* Steps */}
         <section className="mb-8">
           <h2 className="mb-4 text-xl font-bold text-slate-50">Workflow Steps</h2>

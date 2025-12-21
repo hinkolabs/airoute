@@ -20,7 +20,8 @@ export async function GET() {
       .select("id, slug, title, description, icon, featured, tags, guide_bullets, manual_order, created_at")
       .eq("featured", true)
       .order("manual_order", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: false });
+      .order("created_at", { ascending: false })
+      .limit(3);
 
     if (error) {
       console.error("[/api/routes/featured] Supabase error:", error);
@@ -33,4 +34,5 @@ export async function GET() {
     return NextResponse.json({ routes: [], error: "Internal server error" }, { status: 500 });
   }
 }
+
 

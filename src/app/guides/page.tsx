@@ -1,18 +1,6 @@
 import { Metadata } from "next";
-import Link from "next/link";
-import { supabaseServerClient } from "@/lib/supabase/server";
-
-// Force dynamic rendering - always fetch fresh data from Supabase
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-type GuideRecord = {
-  id: string;
-  slug: string;
-  title: string;
-  excerpt: string | null;
-  created_at: string;
-};
+import GuidesListClient from "./_components/guides-list-client";
+import { createClient } from "@supabase/supabase-js";
 
 export const metadata: Metadata = {
   title: "AI Tool Guides - Airoute",
@@ -27,56 +15,57 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function GuidesPage() {
-  const { data, error } = await supabaseServerClient
-    .from("guides")
-    .select("id, slug, title, excerpt, created_at")
-    .order("created_at", { ascending: false });
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { persistSession: false } }
+);
 
-  if (error || !data) {
+export default async function GuidesPage() {
+  try {
+    const { data, error } = await supabase
+      .from("guides")
+      .select("id,slug,title,excerpt,guide_type,primary_intent,taxonomy,created_at,cta_type,cta_tool_slug,cta_route_slug")
+      .eq("status", "approved") // Only show approved guides
+      .eq("lang", "en") // Public pages default to EN only
+      .order("created_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(10);
+
+    if (error) {
+      console.error("[guides/page] Supabase error:", error.message);
+      return (
+        <div className="mx-auto max-w-2xl px-4 py-8 text-white/80">
+          Failed to load guides.
+        </div>
+      );
+    }
+
+    const items = data ?? [];
+    const last = items.length ? items[items.length - 1] : null;
+    const initialCursor =
+      items.length === 10 && last ? { createdAt: last.created_at, id: last.id } : null;
+
     return (
-      <div className="px-4 py-12 text-center text-slate-400">
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className="mb-6">
+          <h1 className="mb-3 text-2xl font-bold text-white">Getting started with AI</h1>
+          <p className="max-w-lg text-sm leading-relaxed text-white/70">
+            Simple, step-by-step guides
+            <br />
+            to help you choose the right AI tools
+          </p>
+        </div>
+        <GuidesListClient initialItems={items as any} initialCursor={initialCursor as any} />
+      </div>
+    );
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : "Unknown error";
+    console.error("[guides/page] Server error:", message);
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-8 text-white/80">
         Failed to load guides.
       </div>
     );
   }
-
-  return (
-    <div className="min-h-[calc(100vh-80px)] bg-slate-950 px-4 pb-24 pt-3">
-      <div className="mx-auto flex max-w-5xl flex-col gap-6">
-        <header className="space-y-2">
-          <h1 className="text-2xl font-semibold text-slate-50 sm:text-3xl">
-            Guides
-          </h1>
-          <p className="text-sm text-slate-400 sm:text-base">
-            Practical guides to help you choose the right AI tools faster.
-          </p>
-        </header>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {data.map((guide: GuideRecord) => (
-            <Link
-              key={guide.id}
-              href={`/guides/${guide.slug}`}
-              className="group rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition hover:border-slate-700 hover:bg-slate-900/40"
-            >
-              <div className="flex flex-col gap-2">
-                <h2 className="text-base font-semibold text-slate-100 group-hover:text-white sm:text-lg">
-                  {guide.title}
-                </h2>
-                {guide.excerpt && (
-                  <p className="text-sm text-slate-400 line-clamp-3">
-                    {guide.excerpt}
-                  </p>
-                )}
-                <span className="mt-2 text-xs text-slate-500">
-                  {new Date(guide.created_at).toLocaleDateString()}
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
 }

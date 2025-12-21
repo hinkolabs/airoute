@@ -1,12 +1,51 @@
-"use client";
-
 import Link from "next/link";
 import type { ToolRecord } from "@/lib/tools";
 import { BestRoutesSection } from "./home/best-routes-section";
 import { MyToolboxSection } from "./home/my-toolbox-section";
 
+type FeaturedRoute = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  icon: string | null;
+  featured: boolean;
+  tags: string[] | null;
+};
+
+type GuideRecord = {
+  slug: string;
+  title: string;
+  excerpt: string | null;
+  guide_type: string | null;
+  primary_intent: string | null;
+  taxonomy?: string | null;
+  created_at: string;
+  cta_type: string | null;
+  cta_route_slug: string | null;
+  cta_tool_slug: string | null;
+};
+
+// Pretty label: convert underscore/hyphen to space, then Title Case
+function prettyLabel(input?: string | null): string {
+  if (!input) return "";
+  return input
+    .replace(/[_-]+/g, " ")
+    .trim()
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+}
+
+// Format date to YYYY-MM-DD
+function formatDate(iso: string): string {
+  return new Date(iso).toISOString().slice(0, 10);
+}
+
 type NormalModePageProps = {
   tools: ToolRecord[];
+  featuredRoutes: FeaturedRoute[];
+  latestGuides: GuideRecord[];
 };
 
 // ===========================
@@ -48,22 +87,6 @@ const CATEGORIES = [
     title: "Coding",
     description: "Get code assistance and debug efficiently",
     icon: "💻",
-  },
-];
-
-// ===========================
-// GUIDES DATA
-// ===========================
-const GUIDES = [
-  {
-    slug: "how-to-choose-ai-tool",
-    title: "How to choose the right AI tool",
-    description: "A beginner's framework for evaluating AI tools.",
-  },
-  {
-    slug: "ai-image-generation-guide",
-    title: "Beginner's guide to AI image generation",
-    description: "Learn the basics of creating stunning images.",
   },
 ];
 
@@ -159,27 +182,87 @@ function CategorySection() {
 // ===========================
 // 3. GUIDES SECTION
 // ===========================
-function GuidesSection() {
+function GuidesSection({ guides }: { guides: GuideRecord[] }) {
+  const hasGuides = guides && guides.length > 0;
+
   return (
     <section className="px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <SectionHeader title="Guides for beginners" moreHref="/guides" />
-        <p className="mb-4 text-xs leading-relaxed text-slate-400">
-          Learn the basics and get the most out of AI tools.
-        </p>
-
-        <div className="space-y-3 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-        {GUIDES.map((guide) => (
+        {/* Section Header */}
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-base font-semibold text-slate-50">Start here</h2>
+            <p className="mt-1 text-xs leading-relaxed text-slate-400 max-w-[24rem]">
+              Step-by-step guides to help you choose AI tools,
+              <br />
+              and use them with confidence.
+            </p>
+          </div>
           <Link
-            key={guide.slug}
-            href={`/guides/${guide.slug}`}
-            className="block min-h-[90px] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-4 py-4 shadow-sm transition hover:border-emerald-400/30"
+            href="/guides"
+            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:text-emerald-300"
           >
-            <h3 className="mb-2 text-sm font-semibold leading-snug text-slate-50">{guide.title}</h3>
-            <p className="line-clamp-3 text-xs leading-relaxed text-slate-400">{guide.description}</p>
+            <span>More</span>
+            <span>→</span>
           </Link>
-        ))}
         </div>
+
+        {/* Guides Cards */}
+        {hasGuides ? (
+          <div className="space-y-3">
+            {guides.map((guide) => (
+              <Link
+                key={guide.slug}
+                href={`/guides/${guide.slug}`}
+                className="group block rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900 active:scale-[0.98]"
+              >
+                {/* Row 1: Meta row - guide_type pill (left) + date (right) */}
+                <div className="mb-3 flex min-h-[1.75rem] items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    {guide.guide_type ? (
+                      <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold tracking-wide text-emerald-300 ring-1 ring-emerald-500/20">
+                        {guide.guide_type}
+                      </span>
+                    ) : (
+                      <span className="h-5 w-0" aria-hidden="true" />
+                    )}
+                  </div>
+                  <div className="shrink-0 text-xs text-slate-400">
+                    {formatDate(guide.created_at)}
+                  </div>
+                </div>
+
+                {/* Row 2: Title */}
+                <h3 className="mb-2 text-sm font-bold leading-snug text-slate-50 group-hover:text-emerald-300">
+                  {guide.title}
+                </h3>
+
+                {/* Row 3: Intent chip (taxonomy 우선, 없으면 primary_intent) */}
+                {(guide.taxonomy || guide.primary_intent) && (
+                  <div className="mb-2 w-full">
+                    <span className="inline-block w-full truncate rounded-md bg-slate-800/50 px-2 py-1 text-[11px] font-semibold text-slate-400">
+                      {prettyLabel(guide.taxonomy || guide.primary_intent)}
+                    </span>
+                  </div>
+                )}
+
+                {/* Row 4: Excerpt (2 lines clamp) */}
+                {guide.excerpt && (
+                  <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
+                    {guide.excerpt}
+                  </p>
+                )}
+              </Link>
+            ))}
+          </div>
+        ) : (
+          /* Fallback - Simple and lightweight */
+          <div className="flex items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/50 px-6 py-8 text-center">
+            <p className="text-xs text-slate-500">
+              Guides are loading...
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
@@ -257,15 +340,15 @@ function PageFooter() {
 // ===========================
 // MAIN COMPONENT
 // ===========================
-export default function NormalModePage({ tools }: NormalModePageProps) {
+export default function NormalModePage({ tools, featuredRoutes, latestGuides }: NormalModePageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
       <main className="pb-20">
         <HeroSection />
         <CategorySection />
-        <BestRoutesSection />
+        <BestRoutesSection routes={featuredRoutes} />
         <MyToolboxSection />
-        <GuidesSection />
+        <GuidesSection guides={latestGuides} />
         <StudioTeaser />
         <PageFooter />
       </main>
