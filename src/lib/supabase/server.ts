@@ -16,7 +16,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabaseServerClient = createClient(supabaseUrl, supabaseAnonKey);
+export const supabaseServerClient = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: false,
+  },
+  global: {
+    // Disable Supabase client-side cache for server components
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        cache: 'no-store',
+      });
+    },
+  },
+});
 
 
 

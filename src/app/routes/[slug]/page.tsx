@@ -1,18 +1,28 @@
 import { notFound } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
 import { getRouteBySlug, getRouteBest3, getAllRoutes } from "@/lib/db/routes";
 import RouteDetailContent from "./route-detail-content";
 
 interface RouteDetailPageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
+
+// Force dynamic rendering to avoid caching issues with route_tools updates
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export async function generateStaticParams() {
   const routes = await getAllRoutes();
   return routes.map((route) => ({ slug: route.slug }));
 }
 
-export default async function RouteDetailPage({ params }: RouteDetailPageProps) {
+export default async function RouteDetailPage({ params, searchParams }: RouteDetailPageProps) {
+  // Disable Next.js cache for this page
+  noStore();
+  
   const { slug } = await params;
+  const resolvedSearchParams = await searchParams;
   
   // Log the incoming slug for debugging
   console.log("[RouteDetailPage] Requested slug:", slug);
@@ -52,6 +62,35 @@ export default async function RouteDetailPage({ params }: RouteDetailPageProps) 
     notFound();
   }
 
-  return <RouteDetailContent route={route} best3Tools={best3Tools} />;
+  // Debug mode: show DB data info
+  const showDebug = resolvedSearchParams?.debug === "1";
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
+  const supabaseProjectRef = supabaseUrl.match(/https:\/\/([^.]+)\./)?.[1]?.substring(0, 8) || "unknown";
+
+  return (
+    <>
+      {showDebug && (
+        <div className="fixed top-4 left-4 z-50 max-w-md rounded-lg border border-emerald-500 bg-emerald-950/95 p-3 text-xs text-emerald-100 shadow-lg backdrop-blur-sm">
+          <div className="font-semibold mb-2 text-emerald-300">🔍 Debug: Live DB Data</div>
+          <div className="space-y-1 font-mono text-[10px]">
+            <div><span className="text-emerald-400">Project:</span> {supabaseProjectRef}</div>
+            <div><span className="text-emerald-400">Slug:</span> {route.slug}</div>
+            <div><span className="text-emerald-400">Steps:</span> {best3Tools.length}</div>
+            <div className="mt-2 pt-2 border-t border-emerald-800/50">
+              {best3Tools.map((step, idx) => (
+                <div key={step.id} className="mb-2 pb-2 border-b border-emerald-900/30 last:border-0">
+                  <div className="text-emerald-300 font-semibold">Step {step.position}:</div>
+                  <div className="text-white/90">Title: {step.step_title || "N/A"}</div>
+                  <div className="text-white/70 break-words">Why: {step.step_why?.substring(0, 40) || "N/A"}...</div>
+                  <div className="text-white/70 break-words">Prompt: {step.step_prompt_example?.substring(0, 40) || "N/A"}...</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      <RouteDetailContent route={route} best3Tools={best3Tools} />
+    </>
+  );
 }
 
