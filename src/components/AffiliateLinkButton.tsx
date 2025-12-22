@@ -78,23 +78,6 @@ export default function AffiliateLinkButton({
         placement,
         toolSlug: toolSlug || 'none',
       });
-      
-      // Assert correct affiliate URLs for priority tools
-      const EXPECTED_URLS: Record<string, string> = {
-        'opus-clip': 'https://www.opus.pro/?via=165d30',
-        'filmora': 'https://tidd.ly/44vL1oI',
-        'prowritingaid': 'https://tidd.ly/48Y1lQu',
-      };
-      
-      if (toolSlug && EXPECTED_URLS[toolSlug]) {
-        if (href !== EXPECTED_URLS[toolSlug]) {
-          console.warn(
-            `🚨 AFFILIATE URL MISMATCH for ${toolSlug}:\n` +
-            `Expected: ${EXPECTED_URLS[toolSlug]}\n` +
-            `Got: ${href}`
-          );
-        }
-      }
     }
     
     // Fire GA4 event
