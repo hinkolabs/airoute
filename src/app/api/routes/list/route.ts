@@ -3,7 +3,7 @@ import { getAllRoutes } from "@/lib/db/routes";
 
 export async function GET() {
   try {
-    const routes = await getAllRoutes();
+    const routes = await getAllRoutes({ limit: 12 });
     return NextResponse.json(routes);
   } catch (error) {
     console.error("[/api/routes/list] Error:", error);

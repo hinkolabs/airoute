@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { unstable_noStore as noStore } from "next/cache";
 import { getRouteBySlug, getRouteBest3, getAllRoutes } from "@/lib/db/routes";
 import RouteDetailContent from "./route-detail-content";
+import { createClient } from "@supabase/supabase-js";
 
 interface RouteDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -62,6 +63,43 @@ export default async function RouteDetailPage({ params, searchParams }: RouteDet
     notFound();
   }
 
+  // Fetch related guides for this route
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { persistSession: false } }
+  );
+
+  const [guidesPreview, guidesCount] = await Promise.all([
+    supabase
+      .from("guides")
+      .select("id, slug, title, excerpt")
+      .eq("guide_type", "route_based")
+      .eq("route_slug", route.slug)
+      .eq("status", "published")
+      .eq("lang", "en")
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .order("updated_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("guides")
+      .select("id", { count: "exact", head: true })
+      .eq("guide_type", "route_based")
+      .eq("route_slug", route.slug)
+      .eq("status", "published")
+      .eq("lang", "en")
+  ]);
+
+  const relatedGuides = guidesPreview.data ?? [];
+  const totalGuidesCount = guidesCount.count ?? 0;
+
+  if (process.env.NODE_ENV !== "production") {
+    console.log("[RouteDetailPage] Related guides data:", {
+      routeSlug: route.slug,
+      relatedGuidesCount: relatedGuides.length,
+    });
+  }
+
   // Debug mode: show DB data info
   const showDebug = resolvedSearchParams?.debug === "1";
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL || "";
@@ -89,7 +127,7 @@ export default async function RouteDetailPage({ params, searchParams }: RouteDet
           </div>
         </div>
       )}
-      <RouteDetailContent route={route} best3Tools={best3Tools} />
+      <RouteDetailContent route={route} best3Tools={best3Tools} relatedGuides={relatedGuides} totalGuidesCount={totalGuidesCount} />
     </>
   );
 }

@@ -18,6 +18,7 @@ export async function GET() {
     const { data, error } = await supabase
       .from("routes")
       .select("id, slug, title, description, icon, featured, tags, guide_bullets, manual_order, created_at")
+      .eq("status", "active")
       .eq("featured", true)
       .order("manual_order", { ascending: true, nullsFirst: false })
       .order("created_at", { ascending: false })

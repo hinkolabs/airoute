@@ -26,13 +26,14 @@ export type DbRoute = {
 export type DbRouteTool = {
   id: string;
   route_id: string;
-  tool_id: string;
+  tool_id: string | null;
   position: number;
   is_best3: boolean;
   step_title: string | null;
   step_why: string | null;
   step_cta_label: string | null;
   step_prompt_example: string | null;
+  step_input_type: "settings" | "action" | "prompt" | null;
   created_at: string;
 };
 
@@ -67,6 +68,7 @@ export async function getRouteBySlug(
     .from("routes")
     .select("*")
     .eq("slug", slug)
+    .eq("status", "active")
     .single();
 
   if (error) {
@@ -90,6 +92,7 @@ export async function getRouteBest3(slug: string): Promise<
         website_url: string | null;
         image: string | null;
         affiliate_url: string | null;
+        url: string | null;
       };
     }
   >
@@ -101,6 +104,7 @@ export async function getRouteBest3(slug: string): Promise<
     .from("routes")
     .select("id")
     .eq("slug", slug)
+    .eq("status", "active")
     .single();
 
   if (!route) {
@@ -127,44 +131,61 @@ export async function getRouteBest3(slug: string): Promise<
   }
 
   // Get tool data for each route_tool
-  const toolIds = routeTools.map((rt: any) => rt.tool_id);
+  const toolIds = routeTools.map((rt: any) => rt.tool_id).filter(Boolean);
   const { data: tools, error: toolsError } = await supabase
     .from("tools")
-    .select("id, name, slug, website_url, image, affiliate_url")
+    .select("id, name, slug, website_url, image, affiliate_url, url")
     .in("id", toolIds);
 
   if (toolsError) {
     console.error("[getRouteBest3] Error fetching tools:", toolsError);
-    return [];
   }
 
   // Merge route_tools with tool data
-  const toolMap = new Map(tools?.map(t => [t.id, t]) || []);
+  const toolsById = new Map(tools?.map(t => [t.id, t]) || []);
   
-  return routeTools.map((rt: any) => ({
-    ...rt,
-    tool: toolMap.get(rt.tool_id) || {
-      id: rt.tool_id,
-      name: "Unknown Tool",
-      slug: null,
-      website_url: null,
-      image: null,
-      affiliate_url: null,
-    },
-  })) as any;
+  return routeTools.map((rt: any) => {
+    const tool = rt.tool_id ? toolsById.get(rt.tool_id) : null;
+    
+    // Dev-only warning when tool cannot be resolved
+    if (!tool && process.env.NODE_ENV !== 'production') {
+      console.warn(`[getRouteBest3] Tool not found for route_tool.id=${rt.id}, tool_id=${rt.tool_id}`);
+    }
+    
+    return {
+      ...rt,
+      tool: tool || {
+        id: rt.tool_id || 'unknown',
+        name: "Unknown Tool",
+        slug: null,
+        website_url: null,
+        image: null,
+        affiliate_url: null,
+        url: null,
+      },
+    };
+  }) as any;
 }
 
 /**
  * Get all routes (for list page)
  */
-export async function getAllRoutes(): Promise<DbRoute[]> {
+export async function getAllRoutes(options: { limit?: number } = {}): Promise<DbRoute[]> {
   const supabase = supabaseServerClient;
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("routes")
     .select("*")
+    .eq("status", "active")
     .order("featured", { ascending: false })
-    .order("created_at", { ascending: false });
+    .order("manual_order", { ascending: true, nullsFirst: false })
+    .order("updated_at", { ascending: false });
+
+  if (typeof options.limit === "number") {
+    query = query.limit(options.limit);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     console.error("[getAllRoutes] Error:", error);
@@ -184,6 +205,7 @@ export async function getFeaturedRoutes(): Promise<DbRoute[]> {
   const { data, error } = await supabase
     .from("routes")
     .select("*")
+    .eq("status", "active")
     .eq("featured", true)
     .order("manual_order", { ascending: true, nullsFirst: false })
     .order("created_at", { ascending: false });

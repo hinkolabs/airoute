@@ -12,6 +12,8 @@ interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorE
   partnerName?: string;
   placement: Placement;
   toolSlug?: string;
+  routeSlug?: string | null;
+  guideSlug?: string | null;
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -44,6 +46,8 @@ export default function AffiliateLinkButton({
   partnerName,
   placement,
   toolSlug,
+  routeSlug,
+  guideSlug,
   children,
   variant = 'primary',
   size = 'md',
@@ -64,10 +68,29 @@ export default function AffiliateLinkButton({
     }
   };
 
+  // Determine if this is internal/test traffic
+  const isInternalTraffic = (): boolean => {
+    if (typeof window === 'undefined') return false;
+    
+    const hostname = window.location.hostname;
+    
+    // Development environments
+    if (hostname === 'localhost' || hostname === '127.0.0.1') return true;
+    
+    // Vercel preview deployments
+    if (hostname.includes('vercel.app')) return true;
+    
+    // Any other preview/staging domains (add as needed)
+    if (hostname.includes('preview') || hostname.includes('staging')) return true;
+    
+    return false;
+  };
+
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
     
     const partner = getPartnerName();
+    const isInternal = isInternalTraffic();
     
     // Localhost-only debug log and assertion
     if (typeof window !== 'undefined' && 
@@ -77,6 +100,9 @@ export default function AffiliateLinkButton({
         partnerName: partner,
         placement,
         toolSlug: toolSlug || 'none',
+        routeSlug: routeSlug || 'none',
+        guideSlug: guideSlug || 'none',
+        isInternalTraffic: isInternal,
       });
     }
     
@@ -85,17 +111,21 @@ export default function AffiliateLinkButton({
       try {
         window.gtag('event', 'affiliate_click', {
           partner_name: partner,
+          tool_slug: toolSlug || 'none',
           link_url: href,
           placement,
-          tool_slug: toolSlug || 'none',
-          event_category: 'engagement',
-          event_label: `${placement}_${partner}`,
+          route_slug: routeSlug ?? null,
+          guide_slug: guideSlug ?? null,
+          is_internal_traffic: isInternal,
         });
         console.log('📊 GA4 Affiliate Click:', {
           partner_name: partner,
+          tool_slug: toolSlug || 'none',
           link_url: href,
           placement,
-          tool_slug: toolSlug || 'none',
+          route_slug: routeSlug ?? null,
+          guide_slug: guideSlug ?? null,
+          is_internal_traffic: isInternal,
         });
       } catch (error) {
         console.error('GA4 tracking error:', error);
@@ -104,9 +134,12 @@ export default function AffiliateLinkButton({
       // Development/local environment - log to console
       console.log('📊 GA4 Affiliate Click:', {
         partner_name: partner,
+        tool_slug: toolSlug || 'none',
         link_url: href,
         placement,
-        tool_slug: toolSlug || 'none',
+        route_slug: routeSlug ?? null,
+        guide_slug: guideSlug ?? null,
+        is_internal_traffic: isInternal,
       });
     }
 

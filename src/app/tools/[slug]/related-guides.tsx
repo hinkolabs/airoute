@@ -1,10 +1,14 @@
 import Link from "next/link";
 import { supabaseServerClient } from "@/lib/supabase/server";
 
-export async function RelatedGuides() {
+export async function RelatedGuides({ toolSlug }: { toolSlug: string }) {
   const { data: guides } = await supabaseServerClient
     .from("guides")
     .select("id, slug, title, excerpt")
+    .eq("guide_type", "tool_based")
+    .eq("tool_slug", toolSlug)
+    .in("status", ["approved", "published"])
+    .eq("lang", "en")
     .order("created_at", { ascending: false })
     .limit(3);
 

@@ -33,14 +33,13 @@ export async function GET(req: Request) {
 
     // Default to EN for public pages (can be extended later with lang param)
     const lang = searchParams.get("lang") || "en";
-    const statusFilter = "approved";
     const langFilter = lang;
 
     let query = supabase
       .from("guides")
-      .select("id,slug,title,excerpt,guide_type,primary_intent,created_at,cta_tool_slug,cta_route_slug")
-      .eq("status", statusFilter) // Only show approved guides
-      .eq("lang", langFilter); // Filter by language
+      .select("id,slug,title,excerpt,guide_type,primary_intent,created_at,cta_tool_slug,cta_route_slug,cta_type")
+      .eq("status", "published")
+      .eq("lang", langFilter);
 
     // Apply type filter (guide_type)
     if (type !== "all" && (type === "route_based" || type === "tool_based" || type === "safety")) {
@@ -89,16 +88,46 @@ export async function GET(req: Request) {
     }
 
     const items = data ?? [];
-    const last = items.length ? items[items.length - 1] : null;
+
+    // Filter out route-based guides with invalid cta_route_slug
+    // Only keep guides if:
+    // 1. cta_type is NOT 'route', OR
+    // 2. cta_route_slug is empty/null, OR
+    // 3. cta_route_slug exists in routes table
+    const filteredItems = await Promise.all(
+      items.map(async (guide) => {
+        // If not a route CTA, keep it
+        if (!guide.cta_type || guide.cta_type !== "route") {
+          return guide;
+        }
+        
+        // If no route slug specified, keep it (will show no CTA)
+        if (!guide.cta_route_slug) {
+          return guide;
+        }
+        
+        // Check if route exists
+        const { data: route } = await supabase
+          .from("routes")
+          .select("slug")
+          .eq("slug", guide.cta_route_slug)
+          .single();
+        
+        // Only keep guide if route exists
+        return route ? guide : null;
+      })
+    ).then((results) => results.filter((item): item is NonNullable<typeof item> => item !== null));
+
+    const last = filteredItems.length ? filteredItems[filteredItems.length - 1] : null;
 
     const nextCursor =
-      items.length === limit && last
+      filteredItems.length === limit && last
         ? { createdAt: last.created_at, id: last.id }
         : null;
 
     const response: {
       ok: boolean;
-      items: typeof items;
+      items: typeof filteredItems;
       nextCursor: typeof nextCursor;
       debug?: {
         statusFilter: string;
@@ -110,14 +139,14 @@ export async function GET(req: Request) {
       };
     } = {
       ok: true,
-      items,
+      items: filteredItems,
       nextCursor,
     };
 
     // Add debug field only in development
     if (process.env.NODE_ENV !== "production") {
       response.debug = {
-        statusFilter,
+        statusFilter: "published",
         langFilter,
         limit,
         ...(q && { q }),

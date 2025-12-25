@@ -38,6 +38,13 @@ function prettyLabel(input?: string | null): string {
     .join(" ");
 }
 
+// Guide type label mapping
+const GUIDE_TYPE_LABEL: Record<string, string> = {
+  route_based: "Step-by-Step",
+  tool_based: "Quick Start",
+  safety: "Before You Start",
+};
+
 // Format date to YYYY-MM-DD
 function formatDate(iso: string): string {
   return new Date(iso).toISOString().slice(0, 10);
@@ -46,6 +53,7 @@ function formatDate(iso: string): string {
 type NormalModePageProps = {
   tools: ToolRecord[];
   featuredRoutes: FeaturedRoute[];
+  featuredRouteSteps: Array<{ position: number; step_title: string | null; tool_id: string }>;
   latestGuides: GuideRecord[];
 };
 
@@ -196,10 +204,8 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
         <div className="mb-4 flex items-center justify-between">
           <div>
             <h2 className="text-base font-semibold text-slate-50">Start here</h2>
-            <p className="mt-1 text-xs leading-relaxed text-slate-400 max-w-[24rem]">
-              Step-by-step guides to help you choose AI tools,
-              <br />
-              and use them with confidence.
+            <p className="mt-1 text-xs leading-relaxed text-slate-400 sm:whitespace-nowrap sm:overflow-hidden sm:text-ellipsis sm:max-w-none">
+              Step-by-step guides to help you choose AI tools, and use them with confidence.
             </p>
           </div>
           <Link
@@ -225,7 +231,7 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
                   <div className="flex items-center gap-2">
                     {guide.guide_type ? (
                       <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold tracking-wide text-emerald-300 ring-1 ring-emerald-500/20">
-                        {guide.guide_type}
+                        {GUIDE_TYPE_LABEL[guide.guide_type] ?? guide.guide_type}
                       </span>
                     ) : (
                       <span className="h-5 w-0" aria-hidden="true" />
@@ -344,15 +350,15 @@ function PageFooter() {
 // ===========================
 // MAIN COMPONENT
 // ===========================
-export default function NormalModePage({ tools, featuredRoutes, latestGuides }: NormalModePageProps) {
+export default function NormalModePage({ tools, featuredRoutes, featuredRouteSteps, latestGuides }: NormalModePageProps) {
   return (
     <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
       <main className="pb-20">
         <HeroSection />
-        <CategorySection />
-        <BestRoutesSection routes={featuredRoutes} />
-        <MyToolboxSection />
+        <BestRoutesSection routes={featuredRoutes} steps={featuredRouteSteps} />
         <GuidesSection guides={latestGuides} />
+        <MyToolboxSection />
+        <CategorySection />
         <StudioTeaser />
         <PageFooter />
       </main>

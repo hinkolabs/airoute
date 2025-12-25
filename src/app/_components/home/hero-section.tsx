@@ -57,14 +57,16 @@ export default function HeroSection() {
     <section className="px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="mx-auto max-w-7xl">
         {/* Hero Card */}
-        <div className="rounded-2xl bg-white p-6 shadow-sm sm:p-8 lg:p-10">
+        <div className="relative overflow-hidden rounded-2xl">
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/30 via-indigo-500/20 to-transparent opacity-80" />
+          <div className="relative rounded-2xl border border-white/10 bg-slate-900/40 p-5 shadow-[0_20px_60px_rgba(2,6,23,0.65)] backdrop-blur-xl sm:p-8 lg:p-10">
           {/* Title */}
-          <h1 className="text-center text-2xl font-bold text-slate-900 sm:text-3xl lg:text-4xl">
+          <h1 className="text-center text-2xl font-bold leading-tight text-slate-50 sm:text-3xl lg:text-4xl">
             어떤 AI 작업을 해결하고 싶으세요?
           </h1>
 
           {/* Category Buttons Grid */}
-          <div className="mt-8 grid grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:mt-10 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {CATEGORIES.map((category) => (
               <button
                 key={category.id}

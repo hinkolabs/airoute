@@ -259,11 +259,17 @@ export default function GuidesListClient(props: {
 
   const empty = useMemo(() => filteredItems.length === 0, [filteredItems.length]);
 
+  const GUIDE_TYPE_LABEL: Record<string, string> = {
+    route_based: "Step-by-Step",
+    tool_based: "Quick Start",
+    safety: "Before You Start",
+  };
+
   const FILTER_OPTIONS: { value: GuideTypeFilter; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "route_based", label: "route_based" },
-    { value: "tool_based", label: "tool_based" },
-    { value: "safety", label: "safety" },
+    { value: "route_based", label: "Step-by-Step" },
+    { value: "tool_based", label: "Quick Start" },
+    { value: "safety", label: "Before You Start" },
   ];
 
   return (
@@ -316,8 +322,8 @@ export default function GuidesListClient(props: {
       {!error && !loading && debouncedQ.trim() && activeType !== "all" && filteredItems.length === 0 && allItems.length > 0 && (
         <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50">
           {activeType === "tool_based" 
-            ? "No tool-based guides match your search. Try 'All' or switch to route_based."
-            : `No ${activeType} guides match your search. Try switching to All.`}
+            ? "No Quick Start guides match your search. Try 'All' or another filter."
+            : `No ${GUIDE_TYPE_LABEL[activeType] ?? activeType} guides match your search. Try switching to All.`}
         </div>
       )}
 
@@ -363,7 +369,7 @@ export default function GuidesListClient(props: {
               <div className="mb-3 flex min-h-[1.75rem] items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   {g.guide_type ? (
-                    <Badge>{g.guide_type}</Badge>
+                    <Badge>{GUIDE_TYPE_LABEL[g.guide_type] ?? g.guide_type}</Badge>
                   ) : (
                     <span className="h-5 w-0" aria-hidden="true" />
                   )}

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Star, ExternalLink, Scissors, Sparkles, Layout, FileText, AudioWaveform } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
+import { Star, ExternalLink, Scissors, Sparkles, Layout, FileText, AudioWaveform, Copy, Check } from "lucide-react";
 import type { DbRoute, DbRouteTool } from "@/lib/db/routes";
 import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
@@ -17,27 +18,64 @@ const ROUTE_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>
   "🎵": AudioWaveform,
 };
 
+// Helper: normalize escaped newline characters in prompt text
+function normalizePromptText(input?: string | null): string {
+  if (!input) return "";
+  return input
+    .replaceAll("\\r\\n", "\n")
+    .replaceAll("\\n", "\n")
+    .replaceAll("\\r", "\n")
+    .replaceAll("\r\n", "\n")
+    .replaceAll("\r", "\n");
+}
+
+const supabaseClient =
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    ? createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+        { auth: { persistSession: false } }
+      )
+    : null;
+
 interface RouteDetailContentProps {
   route: DbRoute;
   best3Tools: Array<
     DbRouteTool & {
-      tool: {
-        id: string;
-        name: string;
-        slug: string | null;
-        website_url: string | null;
-        image: string | null;
-        affiliate_url: string | null;
-      };
+        tool: {
+          id: string;
+          name: string;
+          slug: string | null;
+          website_url: string | null;
+          image: string | null;
+          affiliate_url: string | null;
+        };
     }
   >;
+  relatedGuides?: Array<{
+    id: string;
+    slug: string;
+    title: string;
+    excerpt: string | null;
+  }>;
+  totalGuidesCount?: number;
 }
 
-export default function RouteDetailContent({ route, best3Tools }: RouteDetailContentProps) {
+export default function RouteDetailContent({
+  route,
+  best3Tools,
+  relatedGuides = [],
+  totalGuidesCount = 0,
+}: RouteDetailContentProps) {
   const { user } = useAuth();
   const { isSaved, toggle, limit } = useSavedRoutes();
   const [isLoading, setIsLoading] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [relatedGuidesState, setRelatedGuidesState] =
+    useState<RouteDetailContentProps["relatedGuides"]>(relatedGuides);
+  const [relatedGuidesCountState, setRelatedGuidesCountState] = useState(totalGuidesCount);
+  const [isFetchingGuides, setIsFetchingGuides] = useState(false);
+  const [copiedStepId, setCopiedStepId] = useState<string | null>(null);
 
   // Check if this route is saved
   const isFavorited = isSaved(route.slug);
@@ -46,6 +84,63 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  useEffect(() => {
+    if (!supabaseClient) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadGuides = async () => {
+      setIsFetchingGuides(true);
+
+      try {
+        const [previewRes, countRes] = await Promise.all([
+          supabaseClient
+            .from("guides")
+            .select("id,slug,title,excerpt,updated_at,created_at")
+            .eq("guide_type", "route_based")
+            .eq("route_slug", route.slug)
+            .eq("status", "published")
+            .eq("lang", "en")
+            .order("updated_at", { ascending: false, nullsFirst: false })
+            .order("created_at", { ascending: false })
+            .limit(3),
+          supabaseClient
+            .from("guides")
+            .select("id", { count: "exact", head: true })
+            .eq("guide_type", "route_based")
+            .eq("route_slug", route.slug)
+            .eq("status", "published")
+            .eq("lang", "en"),
+        ]);
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (previewRes.error || !previewRes.data) {
+          return;
+        }
+
+        setRelatedGuidesState(previewRes.data);
+        setRelatedGuidesCountState(countRes.count ?? 0);
+      } catch (error) {
+        console.error("Failed to load related guides:", error);
+      } finally {
+        if (isMounted) {
+          setIsFetchingGuides(false);
+        }
+      }
+    };
+
+    loadGuides();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [route.slug]);
 
   const handleToggleFavorite = async () => {
     setIsLoading(true);
@@ -71,6 +166,29 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
       setTimeout(() => setToast(null), 3000);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopyPrompt = async (stepId: string, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedStepId(stepId);
+      setTimeout(() => setCopiedStepId(null), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
+
+  const getInputLabel = (inputType: DbRouteTool["step_input_type"]): string => {
+    switch (inputType) {
+      case "settings":
+        return "SETTINGS";
+      case "action":
+        return "ACTION GUIDE";
+      case "prompt":
+        return "PROMPT";
+      default:
+        return "PROMPT";
     }
   };
 
@@ -208,11 +326,30 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
 
                 {/* Prompt Example */}
                 {step.step_prompt_example && (
-                  <div className="mb-4 rounded-lg bg-slate-950/50 p-4">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-emerald-400">
-                      Prompt Example
-                    </p>
-                    <p className="text-sm leading-relaxed text-slate-300">{step.step_prompt_example}</p>
+                  <div className="relative mb-4 rounded-lg bg-slate-950/50 p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-emerald-400">
+                        {getInputLabel(step.step_input_type)}
+                      </p>
+                      <button
+                        onClick={() => handleCopyPrompt(step.id, normalizePromptText(step.step_prompt_example))}
+                        className="flex items-center gap-1.5 rounded-md bg-slate-800/50 px-2.5 py-1.5 text-xs font-medium text-slate-300 transition hover:bg-slate-700/50 active:bg-slate-600/50"
+                        aria-label="Copy to clipboard"
+                      >
+                        {copiedStepId === step.id ? (
+                          <>
+                            <Check className="h-3.5 w-3.5 text-emerald-400" />
+                            <span className="text-emerald-400">Copied</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="h-3.5 w-3.5" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-sm leading-relaxed text-slate-300 whitespace-pre-wrap">{normalizePromptText(step.step_prompt_example)}</p>
                   </div>
                 )}
 
@@ -252,21 +389,59 @@ export default function RouteDetailContent({ route, best3Tools }: RouteDetailCon
           </section>
         )}
 
-        {/* Related Guides CTA */}
-        <section className="rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 to-slate-900/70 p-6 text-center">
-          <h3 className="mb-2 text-lg font-semibold text-slate-50">
-            Want more in-depth guidance?
-          </h3>
-          <p className="mb-4 text-sm text-slate-400">
-            Check out our detailed guides for step-by-step tutorials.
-          </p>
-          <Link
-            href="/guides"
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
-          >
-            Browse Guides
-          </Link>
-        </section>
+        {/* Related Guides */}
+        {relatedGuidesCountState > 0 && (
+          <section className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-slate-50">Related Guides</h2>
+                <p className="text-xs text-slate-400 sm:text-sm">
+                  Showing {Math.min(3, relatedGuidesCountState)} of {relatedGuidesCountState} guides for this route
+                </p>
+              </div>
+              {relatedGuidesCountState > 3 && (
+                <Link
+                  href={`/guides?route=${route.slug}`}
+                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-400 transition hover:border-emerald-300 hover:text-emerald-200"
+                >
+                  View all guides for this route ({relatedGuidesCountState})
+                </Link>
+              )}
+            </div>
+            <div className="mt-5 space-y-4">
+              {relatedGuidesState.length > 0 ? (
+                relatedGuidesState.map((guide) => (
+                  <div
+                    key={guide.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 sm:p-5"
+                  >
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-50 sm:text-lg">
+                        {guide.title}
+                      </h3>
+                      {guide.excerpt && (
+                        <p className="mt-2 text-sm leading-relaxed text-slate-300 line-clamp-3">
+                          {guide.excerpt}
+                        </p>
+                      )}
+                    </div>
+                    <Link
+                      href={`/guides/${guide.slug}`}
+                      className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500/15 sm:text-sm"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Open guide
+                    </Link>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-400">
+                  {isFetchingGuides ? "Loading guides..." : "No related guides found yet."}
+                </p>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Toast - positioned at top to avoid mobile nav */}
         {toast && (

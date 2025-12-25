@@ -120,72 +120,127 @@ airoute/
 ├── .cursor/
 │   └── rules/
 │       └── airoute-core-rules.mdc      # Master development rules for Cursor
+├── docs/
+│   ├── ga4-custom-dimensions-setup.md  # GA4 Custom Dimensions 등록 가이드
+│   ├── ga4-explorations-setup-guide.md # GA4 Explorations 리포트 설정 (상세)
+│   ├── ga4-explorations-quick-checklist.md # GA4 빠른 설정 체크리스트
+│   ├── routes-db-migration-guide.md    # Routes 테이블 마이그레이션 가이드
+│   └── routes-migration-api-usage.md   # Routes API 사용법
 ├── lib/
 │   └── supabase.ts                     # Supabase client
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                    # Landing page
 │   │   ├── simple/page.tsx             # Simple Mode UI
+│   │   ├── routes/
+│   │   │   └── [slug]/                 # Route detail pages
+│   │   ├── guides/
+│   │   │   └── [slug]/                 # Guide detail pages
 │   │   └── api/
 │   │       ├── tools/route.ts          # Fetch AI tools
-│   │       └── tool/[id]/route.ts      # Fetch single tool
+│   │       ├── routes/                 # Routes API endpoints
+│   │       └── guides/                 # Guides API endpoints
 │   ├── components/
-│   │   └── tool-card.tsx               # Card UI for each AI tool
+│   │   ├── AffiliateLinkButton.tsx     # GA4 tracking for affiliate clicks
+│   │   ├── tool-card.tsx               # Card UI for each AI tool
+│   │   └── layout/                     # Layout components
 │   └── types/                          # DB types
-⚙️ Local Development
-1. Install dependencies
-bash
-코드 복사
-npm install
-2. Add environment variables
-Create .env.local:
+├── supabase/
+│   └── migrations/                     # Database migration files
+└── README.md
+```
 
-bash
-코드 복사
+---
+
+## 📊 Analytics & Tracking
+
+Airoute uses **GA4 (Google Analytics 4)** for tracking user behavior and affiliate click signals.
+
+### Key Events
+
+| Event Name | Purpose | Parameters |
+|---|---|---|
+| `affiliate_click` | Track external tool link clicks | `partner_name`, `tool_slug`, `placement`, `route_slug`, `guide_slug`, `is_internal_traffic` |
+| `page_view` | Standard GA4 page views | Auto-tracked |
+
+### Internal Traffic Filtering
+
+All affiliate clicks include `is_internal_traffic` parameter to separate:
+- **Production traffic** (`false`) - Real user clicks
+- **Development/test traffic** (`true`) - Localhost, Vercel preview, staging
+
+This ensures clean revenue signal data for decision-making.
+
+### GA4 Setup Documentation
+
+For complete GA4 setup and reporting, see:
+- **Quick Start**: `docs/ga4-custom-dimensions-setup.md`
+- **Explorations Setup**: `docs/ga4-explorations-setup-guide.md`
+- **Quick Reference**: `docs/ga4-explorations-quick-checklist.md`
+
+---
+
+## ## ⚙️ Local Development
+
+### 1. Install dependencies
+```bash
+npm install
+```
+
+### 2. Add environment variables
+Create `.env.local`:
+
+```bash
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
-3. Run locally
-bash
-코드 복사
+NEXT_PUBLIC_GA_MEASUREMENT_ID=your_ga_measurement_id
+```
+
+### 3. Run locally
+```bash
 npm run dev
-🚀 Deployment (Vercel)
-Connect GitHub repository to Vercel
+```
 
-Add Supabase environment variables
+**Note**: Localhost traffic is automatically tagged as `is_internal_traffic: true` in GA4 events.
 
-Deploy using default Next.js build settings
+---
 
-Branch Strategy
+## ## 🚀 Deployment (Vercel)
 
-main → Production
+1. Connect GitHub repository to Vercel
+2. Add Supabase and GA4 environment variables
+3. Deploy using default Next.js build settings
 
-dev → Development, preview deployments
+**Branch Strategy:**
+- `main` → Production
+- `dev` → Development, preview deployments
 
-🧭 Roadmap
-v0.6
-Tool detail pages
+**Note**: Vercel preview deployments are automatically tagged as `is_internal_traffic: true`.
 
-Category-based navigation
+---
 
-Related hardware recommendations
+## ## 🧭 Roadmap
 
-v0.8
-Multilingual UI (EN/KR/JP)
+### v0.6
+- Tool detail pages
+- Category-based navigation
+- Related hardware recommendations
+- **GA4 Explorations setup for revenue signal tracking**
 
-Senior-friendly “Hyodo Mode”
+### v0.8
+- Multilingual UI (EN/KR/JP)
+- Senior-friendly "Hyodo Mode"
+- Basic analytics dashboard
 
-Basic analytics dashboard
+### v1.0 Launch
+- Smart recommendation engine
+- Premium prompt library
+- Subscription model integration
+- Global marketing rollout
 
-v1.0 Launch
-Smart recommendation engine
+---
 
-Premium prompt library
-
-Subscription model integration
-
-Global marketing rollout
-
-📄 License
+## 📄 License
 Commercial, all rights reserved.
 (Custom license will be added prior to v1.0 launch.)
 

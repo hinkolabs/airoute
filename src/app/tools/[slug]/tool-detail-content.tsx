@@ -353,7 +353,7 @@ function RichContent({ toolSlug }: { toolSlug: string }) {
         </p>
         <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
           <Link
-            href="/guides"
+            href={`/guides?tool=${toolSlug}`}
             className="inline-flex items-center justify-center rounded-xl bg-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-600"
           >
             Browse Guides
