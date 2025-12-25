@@ -409,7 +409,7 @@ export default function RouteDetailContent({
               )}
             </div>
             <div className="mt-5 space-y-4">
-              {relatedGuidesState.length > 0 ? (
+              {relatedGuidesState && relatedGuidesState.length > 0 ? (
                 relatedGuidesState.map((guide) => (
                   <div
                     key={guide.id}
