@@ -95,7 +95,8 @@ export async function getToolBySlug(slug: string): Promise<ToolRecord | null> {
       why_pick,
       related_gear,
       image,
-      website_url
+      website_url,
+      detail_content
     `
     )
     .eq("slug", slug)

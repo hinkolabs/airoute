@@ -230,7 +230,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         </section>
 
         {/* Rich Content (for priority tools) */}
-        <RichContent toolSlug={toolSlug} />
+        <RichContent toolSlug={toolSlug} tool={tool} />
 
         {/* Toast */}
         {toast && (
@@ -262,8 +262,73 @@ function InfoCard({ label, value }: { label: string; value: string }) {
 // ============================================================
 // Rich Content Component (for priority tools)
 // ============================================================
-function RichContent({ toolSlug }: { toolSlug: string }) {
-  const content = getToolDetailContent(toolSlug);
+type DetailContent = {
+  intro?: string;
+  features?: string[];
+  bestFor?: string[];
+  whyPicked?: string;
+  tips?: string[];
+};
+
+function normalizeDetailContent(raw: any): DetailContent | null {
+  if (!raw) return null;
+  
+  let parsed: any;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  } else if (typeof raw === 'object') {
+    parsed = raw;
+  } else {
+    return null;
+  }
+
+  const result: DetailContent = {};
+  
+  if (typeof parsed.intro === 'string' && parsed.intro.trim()) {
+    result.intro = parsed.intro.trim();
+  }
+  
+  if (Array.isArray(parsed.features)) {
+    const filtered = parsed.features
+      .filter((f: any) => typeof f === 'string')
+      .map((f: string) => f.trim())
+      .filter((f: string) => f.length > 0);
+    if (filtered.length > 0) result.features = filtered;
+  }
+  
+  if (Array.isArray(parsed.bestFor)) {
+    const filtered = parsed.bestFor
+      .filter((b: any) => typeof b === 'string')
+      .map((b: string) => b.trim())
+      .filter((b: string) => b.length > 0);
+    if (filtered.length > 0) result.bestFor = filtered;
+  }
+  
+  if (typeof parsed.whyPicked === 'string' && parsed.whyPicked.trim()) {
+    result.whyPicked = parsed.whyPicked.trim();
+  }
+  
+  if (Array.isArray(parsed.tips)) {
+    const filtered = parsed.tips
+      .filter((t: any) => typeof t === 'string')
+      .map((t: string) => t.trim())
+      .filter((t: string) => t.length > 0);
+    if (filtered.length > 0) result.tips = filtered;
+  }
+
+  return Object.keys(result).length > 0 ? result : null;
+}
+
+function RichContent({ toolSlug, tool }: { toolSlug: string; tool?: ToolRecord }) {
+  console.log("[tool-detail] slug", toolSlug, "has_detail_content", Boolean((tool as any)?.detail_content));
+  
+  const dbContent = normalizeDetailContent((tool as any)?.detail_content);
+  const legacyContent = getToolDetailContent(toolSlug);
+  const content = dbContent ?? legacyContent;
   
   if (!content) return null;
 
@@ -272,7 +337,7 @@ function RichContent({ toolSlug }: { toolSlug: string }) {
       {/* Introduction */}
       {content.intro && (
         <section className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-          <h2 className="mb-3 text-lg font-bold text-slate-50">About {content.slug.charAt(0).toUpperCase() + content.slug.slice(1)}</h2>
+          <h2 className="mb-3 text-lg font-bold text-slate-50">About {toolSlug.charAt(0).toUpperCase() + toolSlug.slice(1)}</h2>
           <p className="text-sm leading-relaxed text-slate-300">{content.intro}</p>
         </section>
       )}
