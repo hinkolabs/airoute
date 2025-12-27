@@ -69,3 +69,4 @@ CREATE INDEX IF NOT EXISTS idx_favorites_routes_created_at ON public.favorites_r
 
 
 
+

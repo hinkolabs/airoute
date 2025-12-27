@@ -49,3 +49,4 @@ GRANT SELECT ON public.guides_public TO authenticated;
 
 
 
+

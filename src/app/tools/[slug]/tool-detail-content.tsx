@@ -79,7 +79,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
     tool.description ??
     "Premium AI tool for your creative workflow.";
   const displayTags = filterDisplayTags(tool.tags);
-  const visitUrl = tool.affiliate_url ?? tool.url;
+  const visitUrl = tool.affiliate_url ?? tool.website_url ?? tool.url;
   const toolSlug = tool.slug || tool.id || '';
 
   // Load initial favorite state

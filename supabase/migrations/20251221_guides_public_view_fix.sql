@@ -32,3 +32,4 @@ WHERE status = 'approved';
 GRANT SELECT ON public.guides_public TO anon;
 GRANT SELECT ON public.guides_public TO authenticated;
 
+

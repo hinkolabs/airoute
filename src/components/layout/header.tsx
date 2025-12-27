@@ -69,6 +69,14 @@ export default function Header() {
             Home
           </Link>
           <Link
+            href="/routes"
+            className={`text-sm font-medium transition ${
+              pathname.startsWith("/routes") ? "text-emerald-400" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            Routes
+          </Link>
+          <Link
             href="/guides"
             className={`text-sm font-medium transition ${
               pathname.startsWith("/guides") ? "text-emerald-400" : "text-slate-300 hover:text-white"

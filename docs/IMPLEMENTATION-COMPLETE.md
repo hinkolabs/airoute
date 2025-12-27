@@ -299,3 +299,4 @@ Reports → Realtime → Event count by Event name
 **배포 상태**: Ready for Production  
 **다음 액션**: GA4 Admin 설정 (사용자 수동 작업)
 
+

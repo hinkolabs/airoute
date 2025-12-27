@@ -180,3 +180,4 @@ Sort: Event count DESC
 **상세 가이드**: `docs/ga4-explorations-setup-guide.md`  
 **이벤트 스펙**: `src/components/AffiliateLinkButton.tsx` (코드 주석)
 
+

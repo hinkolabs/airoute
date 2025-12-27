@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageShell, SearchBar, ToolCard, ToolCardProps } from "@/app/_design/components/page";
 import type { ToolRecord } from "@/lib/tools";
 import { Search } from "lucide-react";
@@ -9,17 +10,89 @@ import { useAuth } from "@/app/_providers/auth-provider";
 import { Toast } from "@/components/toast";
 
 // ============================================================
+// Types
+// ============================================================
+type CategoryFilter = "All" | "Image & Design" | "Writing" | "Video" | "Audio" | "Voice" | "Coding";
+
+const CATEGORY_FILTERS: CategoryFilter[] = [
+  "All",
+  "Image & Design",
+  "Writing",
+  "Video",
+  "Audio",
+  "Voice",
+  "Coding",
+];
+
+// ============================================================
 // Helpers
 // ============================================================
-function categoryLabelFromId(categoryId: string | null): string {
-  if (!categoryId) return "Other";
-  const map: Record<string, string> = {
-    chat: "Chat & Text",
-    image: "Image & Design",
-    video: "Video & Editing",
-    music: "Music & Audio",
-  };
-  return map[categoryId] ?? "Other";
+function normalizeCategory(tool: any): CategoryFilter | null {
+  // 1) Direct canonical enum
+  const direct =
+    tool?.category ??
+    tool?.task_category ??
+    tool?.taskCategory ??
+    tool?.category_name ??
+    tool?.categoryName ??
+    null;
+
+  if (typeof direct === 'string') {
+    const s = direct.trim();
+
+    // exact match
+    if (
+      s === 'Image & Design' || s === 'Writing' || s === 'Video' ||
+      s === 'Audio' || s === 'Voice' || s === 'Coding'
+    ) return s as CategoryFilter;
+
+    // common variants -> canonical
+    const lower = s.toLowerCase();
+    if (lower.includes('image')) return 'Image & Design';
+    if (lower.includes('design')) return 'Image & Design';
+    if (lower.includes('writing')) return 'Writing';
+    if (lower.includes('text')) return 'Writing';
+    if (lower.includes('video')) return 'Video';
+    if (lower.includes('audio')) return 'Audio';
+    if (lower.includes('music')) return 'Audio';
+    if (lower.includes('voice')) return 'Voice';
+    if (lower.includes('coding')) return 'Coding';
+    if (lower.includes('dev')) return 'Coding';
+  }
+
+  // 2) category_id / categoryId (string)
+  const id =
+    tool?.category_id ??
+    tool?.categoryId ??
+    tool?.categoryID ??
+    tool?.category_key ??
+    tool?.categoryKey ??
+    null;
+
+  if (typeof id === 'string') {
+    const s = id.trim().toLowerCase();
+    if (s === 'image') return 'Image & Design';
+    if (s === 'video') return 'Video';
+    if (s === 'music') return 'Audio';
+    if (s === 'audio') return 'Audio';
+    if (s === 'voice') return 'Voice';
+    if (s === 'coding') return 'Coding';
+    if (s === 'chat') return 'Writing';
+    if (s === 'text') return 'Writing';
+    if (s === 'writing') return 'Writing';
+  }
+
+  // 3) category_id numeric (fallback guess)
+  if (typeof id === 'number') {
+    // common legacy mapping guess:
+    // 1=chat, 2=image, 3=video, 4=music
+    if (id === 1) return 'Writing';
+    if (id === 2) return 'Image & Design';
+    if (id === 3) return 'Video';
+    if (id === 4) return 'Audio';
+  }
+
+  return null;
 }
 
 function filterDisplayTags(tags: string[] | null | undefined): string[] {
@@ -39,9 +112,46 @@ type ToolsListClientProps = {
 // ============================================================
 export function ToolsListClient({ tools }: ToolsListClientProps) {
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryFilter>("All");
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
+  const [categoryInitialized, setCategoryInitialized] = useState(false);
+
+  // Initialize category from URL query parameter (only once on mount)
+  useEffect(() => {
+    if (categoryInitialized) return;
+    
+    const categoryParam = searchParams.get("category");
+    if (categoryParam) {
+      const normalizedParam = categoryParam.trim();
+      // Check if it's a valid category
+      const validCategories: CategoryFilter[] = [
+        "Image & Design",
+        "Writing",
+        "Video",
+        "Audio",
+        "Voice",
+        "Coding",
+      ];
+      
+      if (validCategories.includes(normalizedParam as CategoryFilter)) {
+        setSelectedCategory(normalizedParam as CategoryFilter);
+      }
+    }
+    setCategoryInitialized(true);
+  }, [searchParams, categoryInitialized]);
+
+  // Debug log (dev-only)
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('[tools-list] sample tool:', tools?.[0]);
+      // eslint-disable-next-line no-console
+      console.log('[tools-list] sample keys:', tools?.[0] ? Object.keys(tools[0]) : []);
+    }
+  }, [tools]);
 
   // Load favorites
   useEffect(() => {
@@ -56,25 +166,39 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
     loadFavorites();
   }, [user]);
 
-  // Local filtering
+  // Local filtering: first by search, then by category
   const filteredTools = useMemo(() => {
+    let result = tools;
+
+    // 1. Search filtering
     const q = search.trim().toLowerCase();
-    if (q.length === 0) return tools;
+    if (q.length > 0) {
+      result = result.filter((tool) => {
+        const name = tool.name?.toLowerCase() ?? "";
+        const descEn = tool.desc_en?.toLowerCase() ?? "";
+        const desc = tool.description?.toLowerCase() ?? "";
+        const tags = tool.tags ?? [];
 
-    return tools.filter((tool) => {
-      const name = tool.name?.toLowerCase() ?? "";
-      const descEn = tool.desc_en?.toLowerCase() ?? "";
-      const desc = tool.description?.toLowerCase() ?? "";
-      const tags = tool.tags ?? [];
+        return (
+          name.includes(q) ||
+          descEn.includes(q) ||
+          desc.includes(q) ||
+          tags.some((t) => (t ?? "").toLowerCase().includes(q))
+        );
+      });
+    }
 
-      return (
-        name.includes(q) ||
-        descEn.includes(q) ||
-        desc.includes(q) ||
-        tags.some((t) => (t ?? "").toLowerCase().includes(q))
-      );
-    });
-  }, [tools, search]);
+    // 2. Category filtering
+    if (selectedCategory !== "All") {
+      result = result.filter((tool) => {
+        const cat = normalizeCategory(tool);
+        if (!cat) return false;
+        return cat === selectedCategory;
+      });
+    }
+
+    return result;
+  }, [tools, search, selectedCategory]);
 
   // Handle favorite toggle
   const handleFavoriteToggle = async (toolSlug: string) => {
@@ -125,6 +249,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
     (tool) => {
       const displayTags = filterDisplayTags(tool.tags);
       const toolSlug = tool.slug || tool.id;
+      const normalized = normalizeCategory(tool);
 
       return {
         id: tool.id,
@@ -134,7 +259,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
           tool.desc_en ??
           tool.description ??
           "No description available.",
-        category: categoryLabelFromId(tool.category_id),
+        category: normalized ?? 'Other',
         tags: displayTags,
         badge: tool.badge ?? undefined,
         href: tool.affiliate_url ?? tool.url ?? undefined,
@@ -162,7 +287,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
         </header>
 
         {/* Search Input */}
-        <div className="mb-6">
+        <div className="mb-4">
           <div className="relative">
             <input
               type="text"
@@ -177,12 +302,38 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
           </div>
         </div>
 
+        {/* Category Filter Tabs */}
+        <div className="mb-6">
+          <div className="flex flex-wrap items-center gap-2">
+            {CATEGORY_FILTERS.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setSelectedCategory(category)}
+                className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
+                  selectedCategory === category
+                    ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
+                    : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
+                }`}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
+
         {/* Results count */}
         <div className="mb-4 text-xs text-slate-400 sm:text-sm">
           {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
           {search && (
             <span className="ml-2">
               for &quot;<span className="text-slate-200">{search}</span>&quot;
+            </span>
+          )}
+          {selectedCategory !== "All" && (
+            <span className="ml-2">
+              in <span className="text-slate-200">{selectedCategory}</span>
             </span>
           )}
         </div>

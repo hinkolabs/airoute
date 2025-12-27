@@ -411,3 +411,4 @@ GA4 Admin → Data display → Custom definitions에서 다음 항목들이 Even
 **검토 필요**: GA4 Admin 권한 보유자  
 **업데이트 주기**: 월 1회 또는 이벤트 스펙 변경 시
 
+

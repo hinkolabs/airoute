@@ -8,7 +8,7 @@ type ButtonSize = 'sm' | 'md' | 'lg';
 type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom';
 
 interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'> {
-  href: string;
+  href: string | null | undefined;
   partnerName?: string;
   placement: Placement;
   toolSlug?: string;
@@ -54,6 +54,29 @@ export default function AffiliateLinkButton({
   className,
   ...props
 }: AffiliateLinkButtonProps) {
+  
+  // If href is null/undefined, render as disabled button
+  if (!href) {
+    const baseStyles = cn(
+      'inline-flex items-center justify-center font-medium rounded-full',
+      'transition-colors duration-200',
+      'opacity-50 cursor-not-allowed',
+      variantStyles[variant],
+      sizeStyles[size],
+      className
+    );
+    
+    return (
+      <button
+        type="button"
+        disabled
+        className={baseStyles}
+        {...props}
+      >
+        {children}
+      </button>
+    );
+  }
   
   // Extract partner name from domain if not provided
   const getPartnerName = (): string => {

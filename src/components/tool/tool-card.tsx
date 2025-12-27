@@ -11,10 +11,11 @@ interface ToolCardProps {
 
 export default function ToolCard({ tool }: ToolCardProps) {
   const description = tool.desc_simple_en || tool.desc_ko || tool.desc_en || 'AI 도구';
+  const visitUrl = (tool as any).affiliate_url ?? (tool as any).website_url ?? (tool as any).url;
 
   return (
     <AffiliateLinkButton
-      href={tool.affiliate_url}
+      href={visitUrl}
       placement="tool_card"
       toolSlug={tool.id}
       className="group flex flex-col rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all duration-300 hover:border-emerald-500/50 hover:bg-zinc-900"

@@ -41,7 +41,7 @@ export default function CategoriesPage() {
             return (
               <Link
                 key={category.key}
-                href="/guides"
+                href={`/categories/${category.key}`}
                 className="group flex h-[140px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-3 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
               >
                 {/* Icon + Title */}
@@ -59,7 +59,7 @@ export default function CategoriesPage() {
 
                 {/* Bottom CTA */}
                 <div className="flex items-center justify-between text-[11px] font-medium text-emerald-300">
-                  <span>View guides</span>
+                  <span>View best tools</span>
                   <span className="transition group-hover:translate-x-0.5">→</span>
                 </div>
               </Link>

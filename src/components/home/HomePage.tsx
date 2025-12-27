@@ -188,6 +188,7 @@ function TagChip({ emoji, label }: { emoji: string; label: string }) {
 // 🔹 도구 카드 컴포넌트 - 모바일 최적화된 패딩
 function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }) {
   const description = tool.desc_en || tool.why_pick || 'AI Tool';
+  const visitUrl = (tool as any).affiliate_url ?? (tool as any).website_url ?? (tool as any).url;
 
   return (
     <article className="w-full flex flex-col rounded-2xl border border-slate-700/80 bg-slate-900/60 p-4 md:p-5 transition-all duration-150 ease-out hover:border-emerald-400/50 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-slate-900/50 md:hover:-translate-y-1">
@@ -225,7 +226,7 @@ function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }
       {/* 버튼 영역 */}
       <div className="flex gap-2.5 mt-auto pt-4 border-t border-slate-800/80">
         <AffiliateLinkButton
-          href={tool.affiliate_url}
+          href={visitUrl}
           placement="tool_card"
           toolSlug={tool.id}
           className="flex-1 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-sm font-semibold transition-all duration-200 hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20"

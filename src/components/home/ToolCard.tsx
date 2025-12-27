@@ -15,10 +15,11 @@ type ToolCardProps = {
 export function ToolCard({ tool }: ToolCardProps) {
   // 설명 텍스트: desc_en 우선, 없으면 why_pick
   const description = tool.desc_en || tool.why_pick || 'No description available.';
+  const visitUrl = (tool as any).affiliate_url ?? (tool as any).website_url ?? (tool as any).url;
 
   return (
     <AffiliateLinkButton
-      href={tool.affiliate_url}
+      href={visitUrl}
       placement="tool_card"
       toolSlug={tool.id}
       className="group flex w-full flex-col rounded-2xl border border-slate-700/70 bg-slate-900/70 p-4 shadow-sm transition hover:-translate-y-1 hover:border-emerald-400/60 hover:shadow-lg md:p-5"

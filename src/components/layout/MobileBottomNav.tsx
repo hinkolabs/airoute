@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, BookOpen, Sparkles, User } from "lucide-react";
+import { Home, Route, BookOpen, Sparkles, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -18,6 +18,10 @@ export default function MobileBottomNav() {
         <Link href="/" className={`flex flex-col items-center space-y-1 transition-colors ${isActive('/') ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
           <Home size={24} />
           <span className="text-xs font-medium">Home</span>
+        </Link>
+        <Link href="/routes" className={`flex flex-col items-center space-y-1 transition-colors ${pathname.startsWith('/routes') ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
+          <Route size={24} />
+          <span className="text-xs font-medium">Routes</span>
         </Link>
         <Link href="/guides" className={`flex flex-col items-center space-y-1 transition-colors ${isActive('/guides') ? 'text-emerald-400' : 'text-gray-500 hover:text-gray-300'}`}>
           <BookOpen size={24} />

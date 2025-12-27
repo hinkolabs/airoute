@@ -124,8 +124,8 @@ function SectionHeader({ title, moreHref }: { title: string; moreHref: string })
 // ===========================
 function HeroSection() {
   return (
-    <section className="px-4 pt-4 pb-6">
-      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-6 shadow-sm lg:px-8 lg:py-8">
+    <section className="px-4 pt-4 pb-4">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-5 shadow-sm lg:px-8 lg:py-8">
         {/* Badge */}
         <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/30">
           <span>✦</span>
@@ -154,7 +154,7 @@ function CategorySection() {
   return (
     <section id="categories" className="px-4 py-8">
       <div className="mx-auto max-w-5xl">
-        <SectionHeader title="Categories" moreHref="/categories" />
+        <SectionHeader title="Categories" moreHref="/tools" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         {CATEGORIES.map((category) => {
           const Icon = category.Icon;
