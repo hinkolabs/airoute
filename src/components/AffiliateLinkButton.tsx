@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
-type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom';
+type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom' | 'category_best3';
 
 interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'> {
   href: string | null | undefined;
@@ -71,7 +71,6 @@ export default function AffiliateLinkButton({
         type="button"
         disabled
         className={baseStyles}
-        {...props}
       >
         {children}
       </button>

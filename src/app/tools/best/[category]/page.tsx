@@ -174,7 +174,7 @@ export default async function BestCategoryPage({
   }
 
   // Get tool slugs
-  const toolSlugs = best3Items.map((item: ToolCategoryBest) => item.tool_slug);
+  const toolSlugs = best3Items.map(item => item.tool_slug);
 
   // Fetch tool data
   const { data: tools, error: toolsError } = await supabaseServerClient
@@ -194,7 +194,7 @@ export default async function BestCategoryPage({
   // Sort by role order: popular -> easy -> free
   const roleOrder: Array<"popular" | "easy" | "free"> = ["popular", "easy", "free"];
   const sortedBest3 = best3Items
-    .map((item: ToolCategoryBest) => {
+    .map(item => {
       const tool = toolsBySlug.get(item.tool_slug);
       if (!tool) return null;
       return {
@@ -203,7 +203,7 @@ export default async function BestCategoryPage({
         note: item.note,
       };
     })
-    .filter((item): item is { role: "popular" | "easy" | "free"; tool: ToolData; note: string | null } => item !== null)
+    .filter((item): item is NonNullable<typeof item> => item !== null)
     .sort((a, b) => roleOrder.indexOf(a.role) - roleOrder.indexOf(b.role))
     .slice(0, 3);
 

@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { Suspense } from "react";
 import { getActiveTools } from "@/lib/tools";
 import { ToolsListClient } from "./_components/tools-list";
 import { FALLBACK_TOOLS } from "@/lib/tool-fallback-data";
@@ -19,7 +20,11 @@ export default async function ToolsPage() {
   
   const tools = [...dbTools, ...fallbackToolsList];
 
-  return <ToolsListClient tools={tools} />;
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+      <ToolsListClient tools={tools} />
+    </Suspense>
+  );
 }
 
 
