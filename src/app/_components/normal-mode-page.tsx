@@ -124,22 +124,22 @@ function SectionHeader({ title, moreHref }: { title: string; moreHref: string })
 // ===========================
 function HeroSection() {
   return (
-    <section className="px-4 pt-4 pb-4">
-      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-5 shadow-sm lg:px-8 lg:py-8">
+    <section className="px-4 pt-4 pb-4 lg:pb-6 lg:px-8">
+      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-5 py-5 shadow-sm lg:max-w-[1200px] lg:px-12 lg:py-10">
         {/* Badge */}
-        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/30">
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-[11px] font-medium text-emerald-300 ring-1 ring-emerald-400/30 lg:mb-3 lg:text-xs">
           <span>✦</span>
           <span>AI tool navigation, not another directory</span>
         </div>
 
         {/* Headline */}
-        <h1 className="mb-2 text-2xl font-semibold leading-snug text-slate-50 lg:text-3xl lg:leading-tight">
+        <h1 className="mb-2 text-2xl font-semibold leading-snug text-slate-50 lg:mb-3 lg:max-w-[900px] lg:text-5xl lg:leading-tight">
           <span className="block">Too many AI tools?</span>
           <span className="block">We find the best route for you.</span>
         </h1>
 
         {/* Subtext */}
-        <p className="text-sm leading-relaxed text-slate-300 lg:text-base lg:leading-7">
+        <p className="text-sm leading-relaxed text-slate-300 lg:max-w-none lg:whitespace-nowrap lg:overflow-hidden lg:text-ellipsis lg:text-lg">
           No more endless searching. Choose your goal, and we'll show you the top 3 AI tools.
         </p>
       </div>
@@ -152,8 +152,8 @@ function HeroSection() {
 // ===========================
 function CategorySection() {
   return (
-    <section id="categories" className="px-4 py-8">
-      <div className="mx-auto max-w-5xl">
+    <section id="categories" className="px-4 py-8 lg:px-8">
+      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
         <SectionHeader title="Categories" moreHref="/tools" />
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         {CATEGORIES.map((category) => {
@@ -169,16 +169,16 @@ function CategorySection() {
                 <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10">
                   <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-emerald-400" />
                 </div>
-                <h3 className="mb-1.5 text-sm font-semibold leading-tight text-slate-50">
+                <h3 className="mb-1.5 text-sm lg:text-lg font-semibold leading-tight text-slate-50">
                   {category.title}
                 </h3>
-                <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
+                <p className="line-clamp-2 text-xs lg:text-base leading-relaxed text-slate-400 lg:text-slate-300">
                   {category.description}
                 </p>
               </div>
 
               {/* Bottom CTA (single line) */}
-              <div className="mt-3 flex items-center justify-between text-[10px] font-medium text-emerald-400/80">
+              <div className="mt-3 flex items-center justify-between text-[10px] lg:text-sm font-medium text-emerald-400/80 lg:text-emerald-300">
                 <span>View best 3 tools</span>
                 <span className="transition group-hover:translate-x-0.5">→</span>
               </div>
@@ -198,8 +198,8 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
   const hasGuides = guides && guides.length > 0;
 
   return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-5xl">
+    <section className="px-4 py-8 lg:px-8">
+      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
         {/* Section Header */}
         <div className="mb-4 flex items-center justify-between">
           <div>
@@ -219,15 +219,15 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
 
         {/* Guides Cards */}
         {hasGuides ? (
-          <div className="space-y-3">
+          <div className="space-y-3 lg:space-y-2.5">
             {guides.map((guide) => (
               <Link
                 key={guide.slug}
                 href={`/guides/${guide.slug}`}
-                className="group block rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900 active:scale-[0.98]"
+                className="group block rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 lg:py-3.5 lg:px-5 shadow-sm transition-all hover:border-emerald-400/30 hover:bg-slate-900 active:scale-[0.98]"
               >
                 {/* Row 1: Meta row - guide_type pill (left) + date (right) */}
-                <div className="mb-3 flex min-h-[1.75rem] items-center justify-between gap-2">
+                <div className="mb-3 lg:mb-2 flex min-h-[1.75rem] lg:min-h-0 items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     {guide.guide_type ? (
                       <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold tracking-wide text-emerald-300 ring-1 ring-emerald-500/20">
@@ -237,28 +237,31 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
                       <span className="h-5 w-0" aria-hidden="true" />
                     )}
                   </div>
-                  <div className="shrink-0 text-xs text-slate-400">
+                  <div className="shrink-0 text-xs lg:text-[11px] text-slate-400 lg:text-slate-500">
                     {formatDate(guide.created_at)}
                   </div>
                 </div>
 
-                {/* Row 2: Title */}
-                <h3 className="mb-2 text-sm font-bold leading-snug text-slate-50 group-hover:text-emerald-300">
+                {/* Row 2: Title - Large & Actionable */}
+                <h3 className="mb-2 text-sm lg:text-lg font-bold leading-tight text-slate-50 group-hover:text-emerald-300 line-clamp-2 transition-colors">
                   {guide.title}
                 </h3>
 
-                {/* Row 3: Intent chip (taxonomy 우선, 없으면 primary_intent) */}
+                {/* Row 3: Meta Bar (Desktop only) - Intent/Category summary */}
                 {(guide.taxonomy || guide.primary_intent) && (
-                  <div className="mb-2 w-full">
-                    <span className="inline-block w-full truncate rounded-md bg-slate-800/50 px-2 py-1 text-[11px] font-semibold text-slate-400">
+                  <div className="mb-2 lg:mb-0">
+                    <span className="inline-block w-full truncate rounded-md bg-slate-800/50 px-2 py-1 text-[11px] font-semibold text-slate-400 lg:hidden">
                       {prettyLabel(guide.taxonomy || guide.primary_intent)}
                     </span>
+                    <div className="hidden lg:flex items-center gap-3 text-sm text-slate-400">
+                      <span>{prettyLabel(guide.taxonomy || guide.primary_intent)}</span>
+                    </div>
                   </div>
                 )}
 
-                {/* Row 4: Excerpt (2 lines clamp) */}
+                {/* Row 4: Excerpt - Hidden on Desktop */}
                 {guide.excerpt && (
-                  <p className="line-clamp-2 text-xs leading-relaxed text-slate-400">
+                  <p className="line-clamp-2 text-xs leading-relaxed text-slate-400 lg:hidden">
                     {guide.excerpt}
                   </p>
                 )}
@@ -283,8 +286,8 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
 // ===========================
 function StudioTeaser() {
   return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-5xl rounded-2xl border border-slate-800/70 bg-slate-900/70 px-5 py-7 text-center shadow-sm lg:px-8 lg:py-10">
+    <section className="px-4 py-8 lg:px-8">
+      <div className="mx-auto max-w-5xl lg:max-w-[1200px] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-5 py-7 text-center shadow-sm lg:px-8 lg:py-10">
         {/* Badge */}
         <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-black/40 px-3 py-1 text-xs font-medium text-emerald-300">
           <span>✨</span>
@@ -315,8 +318,8 @@ function StudioTeaser() {
 // ===========================
 function PageFooter() {
   return (
-    <footer className="px-4 py-8 text-center">
-      <div className="mx-auto max-w-5xl">
+    <footer className="px-4 py-8 text-center lg:px-8">
+      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
         <div className="mb-4 flex justify-center gap-6 text-xs">
         <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
           Contact Us

@@ -10,6 +10,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { getLimits, clampFavorites } from "@/lib/limits";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSavedRoutes, USER_ROUTE_LIMIT } from "@/lib/hooks/use-saved-routes";
+import AffiliateLinkButton from "@/components/AffiliateLinkButton";
 
 // ===========================
 // TYPES
@@ -24,6 +25,7 @@ type ToolData = {
   slug: string;
   name: string;
   website_url: string | null;
+  affiliate_url: string | null;
 };
 
 // ===========================
@@ -73,7 +75,7 @@ export function MyToolboxSection() {
           const supabase = getSupabaseBrowserClient();
           const { data: tools, error } = await supabase
             .from('tools')
-            .select('slug, name, website_url')
+            .select('slug, name, website_url, affiliate_url')
             .in('slug', clamped.tools);
           
           if (error) {
@@ -170,8 +172,8 @@ export function MyToolboxSection() {
   const canExpandRoutes = false; // Routes expansion disabled for now
 
   return (
-    <section className="px-4 py-8">
-      <div className="mx-auto max-w-5xl">
+    <section className="px-4 py-8 lg:px-8">
+      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
         {/* Section Header */}
         <div className="mb-4 flex items-center justify-between">
           <div>
@@ -240,38 +242,64 @@ export function MyToolboxSection() {
                   
                   if (toolSlug) {
                     // Saved tool slot with remove button
+                    const officialUrl = toolData?.affiliate_url || toolData?.website_url;
+                    
                     return (
                       <div
                         key={`tool-${i}`}
-                        className="group relative flex aspect-square flex-col items-center justify-center gap-2 rounded-xl border border-slate-800/70 bg-slate-900/70 p-3 transition hover:border-emerald-400/30 hover:bg-slate-900"
+                        className="group relative flex aspect-square flex-col items-center justify-between rounded-xl border border-slate-800/70 bg-slate-900/70 p-4 transition hover:border-emerald-400/30 hover:bg-slate-900"
                       >
                         {/* Remove button */}
                         <button
                           onClick={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             handleRemoveTool(toolSlug);
                           }}
-                          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition hover:bg-red-600 group-hover:opacity-100"
+                          className="absolute right-1 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500/80 text-white opacity-0 transition hover:bg-red-600 group-hover:opacity-100 z-10"
                           aria-label="Remove tool"
                         >
                           <span className="text-xs">×</span>
                         </button>
 
-                        {/* Tool content - clickable to tool page */}
-                        <Link href={`/tools/${toolSlug}`} className="flex flex-col items-center gap-2">
-                          {/* Tool Logo */}
-                          <div className="transition-transform group-hover:scale-110">
+                        {/* Top area: Link to tool detail page */}
+                        <Link 
+                          href={`/tools/${toolSlug}`}
+                          className="flex flex-1 flex-col items-center justify-center gap-3 w-full"
+                        >
+                          {/* Tool Logo - larger and centered */}
+                          <div className="flex items-center justify-center mx-auto transition-transform hover:scale-105">
                             <ToolLogo
                               tool={toolData ?? { slug: toolSlug, name: toolSlug, website_url: null }}
-                              size={40}
+                              size={56}
                             />
                           </div>
                           
-                          {/* Tool Name (truncated) */}
-                          <span className="line-clamp-2 text-center text-[10px] font-medium leading-tight text-slate-300">
+                          {/* Tool Name - bigger and centered */}
+                          <span className="line-clamp-2 text-center text-sm font-semibold leading-snug text-slate-200 transition hover:text-emerald-300">
                             {toolData?.name ?? toolSlug}
                           </span>
                         </Link>
+
+                        {/* Bottom CTA: AffiliateLinkButton for official site */}
+                        <div className="w-full mt-auto flex justify-center pt-2">
+                          {officialUrl ? (
+                            <AffiliateLinkButton
+                              href={officialUrl}
+                              placement="home_my_toolbox"
+                              toolSlug={toolSlug}
+                              variant="ghost"
+                              size="sm"
+                              className="w-full h-9 inline-flex items-center justify-center rounded-md px-4 text-sm font-semibold bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/30 hover:bg-emerald-500/20 hover:ring-emerald-400/40 transition"
+                            >
+                              Official site →
+                            </AffiliateLinkButton>
+                          ) : (
+                            <span className="w-full h-9 inline-flex items-center justify-center rounded-md px-4 text-sm font-semibold bg-slate-800/50 text-slate-500 ring-1 ring-slate-700/30">
+                              No link
+                            </span>
+                          )}
+                        </div>
                       </div>
                     );
                   } else {

@@ -39,7 +39,7 @@ export default async function RouteDetailPage({ params, searchParams }: RouteDet
   // Development: show helpful error if route not found
   if (!route && process.env.NODE_ENV !== "production") {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-8">
+      <main className="mx-auto w-full max-w-5xl px-4 py-8 lg:max-w-[1200px] lg:px-8">
         <div className="rounded-lg border border-yellow-500 bg-yellow-50 p-4 text-yellow-900">
           <h1 className="text-lg font-semibold">Route not found</h1>
           <p className="mt-2 text-sm">Requested slug: <code className="font-mono bg-yellow-100 px-1">{slug}</code></p>

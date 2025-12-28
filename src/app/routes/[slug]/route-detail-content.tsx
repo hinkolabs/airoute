@@ -193,8 +193,8 @@ export default function RouteDetailContent({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6">
-      <div className="mx-auto max-w-4xl">
+    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 lg:px-8">
+      <div className="mx-auto w-full max-w-5xl lg:max-w-[1200px]">
         {/* Header */}
         <header className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
           {/* Icon + Save Button Row */}

@@ -42,7 +42,7 @@ export default async function GuidePage({ params }: Props) {
   console.log("🔥 [GUIDE DETAIL] First 200 chars:", md.substring(0, 200));
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6 md:py-16">
+    <main className="mx-auto w-full max-w-5xl px-4 py-8 lg:max-w-[1200px] lg:px-8 md:py-16">
       {/* Header Section */}
       <header className="mb-12 border-b border-slate-700/50 pb-8">
         <h1 className="mb-5 text-3xl font-bold leading-tight text-white md:text-4xl md:leading-tight">
