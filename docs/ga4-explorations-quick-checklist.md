@@ -181,3 +181,5 @@ Sort: Event count DESC
 **이벤트 스펙**: `src/components/AffiliateLinkButton.tsx` (코드 주석)
 
 
+
+

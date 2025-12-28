@@ -2,10 +2,11 @@
 
 import { ReactNode, MouseEvent, AnchorHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
+import { logEventToDB } from '@/lib/event-logger';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost';
 type ButtonSize = 'sm' | 'md' | 'lg';
-type Placement = 'tool_card' | 'tool_detail' | 'route_step' | 'route_detail' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom' | 'category_best3';
+type Placement = 'tool_card' | 'tool_detail' | 'route_detail' | 'route_best_tools' | 'best3' | 'trending' | 'guide_cta' | 'guide' | 'guide_cta_bottom' | 'category_best3' | string;
 
 interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorElement>, 'href' | 'onClick'> {
   href: string | null | undefined;
@@ -14,6 +15,7 @@ interface AffiliateLinkButtonProps extends Omit<AnchorHTMLAttributes<HTMLAnchorE
   toolSlug?: string;
   routeSlug?: string | null;
   guideSlug?: string | null;
+  stepIndex?: number | null;
   children: ReactNode;
   variant?: ButtonVariant;
   size?: ButtonSize;
@@ -48,6 +50,7 @@ export default function AffiliateLinkButton({
   toolSlug,
   routeSlug,
   guideSlug,
+  stepIndex,
   children,
   variant = 'primary',
   size = 'md',
@@ -76,19 +79,6 @@ export default function AffiliateLinkButton({
       </button>
     );
   }
-  
-  // Extract partner name from domain if not provided
-  const getPartnerName = (): string => {
-    if (partnerName) return partnerName;
-    
-    try {
-      const url = new URL(href);
-      const hostname = url.hostname.replace('www.', '');
-      return hostname.split('.')[0] || hostname;
-    } catch {
-      return 'unknown';
-    }
-  };
 
   // Determine if this is internal/test traffic
   const isInternalTraffic = (): boolean => {
@@ -111,28 +101,30 @@ export default function AffiliateLinkButton({
   const handleClick = (e: MouseEvent<HTMLAnchorElement>) => {
     e.stopPropagation();
     
-    const partner = getPartnerName();
+    // Use tool_slug as partner_name for consistency (stable identifier, no casing issues)
+    const partnerNameForTracking = toolSlug || 'unknown';
     const isInternal = isInternalTraffic();
     
-    // Localhost-only debug log and assertion
+    // Localhost-only debug log
     if (typeof window !== 'undefined' && 
         (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
       console.log('[AffiliateLinkButton CLICK]', {
         href,
-        partnerName: partner,
+        partnerName: partnerNameForTracking,
         placement,
         toolSlug: toolSlug || 'none',
         routeSlug: routeSlug || 'none',
         guideSlug: guideSlug || 'none',
+        stepIndex: stepIndex || 'none',
         isInternalTraffic: isInternal,
       });
     }
     
-    // Fire GA4 event
+    // Fire GA4 event with tool_slug as partner_name
     if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
       try {
         window.gtag('event', 'affiliate_click', {
-          partner_name: partner,
+          partner_name: partnerNameForTracking,
           tool_slug: toolSlug || 'none',
           link_url: href,
           placement,
@@ -141,7 +133,7 @@ export default function AffiliateLinkButton({
           is_internal_traffic: isInternal,
         });
         console.log('📊 GA4 Affiliate Click:', {
-          partner_name: partner,
+          partner_name: partnerNameForTracking,
           tool_slug: toolSlug || 'none',
           link_url: href,
           placement,
@@ -155,7 +147,7 @@ export default function AffiliateLinkButton({
     } else {
       // Development/local environment - log to console
       console.log('📊 GA4 Affiliate Click:', {
-        partner_name: partner,
+        partner_name: partnerNameForTracking,
         tool_slug: toolSlug || 'none',
         link_url: href,
         placement,
@@ -164,6 +156,37 @@ export default function AffiliateLinkButton({
         is_internal_traffic: isInternal,
       });
     }
+
+    // Log to DB (non-blocking)
+    // Determine event_type and target_type based on context
+    // Route step clicks (with stepIndex) => route_outbound_click
+    // Other clicks with routeSlug (non-step) => tool_click with ref_route_slug
+    // Everything else => tool_click
+    const isRouteStep = !!(routeSlug && stepIndex);
+    const isRouteContext = !!(routeSlug && !stepIndex);
+    
+    const eventType = isRouteStep ? 'route_outbound_click' : 'tool_click';
+    const targetType = isRouteStep ? 'route' : 'tool';
+    const targetSlug = isRouteStep ? routeSlug : (toolSlug || 'unknown');
+    const source = placement || 'other';
+
+    logEventToDB({
+      event_type: eventType,
+      target_type: targetType,
+      target_slug: targetSlug,
+      source,
+      metadata: {
+        partner_name: partnerNameForTracking,
+        tool_slug: toolSlug || null,
+        link_url: href,
+        placement,
+        route_slug: isRouteStep ? routeSlug : null,
+        ref_route_slug: isRouteContext ? routeSlug : null,
+        guide_slug: guideSlug || null,
+        step_index: stepIndex ?? null,
+        is_internal_traffic: isInternal,
+      },
+    });
 
     // Do NOT preventDefault - let navigation proceed naturally
   };

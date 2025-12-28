@@ -269,13 +269,28 @@ export default function RouteDetailContent({
           {best3Tools.length > 0 ? (
             <div className="mt-2 flex flex-wrap gap-2">
               {best3Tools.map((item) => (
-                item.tool && (
-                  <span
+                item.tool && (item.tool.affiliate_url || item.tool.website_url) ? (
+                  <AffiliateLinkButton
                     key={item.id}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90"
+                    href={item.tool.affiliate_url || item.tool.website_url || "#"}
+                    placement="route_best_tools"
+                    toolSlug={item.tool.slug || item.tool.id}
+                    routeSlug={route.slug}
+                    variant="ghost"
+                    size="sm"
+                    className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90 hover:border-emerald-400/50 hover:bg-emerald-500/10 transition-colors"
                   >
                     {item.tool.name}
-                  </span>
+                  </AffiliateLinkButton>
+                ) : (
+                  item.tool && (
+                    <span
+                      key={item.id}
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-xs text-white/90"
+                    >
+                      {item.tool.name}
+                    </span>
+                  )
                 )
               ))}
             </div>
@@ -357,8 +372,10 @@ export default function RouteDetailContent({
                 {step.tool && (step.tool.affiliate_url || step.tool.website_url) && (
                   <AffiliateLinkButton
                     href={step.tool.affiliate_url || step.tool.website_url || "#"}
-                    placement="route_detail"
+                    placement={`route_step_${step.position}`}
                     toolSlug={step.tool.slug || step.tool.id}
+                    routeSlug={route.slug}
+                    stepIndex={step.position}
                     variant="primary"
                     size="md"
                     className="w-full sm:w-auto"

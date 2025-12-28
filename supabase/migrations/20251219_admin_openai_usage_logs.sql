@@ -25,3 +25,5 @@ GRANT SELECT, INSERT ON public.admin_openai_usage_logs TO authenticated;
 
 
 
+
+

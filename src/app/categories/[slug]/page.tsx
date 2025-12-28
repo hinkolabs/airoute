@@ -32,3 +32,5 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
   return <CategoryDetailContent slug={slug} categoryName={categoryName} />;
 }
 
+
+
