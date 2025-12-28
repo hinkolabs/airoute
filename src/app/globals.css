@@ -83,3 +83,82 @@ strong, b {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+/* ========================================
+   📖 가이드 콘텐츠 가독성 스타일
+   ======================================== */
+
+.guide-content {
+  /* 기본 타이포 */
+  @apply leading-relaxed text-slate-200;
+}
+
+/* 제목 계층 */
+.guide-content .guide-h1 {
+  @apply mt-12 mb-6 text-2xl font-bold leading-tight text-white;
+  @apply md:mt-16 md:mb-8 md:text-4xl;
+}
+
+.guide-content .guide-h2 {
+  @apply mt-10 mb-4 border-b-2 border-slate-700/60 pb-3 text-xl font-bold leading-snug text-white;
+  @apply md:mt-14 md:mb-6 md:text-3xl;
+}
+
+.guide-content .guide-h3 {
+  @apply mt-8 mb-3 text-lg font-bold leading-snug text-white;
+  @apply md:mt-10 md:mb-4 md:text-2xl;
+}
+
+.guide-content .guide-h4 {
+  @apply mt-6 mb-3 text-base font-bold leading-snug text-white;
+  @apply md:text-xl;
+}
+
+/* 본문 단락 */
+.guide-content .guide-p {
+  @apply mb-6 text-base leading-[1.75] text-slate-200;
+  @apply md:mb-8 md:text-lg md:leading-relaxed;
+}
+
+/* 리스트 */
+.guide-content .guide-ul,
+.guide-content .guide-ol {
+  @apply my-6 space-y-2 pl-6 text-base leading-[1.7] text-slate-200;
+  @apply md:my-8 md:space-y-3 md:text-lg;
+}
+
+.guide-content .guide-ul {
+  @apply list-disc;
+}
+
+.guide-content .guide-ol {
+  @apply list-decimal;
+}
+
+.guide-content .guide-li {
+  @apply my-2 leading-[1.7];
+  @apply md:my-3;
+}
+
+/* 코드 블록 */
+.guide-content .guide-code-block {
+  @apply my-6 block overflow-x-auto rounded-lg border border-slate-700 bg-slate-900 p-4 font-mono text-sm;
+  @apply md:my-8 md:p-5;
+}
+
+.guide-content .guide-pre {
+  @apply my-6 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900 p-4;
+  @apply md:my-8 md:p-5;
+}
+
+/* 인용구 */
+.guide-content .guide-blockquote {
+  @apply my-6 border-l-4 border-l-emerald-400 py-2 pl-6 italic text-slate-300;
+  @apply md:my-8;
+}
+
+/* 구분선 */
+.guide-content .guide-hr {
+  @apply my-10 border-slate-700/50;
+  @apply md:my-12;
+}
