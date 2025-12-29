@@ -67,8 +67,8 @@ export default function RoutesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6">
-      <div className="mx-auto max-w-6xl">
+    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-slate-50 sm:text-4xl">All Routes</h1>

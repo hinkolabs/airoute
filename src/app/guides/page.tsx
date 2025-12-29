@@ -82,7 +82,7 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
       items.length === 10 && last ? { createdAt: last.created_at, id: last.id } : null;
 
     return (
-      <div className="mx-auto max-w-5xl px-4 py-8 lg:max-w-[1200px] lg:px-8">
+      <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
           <h1 className="mb-3 text-2xl font-bold text-white">
             {isRouteMode ? "Guides for this Route" : "Getting started with AI"}

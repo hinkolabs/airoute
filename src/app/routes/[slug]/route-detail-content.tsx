@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@supabase/supabase-js";
-import { Star, ExternalLink, Scissors, Sparkles, Layout, FileText, AudioWaveform, Copy, Check } from "lucide-react";
+import { Star, ExternalLink, Scissors, Sparkles, Layout, FileText, AudioWaveform, Copy, Check, ChevronRight } from "lucide-react";
 import type { DbRoute, DbRouteTool } from "@/lib/db/routes";
 import { useSavedRoutes } from "@/lib/hooks/use-saved-routes";
 import { useAuth } from "@/app/_providers/auth-provider";
@@ -193,8 +193,8 @@ export default function RouteDetailContent({
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 lg:px-8">
-      <div className="mx-auto w-full max-w-5xl lg:max-w-[1200px]">
+    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto w-full max-w-[1200px]">
         {/* Header */}
         <header className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
           {/* Icon + Save Button Row */}
@@ -409,47 +409,32 @@ export default function RouteDetailContent({
         {/* Related Guides */}
         {relatedGuidesCountState > 0 && (
           <section className="mb-8 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-            <div className="flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-bold text-slate-50">Related Guides</h2>
-                <p className="text-xs text-slate-400 sm:text-sm">
-                  Showing {Math.min(3, relatedGuidesCountState)} of {relatedGuidesCountState} guides for this route
-                </p>
-              </div>
-              {relatedGuidesCountState > 3 && (
-                <Link
-                  href={`/guides?route=${route.slug}`}
-                  className="inline-flex items-center justify-center rounded-full border border-slate-700 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-400 transition hover:border-emerald-300 hover:text-emerald-200"
-                >
-                  View all guides for this route ({relatedGuidesCountState})
-                </Link>
-              )}
+            <div className="mb-1">
+              <h2 className="text-xl font-bold text-slate-50">Related Guides</h2>
+              <p className="mt-1 text-xs text-slate-400 sm:text-sm">
+                Up to 3 guides for this Route
+              </p>
             </div>
-            <div className="mt-5 space-y-4">
+            <div className="mt-4 space-y-3">
               {relatedGuidesState && relatedGuidesState.length > 0 ? (
                 relatedGuidesState.map((guide) => (
-                  <div
+                  <Link
                     key={guide.id}
-                    className="flex flex-col gap-3 rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 sm:p-5"
+                    href={`/guides/${guide.slug}`}
+                    className="group flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/40 px-4 py-3 transition hover:bg-slate-900/50"
                   >
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-50 sm:text-lg">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-sm font-semibold leading-5 text-slate-100 line-clamp-2">
                         {guide.title}
                       </h3>
                       {guide.excerpt && (
-                        <p className="mt-2 text-sm leading-relaxed text-slate-300 line-clamp-3">
+                        <p className="mt-1 text-sm leading-5 text-slate-400 line-clamp-1">
                           {guide.excerpt}
                         </p>
                       )}
                     </div>
-                    <Link
-                      href={`/guides/${guide.slug}`}
-                      className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500/15 sm:text-sm"
-                    >
-                      <ExternalLink className="h-3 w-3" />
-                      Open guide
-                    </Link>
-                  </div>
+                    <ChevronRight className="h-5 w-5 flex-shrink-0 text-slate-500 transition group-hover:text-emerald-400" />
+                  </Link>
                 ))
               ) : (
                 <p className="text-sm text-slate-400">

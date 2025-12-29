@@ -6,7 +6,7 @@ import { getFavorites, toggleToolFavorite, type FavoritesData } from "@/lib/favo
 import { useAuth } from "@/app/_providers/auth-provider";
 import { ToolLogo } from "@/components/tool-logo";
 import { Toast } from "@/components/toast";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { getLimits, clampFavorites } from "@/lib/limits";
 import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { useSavedRoutes, USER_ROUTE_LIMIT } from "@/lib/hooks/use-saved-routes";
@@ -172,13 +172,13 @@ export function MyToolboxSection() {
   const canExpandRoutes = false; // Routes expansion disabled for now
 
   return (
-    <section className="px-4 py-8 lg:px-8">
-      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
+    <section className="px-4 py-10 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
         {/* Section Header */}
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-base font-semibold text-slate-50">My Workspace</h2>
-            <p className="mt-0.5 text-xs text-slate-400">
+            <h2 className="text-base font-semibold leading-6 text-slate-50">My Workspace</h2>
+            <p className="mt-1 text-sm leading-5 text-slate-400">
               {authStatus === 'authed' 
                 ? "Your saved tools & routes" 
                 : `${savedTools.length}/${toolsLimits.maxTools} tools · ${savedRoutesCount}/${routesLimit} route`}
@@ -186,7 +186,7 @@ export function MyToolboxSection() {
           </div>
           <Link
             href="/my"
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:text-emerald-300"
+            className="inline-flex h-9 items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-emerald-300"
           >
             <span>View all</span>
             <span>→</span>
@@ -199,24 +199,24 @@ export function MyToolboxSection() {
           {/* LEFT: My Toolbox (2/3 on desktop) */}
           <div className="md:col-span-2">
             {/* Toolbox Header */}
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-medium text-slate-400">My Toolbox</h3>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold leading-5 text-slate-400">My Toolbox</h3>
               
               {/* Expand/Collapse Button (authenticated users only) */}
               {canExpandTools && (
                 <button
                   onClick={() => setToolboxExpanded(!toolboxExpanded)}
-                  className="flex items-center gap-1 text-xs text-slate-500 transition hover:text-slate-300"
+                  className="flex items-center gap-1 text-sm font-medium leading-5 text-slate-500 transition hover:text-slate-300"
                   aria-label={toolboxExpanded ? "Collapse toolbox" : "Expand toolbox"}
                 >
                   {toolboxExpanded ? (
                     <>
-                      <ChevronUp className="h-3 w-3" />
+                      <ChevronUp className="h-3.5 w-3.5" />
                       <span>Less</span>
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="h-3 w-3" />
+                      <ChevronDown className="h-3.5 w-3.5" />
                       <span>More</span>
                     </>
                   )}
@@ -265,10 +265,10 @@ export function MyToolboxSection() {
                         {/* Top area: Link to tool detail page */}
                         <Link 
                           href={`/tools/${toolSlug}`}
-                          className="flex flex-1 flex-col items-center justify-center gap-3 w-full"
+                          className="flex flex-1 flex-col items-center justify-center gap-2 w-full"
                         >
                           {/* Tool Logo - larger and centered */}
-                          <div className="flex items-center justify-center mx-auto transition-transform hover:scale-105">
+                          <div className="flex items-center justify-center transition-transform hover:scale-105">
                             <ToolLogo
                               tool={toolData ?? { slug: toolSlug, name: toolSlug, website_url: null }}
                               size={56}
@@ -276,27 +276,38 @@ export function MyToolboxSection() {
                           </div>
                           
                           {/* Tool Name - bigger and centered */}
-                          <span className="line-clamp-2 text-center text-sm font-semibold leading-snug text-slate-200 transition hover:text-emerald-300">
+                          <span className="line-clamp-2 text-center text-sm font-semibold leading-5 text-slate-200 transition hover:text-emerald-300">
                             {toolData?.name ?? toolSlug}
                           </span>
                         </Link>
 
-                        {/* Bottom CTA: AffiliateLinkButton for official site */}
-                        <div className="w-full mt-auto flex justify-center pt-2">
+                        {/* Bottom CTA: Direct link for official site */}
+                        <div className="w-full mt-2 flex justify-center">
                           {officialUrl ? (
-                            <AffiliateLinkButton
+                            <a
                               href={officialUrl}
-                              placement="home_my_toolbox"
-                              toolSlug={toolSlug}
-                              variant="ghost"
-                              size="sm"
-                              className="w-full h-9 inline-flex items-center justify-center rounded-md px-4 text-sm font-semibold bg-emerald-500/15 text-emerald-200 ring-1 ring-emerald-400/30 hover:bg-emerald-500/20 hover:ring-emerald-400/40 transition"
+                              target="_blank"
+                              rel="noopener noreferrer sponsored"
+                              className="w-full h-9 inline-flex items-center justify-center gap-1.5 rounded-lg border border-emerald-400/20 bg-emerald-900/40 px-3 py-2 text-sm font-medium !text-emerald-300 transition hover:bg-emerald-900/60 hover:!text-emerald-200"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                // Track click
+                                if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
+                                  window.gtag('event', 'affiliate_click', {
+                                    partner_name: toolSlug,
+                                    tool_slug: toolSlug,
+                                    link_url: officialUrl,
+                                    placement: 'home_my_toolbox',
+                                  });
+                                }
+                              }}
                             >
-                              Official site →
-                            </AffiliateLinkButton>
+                              <span className="text-emerald-300">Visit</span>
+                              <ExternalLink size={14} className="text-emerald-300" />
+                            </a>
                           ) : (
-                            <span className="w-full h-9 inline-flex items-center justify-center rounded-md px-4 text-sm font-semibold bg-slate-800/50 text-slate-500 ring-1 ring-slate-700/30">
-                              No link
+                            <span className="w-full h-9 inline-flex items-center justify-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-800/50 px-3 py-2 text-sm font-medium text-slate-500">
+                              <span>No link</span>
                             </span>
                           )}
                         </div>
@@ -322,7 +333,7 @@ export function MyToolboxSection() {
             
             {/* Guest message */}
             {!user && savedTools.length > 0 && (
-              <p className="mt-2 text-center text-[10px] text-slate-500">
+              <p className="mt-3 text-center text-sm leading-5 text-slate-500">
                 Sign in to save more
               </p>
             )}
@@ -331,8 +342,8 @@ export function MyToolboxSection() {
           {/* RIGHT: My Routes (1/3 on desktop) */}
           <div className="md:col-span-1">
             {/* Routes Header */}
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-medium text-slate-400">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-sm font-semibold leading-5 text-slate-400">
                 My Routes {savedRoutesCount > 0 && `(${savedRoutesCount}/${routesLimit})`}
               </h3>
             </div>
@@ -356,8 +367,8 @@ export function MyToolboxSection() {
                       <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-emerald-500/10 text-base transition-transform group-hover:scale-110">
                         {route.icon || "🚀"}
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-xs font-semibold text-slate-50 transition group-hover:text-emerald-300 truncate">
+                      <div className="flex-1 min-w-0 text-left">
+                        <h4 className="text-sm font-semibold leading-5 text-slate-50 transition group-hover:text-emerald-300 truncate">
                           {route.title}
                         </h4>
                       </div>
@@ -367,7 +378,7 @@ export function MyToolboxSection() {
                 
                 {/* Guest message */}
                 {!user && routesData.length > 0 && (
-                  <p className="mt-2 text-center text-[10px] text-slate-500">
+                  <p className="mt-3 text-center text-sm leading-5 text-slate-500">
                     Sign in to save up to {USER_ROUTE_LIMIT} routes
                   </p>
                 )}
@@ -378,8 +389,8 @@ export function MyToolboxSection() {
                 href="/routes"
                 className="group flex min-h-[120px] flex-col items-center justify-center rounded-xl border border-dashed border-slate-800/70 bg-slate-900/30 p-4 text-center transition hover:border-emerald-400/30 hover:bg-slate-900/50"
               >
-                <p className="mb-3 text-xs text-slate-400">No route saved yet</p>
-                <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-1.5 text-xs font-medium text-emerald-300 transition group-hover:bg-emerald-500/30">
+                <p className="mb-3 text-sm leading-5 text-slate-400">No route saved yet</p>
+                <div className="inline-flex h-9 items-center gap-2 rounded-lg bg-emerald-500/20 px-3 py-2 text-sm font-medium text-emerald-300 transition group-hover:bg-emerald-500/30">
                   <span>Browse routes</span>
                   <span>→</span>
                 </div>

@@ -55,14 +55,14 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
   const featuredRest = sortedRoutes.slice(1, 4);
 
   return (
-    <section className="px-4 py-6 lg:py-8 lg:px-8">
-      <div className="mx-auto max-w-5xl lg:max-w-[1200px]">
+    <section className="px-4 py-10 sm:px-6 sm:py-8 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
         {/* Section Header */}
         <div className="mb-4 flex items-center justify-between lg:mb-5">
-          <h2 className="text-base font-semibold text-slate-50 lg:text-2xl">Best Routes</h2>
+          <h2 className="text-base font-semibold leading-6 text-slate-50">Best Routes</h2>
           <Link
             href="/routes"
-            className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-xs font-medium text-slate-400 transition-colors hover:text-emerald-300 lg:text-sm"
+            className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-emerald-300"
           >
             <span>More</span>
             <span>→</span>
@@ -78,26 +78,26 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
               <Link
                 key={featuredPrimary.id}
                 href={`/routes/${featuredPrimary.slug}`}
-                className="group relative flex min-h-[125px] flex-col gap-2 overflow-hidden rounded-lg border border-white/10 bg-slate-900/35 px-4 py-4 shadow-[0_20px_60px_rgba(2,6,23,0.45)] transition hover:border-emerald-400/30 hover:bg-slate-900/40 backdrop-blur-xl"
+                className="group relative flex min-h-[90px] flex-col gap-2 overflow-hidden rounded-lg border border-white/10 bg-slate-900/35 px-4 py-3 shadow-[0_20px_60px_rgba(2,6,23,0.45)] transition hover:border-emerald-400/30 hover:bg-slate-900/40 backdrop-blur-xl"
               >
                 <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-br from-sky-500/25 via-indigo-500/15 to-transparent opacity-80" />
-                <div className="flex flex-1 flex-col gap-3">
+                <div className="flex flex-1 flex-col gap-2">
                   {/* Header row */}
                   <div className="flex w-full items-center gap-2.5">
                     {/* Icon */}
-                    <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
-                      <Icon className="h-4 w-4 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
+                      <Icon className="text-emerald-400 transition-colors group-hover:text-emerald-300" size={22} strokeWidth={2} />
                     </div>
 
                     {/* Title */}
-                    <h3 className="flex-1 text-sm font-medium leading-snug text-slate-50 line-clamp-2">
+                    <h3 className="flex-1 text-sm font-semibold leading-5 text-slate-50 line-clamp-2">
                       {featuredPrimary.title}
                     </h3>
                   </div>
 
                   {/* Description */}
                   {featuredPrimary.description && (
-                    <p className="text-xs leading-relaxed text-slate-300/60 line-clamp-2">
+                    <p className="text-sm leading-5 text-slate-400 line-clamp-1">
                       {featuredPrimary.description}
                     </p>
                   )}
@@ -114,17 +114,19 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
                 <Link
                   key={route.id}
                   href={`/routes/${route.slug}`}
-                  className="group relative flex min-h-[44px] items-center gap-2.5 rounded-lg border border-white/10 bg-slate-900/25 px-3 py-1.5 transition hover:border-emerald-400/30 hover:bg-slate-900/35"
+                  className="group relative flex min-h-[52px] items-center gap-2.5 rounded-lg border border-white/10 bg-slate-900/25 px-3 py-2 transition hover:border-emerald-400/30 hover:bg-slate-900/35"
                 >
                   {/* Icon */}
-                  <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
-                    <Icon className="h-4 w-4 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
+                    <Icon className="text-emerald-400 transition-colors group-hover:text-emerald-300" size={22} strokeWidth={2} />
                   </div>
 
                   {/* Title */}
-                  <h3 className="flex-1 min-w-0 text-sm font-medium text-slate-50 truncate">
-                    {route.title}
-                  </h3>
+                  <div className="flex flex-1 min-w-0 flex-col justify-center text-left">
+                    <h3 className="text-sm font-semibold leading-5 text-slate-50 truncate">
+                      {route.title}
+                    </h3>
+                  </div>
                 </Link>
               );
             })}

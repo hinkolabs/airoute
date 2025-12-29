@@ -42,7 +42,7 @@ export function ToolNotFoundContent() {
 
   return (
     <div className="min-h-screen bg-slate-950 px-4 py-20 text-slate-50">
-      <div className="mx-auto flex max-w-4xl flex-col items-center justify-center text-center">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-center text-center">
         <div className="mb-4 text-6xl">🔍</div>
         <h1 className="mb-2 text-2xl font-bold">Tool Not Found</h1>
         <p className="mb-6 text-slate-400">
@@ -138,8 +138,8 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6">
-      <div className="mx-auto max-w-5xl">
+    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
         {/* Tool Name & Logo */}
         <header className="mb-6 flex items-start gap-4">
           <ToolLogo
