@@ -59,6 +59,19 @@ const TOOLBOX_EXPANDED_SLOTS = 6;
 const ROUTES_LIMIT_GUEST = 1;
 const ROUTES_LIMIT_AUTHED = 2;
 
+const GUEST_SAVED_ROUTES_KEY = "airoute_saved_routes_guest_v1";
+
+function loadGuestSavedRoutes(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const json = localStorage.getItem(GUEST_SAVED_ROUTES_KEY);
+    const data = json ? JSON.parse(json) : [];
+    return Array.isArray(data) ? data.slice(0, ROUTES_LIMIT_GUEST) : [];
+  } catch {
+    return [];
+  }
+}
+
 // ===========================
 // MY TOOLBOX SECTION
 // ===========================
@@ -262,15 +275,50 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
 
       try {
         if (!isAuthed || !user?.id) {
-          const guestFavorites = loadGuestFavorites();
-          const guestRoutes = (guestFavorites.routes || []).slice(0, routeLimit);
+          const guestRoutes = loadGuestSavedRoutes().slice(0, routeLimit);
           if (!active) return;
+
+          if (guestRoutes.length > 0) {
+            const supabase = getBrowserSupabaseClient();
+            const locale = basePath === "/kr" ? "kr" : "en";
+            const metaResult = await withTimeout(
+              (async () => {
+                return await supabase
+                  .from("routes")
+                  .select("slug, title, icon, routes_i18n(locale, title)")
+                  .in("slug", guestRoutes)
+                  .limit(routeLimit);
+              })(),
+              8000
+            );
+            if (active && metaResult.ok) {
+              const meta = metaResult.value as any;
+              if (!meta.error && meta.data) {
+                const mapped = guestRoutes
+                  .map((slug) => {
+                    const r = (meta.data as any[]).find((d: any) => d.slug === slug);
+                    if (!r) return { slug, title: slug, icon: null };
+                    const i18n = r.routes_i18n || [];
+                    const tr = i18n.find((i: any) => i?.locale === locale) || i18n.find((i: any) => i?.locale === "en");
+                    return {
+                      slug: r.slug,
+                      title: tr?.title ?? r.title ?? slug,
+                      icon: r.icon ?? null,
+                    };
+                  });
+                setRoutesData(mapped);
+                setSavedRoutesCount(mapped.length);
+                return;
+              }
+            }
+          }
+
           const guestRouteData = guestRoutes.map((slug) => ({
             slug,
             title: slug,
             icon: null,
           }));
-          setRoutesData(guestRouteData.slice(0, routeLimit));
+          setRoutesData(guestRouteData);
           setSavedRoutesCount(guestRouteData.length);
           return;
         }
