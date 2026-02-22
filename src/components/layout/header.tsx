@@ -92,6 +92,7 @@ export default function Header() {
     { href: getLocalizedPath("/"), label: isKrMode ? "홈" : "Home", exact: true },
     { href: getLocalizedPath("/routes"), label: isKrMode ? "루트" : "Routes" },
     { href: getLocalizedPath("/guides"), label: isKrMode ? "가이드" : "Guides" },
+    { href: getLocalizedPath("/tools"), label: isKrMode ? "도구" : "Tools" },
     ...(demoMode ? [] : [{ href: getLocalizedPath("/workspace"), label: isKrMode ? "워크스페이스" : "Workspace" }]),
   ];
 

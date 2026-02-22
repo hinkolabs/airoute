@@ -4,10 +4,66 @@ import { useMemo, useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageShell, SearchBar, ToolCard, ToolCardProps } from "@/app/_design/components/page";
 import type { ToolRecord } from "@/lib/tools";
-import { Search } from "lucide-react";
+import { Search, ShieldCheck } from "lucide-react";
 import { getFavorites, toggleToolFavorite } from "@/lib/favorites";
 import { useAuth } from "@/app/_providers/auth-provider";
 import { Toast } from "@/components/toast";
+
+// ============================================================
+// i18n
+// ============================================================
+const i18nLabels = {
+  en: {
+    pageTitle: "All tools",
+    pageDesc: "Browse all AI tools listed on Airoute.",
+    officialOnly: "All links go directly to official sites only",
+    searchPlaceholder: "Search tools by name, description, or tags...",
+    resultsFound: (n: number) => `${n} tool${n !== 1 ? "s" : ""} found`,
+    searchFor: "for",
+    inCategory: "in",
+    noToolsYet: "No tools available yet.",
+    noMatch: "No tools match your search.",
+    clearSearch: "Clear search",
+    removedFromToolbox: "Removed from Toolbox",
+    addedToToolbox: "Added to Toolbox",
+    guestLimit: "Guest can save up to 3 tools. Sign in to save more.",
+    failedUpdate: "Failed to update toolbox",
+    categoryLabels: {
+      "All": "All",
+      "Image & Design": "Image & Design",
+      "Writing": "Writing",
+      "Video": "Video",
+      "Audio": "Audio",
+      "Voice": "Voice",
+      "Coding": "Coding",
+    } as Record<string, string>,
+  },
+  kr: {
+    pageTitle: "AI 도구 전체보기",
+    pageDesc: "Airoute에서 엄선한 AI 도구를 모두 확인하세요.",
+    officialOnly: "모든 링크는 공식 사이트로만 연결됩니다",
+    searchPlaceholder: "도구 이름, 설명, 태그로 검색...",
+    resultsFound: (n: number) => `${n}개의 도구가 검색되었습니다`,
+    searchFor: "검색어:",
+    inCategory: "카테고리:",
+    noToolsYet: "아직 등록된 도구가 없습니다.",
+    noMatch: "검색 결과가 없습니다.",
+    clearSearch: "검색 초기화",
+    removedFromToolbox: "툴박스에서 제거됨",
+    addedToToolbox: "툴박스에 추가됨",
+    guestLimit: "게스트는 최대 3개까지 저장 가능합니다. 로그인하면 무제한 저장!",
+    failedUpdate: "업데이트에 실패했습니다",
+    categoryLabels: {
+      "All": "전체",
+      "Image & Design": "이미지 & 디자인",
+      "Writing": "글쓰기",
+      "Video": "동영상",
+      "Audio": "오디오",
+      "Voice": "음성",
+      "Coding": "코딩",
+    } as Record<string, string>,
+  },
+} as const;
 
 // ============================================================
 // Types
@@ -106,12 +162,14 @@ function filterDisplayTags(tags: string[] | null | undefined): string[] {
 type ToolsListClientProps = {
   tools: ToolRecord[];
   basePath?: string;
+  locale?: "en" | "kr";
 };
 
 // ============================================================
 // Component
 // ============================================================
-export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
+export function ToolsListClient({ tools, basePath, locale = "en" }: ToolsListClientProps) {
+  const t = i18nLabels[locale];
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
@@ -215,7 +273,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
         : [...prev, toolSlug]
     );
     setToast({
-      message: wasFavorited ? "Removed from Toolbox" : "Added to Toolbox",
+      message: wasFavorited ? t.removedFromToolbox : t.addedToToolbox,
       type: "success",
     });
 
@@ -230,7 +288,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
             : prev.filter(s => s !== toolSlug)
         );
         setToast({
-          message: "Guest can save up to 3 tools. Sign in to save more.",
+          message: t.guestLimit,
           type: "error",
         });
       } else {
@@ -244,7 +302,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
           ? [...prev, toolSlug]
           : prev.filter(s => s !== toolSlug)
       );
-      setToast({ message: "Failed to update toolbox", type: "error" });
+      setToast({ message: t.failedUpdate, type: "error" });
     }
   };
 
@@ -255,14 +313,15 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
       const toolSlug = tool.slug || tool.id;
       const normalized = normalizeCategory(tool);
 
+      const description = locale === "kr"
+        ? (tool.description ?? tool.desc_ko ?? tool.desc_en ?? "설명 준비 중")
+        : (tool.desc_en ?? tool.description ?? "No description available.");
+
       return {
         id: tool.id,
         slug: toolSlug,
         name: tool.name,
-        description:
-          tool.desc_en ??
-          tool.description ??
-          "No description available.",
+        description,
         category: normalized ?? 'Other',
         tags: displayTags,
         badge: tool.badge ?? undefined,
@@ -270,6 +329,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
         detailsHref: tool.slug ? `${resolvedBase}/tools/${tool.slug}` : undefined,
         isFavorited: favoriteSlugs.includes(toolSlug),
         onFavoriteToggle: () => handleFavoriteToggle(toolSlug),
+        locale,
         // For logo rendering
         image: tool.image,
         website_url: tool.websiteUrl || tool.url,
@@ -283,11 +343,17 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
         {/* Header */}
         <header className="mb-8">
           <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-            All tools
+            {t.pageTitle}
           </h1>
           <p className="mt-2 text-sm text-muted-foreground sm:text-base">
-            Browse all AI tools listed on Airoute.
+            {t.pageDesc}
           </p>
+          <div className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
+              {t.officialOnly}
+            </span>
+          </div>
         </header>
 
         {/* Search Input */}
@@ -297,7 +363,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search tools by name, description, or tags..."
+              placeholder={t.searchPlaceholder}
               className="w-full rounded-xl border border-border bg-card px-4 py-3 pl-10 text-sm text-foreground shadow-sm outline-none ring-0 placeholder:text-muted-foreground focus:border-primary"
             />
             <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
@@ -320,7 +386,7 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
                     : "border-border bg-muted text-muted-foreground hover:border-border hover:text-foreground"
                 }`}
               >
-                {category}
+                {t.categoryLabels[category] ?? category}
               </button>
             ))}
           </div>
@@ -329,15 +395,15 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
 
         {/* Results count */}
         <div className="mb-4 text-xs text-muted-foreground sm:text-sm">
-          {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
+          {t.resultsFound(filteredTools.length)}
           {search && (
             <span className="ml-2">
-              for &quot;<span className="text-foreground">{search}</span>&quot;
+              {t.searchFor} &quot;<span className="text-foreground">{search}</span>&quot;
             </span>
           )}
           {selectedCategory !== "All" && (
             <span className="ml-2">
-              in <span className="text-foreground">{selectedCategory}</span>
+              {t.inCategory} <span className="text-foreground">{t.categoryLabels[selectedCategory] ?? selectedCategory}</span>
             </span>
           )}
         </div>
@@ -347,16 +413,16 @@ export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
           <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 text-center text-muted-foreground">
             <div>
               {tools.length === 0 ? (
-                <p>No tools available yet.</p>
+                <p>{t.noToolsYet}</p>
               ) : (
                 <p>
-                  No tools match your search.
+                  {t.noMatch}
                   <br />
                   <button
                     onClick={() => setSearch("")}
                     className="mt-2 text-primary hover:underline"
                   >
-                    Clear search
+                    {t.clearSearch}
                   </button>
                 </p>
               )}
