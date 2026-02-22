@@ -72,15 +72,9 @@ export default function Header() {
     if (isKrMode) {
       newLocale = "en";
       newPath = pathname.replace(/^\/kr/, "") || "/";
-      newPath = newPath.replace(/(-kr)(\/|$)/g, "$2");
     } else {
       newLocale = "kr";
-      const basePath = pathname === "/" ? "/kr" : `/kr${pathname}`;
-      if (pathname.match(/^\/(guides|routes)\/[^\/]+$/)) {
-        newPath = basePath + "-kr";
-      } else {
-        newPath = basePath;
-      }
+      newPath = pathname === "/" ? "/kr" : `/kr${pathname}`;
     }
     
     // Persist choice so middleware geo-redirect respects it

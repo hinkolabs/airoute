@@ -21,6 +21,9 @@ RULES:
 - Maintain the same tone and intent as the original
 - Do NOT translate tool names (e.g., "ChatGPT", "Filmora", "Opus Clip")
 - Keep URLs, slugs, and technical identifiers unchanged
+- CRITICAL: Translate the ENTIRE content of every field. Do NOT summarize or shorten.
+- Prompt examples must be translated in FULL — every line, every bullet, every rule.
+- Keep the same structure (line breaks, dashes, brackets like [topic]) as the original.
 
 OUTPUT: Valid JSON only, no markdown code blocks.`;
 
@@ -76,7 +79,7 @@ Return JSON:
       { role: "user", content: userPrompt },
     ],
     temperature: 0.5,
-    max_tokens: 800,
+    max_tokens: 1500,
     response_format: { type: "json_object" },
   });
 
@@ -92,19 +95,21 @@ async function translateStep(
   model: string,
   step: TranslateStepRequest
 ): Promise<TranslateStepResponse> {
-  const userPrompt = `Translate this workflow step to Korean:
+  const userPrompt = `Translate this workflow step to Korean.
+IMPORTANT: Translate EVERY line of each field completely. Do NOT summarize or omit any part.
 
 Step Title: ${step.step_title || ""}
 Why: ${step.step_why || ""}
 CTA Label: ${step.step_cta_label || ""}
-Prompt Example: ${step.step_prompt_example || ""}
+Prompt Example (translate ALL lines, keep structure):
+${step.step_prompt_example || ""}
 
 Return JSON:
 {
   "step_title": "Korean translation",
   "step_why": "Korean translation",
   "step_cta_label": "Korean translation",
-  "step_prompt_example": "Korean translation"
+  "step_prompt_example": "FULL Korean translation of the entire prompt example above"
 }`;
 
   const completion = await openai.chat.completions.create({
@@ -114,7 +119,7 @@ Return JSON:
       { role: "user", content: userPrompt },
     ],
     temperature: 0.5,
-    max_tokens: 600,
+    max_tokens: 2000,
     response_format: { type: "json_object" },
   });
 
