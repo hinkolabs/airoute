@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { checkAdminAuth } from "@/lib/admin/check-admin-auth";
 import { normalizeGuideCta } from "@/lib/guides/payload-normalizer";
 import { computeGuideQualityScore } from "@/lib/guides/quality-check";
 
@@ -162,28 +162,9 @@ async function insertGuide(
 }
 
 export async function POST(req: Request) {
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { data: adminRow } = await supabase
-      .from("system_admins")
-      .select("user_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!adminRow) {
-      return NextResponse.json({ ok: false, error: "Not a system admin" }, { status: 403 });
-    }
-  } catch {
-    return NextResponse.json({ ok: false, error: "Auth failed" }, { status: 401 });
+  const auth = await checkAdminAuth();
+  if (!auth.ok) {
+    return NextResponse.json({ ok: false, error: auth.error }, { status: auth.status });
   }
 
   try {
