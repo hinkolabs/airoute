@@ -19,7 +19,7 @@ export const krTopRoutes = [
   },
   {
     title: "구글보다 빠른 리서치",
-    slug: "research-anything-faster-than-google",
+    slug: "research-faster-than-google",
     badge: "추천",
   },
 ];
