@@ -128,10 +128,23 @@ export default function RouteDetailContent({
 
     const loadGuides = async () => {
       setIsFetchingGuides(true);
+      const preferredLang = isKrMode ? "kr" : "en";
 
       try {
-        const [previewRes, countRes] = await Promise.all([
-          supabaseClient
+        let previewRes = await supabaseClient
+          .from("guides")
+          .select("id,slug,title,excerpt,updated_at,created_at")
+          .eq("guide_type", "route_based")
+          .eq("route_slug", route.slug)
+          .eq("status", "published")
+          .eq("lang", preferredLang)
+          .order("updated_at", { ascending: false, nullsFirst: false })
+          .order("created_at", { ascending: false })
+          .limit(3);
+
+        // KR 가이드 없으면 EN 폴백
+        if (isKrMode && (!previewRes.data || previewRes.data.length === 0)) {
+          previewRes = await supabaseClient
             .from("guides")
             .select("id,slug,title,excerpt,updated_at,created_at")
             .eq("guide_type", "route_based")
@@ -140,15 +153,8 @@ export default function RouteDetailContent({
             .eq("lang", "en")
             .order("updated_at", { ascending: false, nullsFirst: false })
             .order("created_at", { ascending: false })
-            .limit(3),
-          supabaseClient
-            .from("guides")
-            .select("id", { count: "exact", head: true })
-            .eq("guide_type", "route_based")
-            .eq("route_slug", route.slug)
-            .eq("status", "published")
-            .eq("lang", "en"),
-        ]);
+            .limit(3);
+        }
 
         if (!isMounted) {
           return;
@@ -159,7 +165,7 @@ export default function RouteDetailContent({
         }
 
         setRelatedGuidesState(previewRes.data);
-        setRelatedGuidesCountState(countRes.count ?? 0);
+        setRelatedGuidesCountState(previewRes.data.length);
       } catch (error) {
         console.error("Failed to load related guides:", error);
       } finally {
@@ -454,7 +460,7 @@ export default function RouteDetailContent({
                 relatedGuidesState.map((guide) => (
                   <Link
                     key={guide.id}
-                    href={`/guides/${guide.slug}`}
+                    href={isKrMode ? `/kr/guides/${guide.slug}` : `/guides/${guide.slug}`}
                     className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3 transition hover:bg-card hover:border-primary/30"
                   >
                     <div className="flex-1 min-w-0">

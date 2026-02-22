@@ -126,27 +126,34 @@ Return JSON:
 }
 
 export async function POST(req: Request) {
-  // 1) Admin auth - check Supabase user + system_admins table (consistent with layout)
+  // 1) Admin auth - ADMIN_KEY cookie OR Supabase session (consistent with admin layout)
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const adminCookie = cookieStore.get("airoute_admin")?.value;
+    const adminKey = process.env.ADMIN_KEY;
+    const isAdminKeyCookie = adminKey && adminCookie === adminKey;
 
-    if (authError || !user) {
-      return NextResponse.json({ ok: false, error: "Unauthorized: Not logged in" }, { status: 401 });
-    }
+    if (!isAdminKeyCookie) {
+      const supabase = await createClient();
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
 
-    // Check system_admin status
-    const { data: systemAdminRow } = await supabase
-      .from("system_admins")
-      .select("user_id")
-      .eq("user_id", user.id)
-      .maybeSingle();
+      if (authError || !user) {
+        return NextResponse.json({ ok: false, error: "Unauthorized: Not logged in" }, { status: 401 });
+      }
 
-    if (!systemAdminRow) {
-      return NextResponse.json({ ok: false, error: "Unauthorized: Not a system admin" }, { status: 403 });
+      const { data: systemAdminRow } = await supabase
+        .from("system_admins")
+        .select("user_id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (!systemAdminRow) {
+        return NextResponse.json({ ok: false, error: "Unauthorized: Not a system admin" }, { status: 403 });
+      }
     }
   } catch (err) {
     console.error("[translate-to-kr] Auth error:", err);

@@ -62,8 +62,23 @@ export default async function KRRouteDetailPage({ params, searchParams }: KRRout
     { auth: { persistSession: false } }
   );
 
-  const [guidesPreview, guidesCount] = await Promise.all([
-    supabase
+  // KR 가이드 우선 → EN 폴백
+  const krGuidesRes = await supabase
+    .from("guides")
+    .select("id, slug, title, excerpt")
+    .eq("guide_type", "route_based")
+    .eq("route_slug", route.slug)
+    .eq("status", "published")
+    .eq("lang", "kr")
+    .order("published_at", { ascending: false, nullsFirst: false })
+    .order("updated_at", { ascending: false })
+    .limit(10);
+
+  const krGuides = krGuidesRes.data ?? [];
+
+  let relatedGuides = krGuides;
+  if (krGuides.length === 0) {
+    const enGuidesRes = await supabase
       .from("guides")
       .select("id, slug, title, excerpt")
       .eq("guide_type", "route_based")
@@ -72,18 +87,11 @@ export default async function KRRouteDetailPage({ params, searchParams }: KRRout
       .eq("lang", "en")
       .order("published_at", { ascending: false, nullsFirst: false })
       .order("updated_at", { ascending: false })
-      .limit(10),
-    supabase
-      .from("guides")
-      .select("id", { count: "exact", head: true })
-      .eq("guide_type", "route_based")
-      .eq("route_slug", route.slug)
-      .eq("status", "published")
-      .eq("lang", "en")
-  ]);
+      .limit(10);
+    relatedGuides = enGuidesRes.data ?? [];
+  }
 
-  const relatedGuides = guidesPreview.data ?? [];
-  const totalGuidesCount = guidesCount.count ?? 0;
+  const totalGuidesCount = relatedGuides.length;
 
   if (process.env.NODE_ENV !== "production") {
     console.log("[KRRouteDetailPage] Related guides data:", {

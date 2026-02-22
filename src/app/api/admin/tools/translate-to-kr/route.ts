@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 
-const OPENAI_ENABLED = process.env.OPENAI_ENABLED === "true";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+function getOpenAIConfig() {
+  return {
+    enabled: process.env.OPENAI_ENABLED === "true",
+    apiKey: process.env.OPENAI_API_KEY,
+    model: process.env.OPENAI_MODEL || "gpt-4o-mini",
+  };
+}
 
 type TranslatedTool = {
   name: string;
@@ -24,12 +28,14 @@ type ToolInput = {
 };
 
 async function callOpenAI(prompt: string): Promise<string> {
-  if (!OPENAI_ENABLED) {
+  const { enabled, apiKey, model } = getOpenAIConfig();
+
+  if (!enabled) {
     throw new Error(
       `OpenAI disabled. OPENAI_ENABLED=${process.env.OPENAI_ENABLED ?? "(unset)"}. Set OPENAI_ENABLED=true in .env.local`
     );
   }
-  if (!OPENAI_API_KEY) {
+  if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not set in .env.local");
   }
 
@@ -37,10 +43,10 @@ async function callOpenAI(prompt: string): Promise<string> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model,
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
     }),
@@ -161,10 +167,11 @@ export async function POST(req: Request) {
       );
     }
 
+    const config = getOpenAIConfig();
     const envDebug = {
-      OPENAI_ENABLED: OPENAI_ENABLED,
-      OPENAI_API_KEY_SET: !!OPENAI_API_KEY,
-      OPENAI_MODEL,
+      OPENAI_ENABLED: config.enabled,
+      OPENAI_API_KEY_SET: !!config.apiKey,
+      OPENAI_MODEL: config.model,
     };
 
     // Filter out already-translated tools (unless force)
