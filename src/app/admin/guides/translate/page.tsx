@@ -18,7 +18,8 @@ export default function AdminGuidesTranslatePage() {
   const [error, setError] = useState<string | null>(null);
   const [guideId, setGuideId] = useState("");
   const [forceRetranslate, setForceRetranslate] = useState(false);
-  const [batchSize, setBatchSize] = useState(5); // 기본 5개씩 처리
+  const [batchSize, setBatchSize] = useState(5);
+  const [translateModel, setTranslateModel] = useState("gpt-4o-mini");
   const [guides, setGuides] = useState<Guide[]>([]);
   const [loadingGuides, setLoadingGuides] = useState(true);
   const [loadGuidesError, setLoadGuidesError] = useState<string | null>(null);
@@ -78,8 +79,8 @@ export default function AdminGuidesTranslatePage() {
 
     try {
       const body = mode === "single" 
-        ? { guideId: guideId.trim(), forceRetranslate } 
-        : { forceRetranslate, batchSize };  // 배치 사이즈 추가
+        ? { guideId: guideId.trim(), forceRetranslate, model: translateModel } 
+        : { forceRetranslate, batchSize, model: translateModel };
       
       const res = await fetch("/api/admin/guides/translate-to-kr", {
         method: "POST",
@@ -237,6 +238,22 @@ export default function AdminGuidesTranslatePage() {
               <br />
               미번역 가이드가 많으면 여러 번 실행하세요. (가이드당 약 20~30초 소요)
             </p>
+          </div>
+
+          {/* Model Selection */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-foreground">
+              번역 모델
+            </label>
+            <select
+              value={translateModel}
+              onChange={(e) => setTranslateModel(e.target.value)}
+              disabled={loading}
+              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="gpt-4o-mini">gpt-4o-mini (빠름, 저비용)</option>
+              <option value="gpt-4o">gpt-4o (고품질, 자연스러운 한국어)</option>
+            </select>
           </div>
 
           {/* Buttons */}

@@ -71,6 +71,7 @@ export default function AdminToolsPage() {
   const [selectedToolId, setSelectedToolId] = useState<string>("");
   const [forceRetranslate, setForceRetranslate] = useState(false);
   const [batchSize, setBatchSize] = useState(3);
+  const [translateModel, setTranslateModel] = useState("gpt-4o-mini");
   const [toolListFilter, setToolListFilter] = useState<"untranslated" | "all">("untranslated");
   const [migrationStatus, setMigrationStatus] = useState<
     "checking" | "applied" | "needed" | "error"
@@ -128,6 +129,7 @@ export default function AdminToolsPage() {
           forceRetranslate,
           batchSize: selectedToolId ? 1 : batchSize,
           delayMs: 3000,
+          model: translateModel,
         }),
       });
 
@@ -359,6 +361,21 @@ export default function AdminToolsPage() {
               <label htmlFor="force-retranslate" className="text-sm text-card-foreground">
                 기존 번역 덮어쓰기 (Force Re-translate)
               </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-card-foreground mb-1">
+                번역 모델
+              </label>
+              <select
+                value={translateModel}
+                onChange={(e) => setTranslateModel(e.target.value)}
+                disabled={translating}
+                className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="gpt-4o-mini">gpt-4o-mini (빠름, 저비용)</option>
+                <option value="gpt-4o">gpt-4o (고품질, 자연스러운 한국어)</option>
+              </select>
             </div>
 
             {!selectedToolId && (

@@ -27,8 +27,8 @@ type ToolInput = {
   detail_content: Record<string, unknown> | null;
 };
 
-async function callOpenAI(prompt: string): Promise<string> {
-  const { enabled, apiKey, model } = getOpenAIConfig();
+async function callOpenAI(prompt: string, modelOverride?: string): Promise<string> {
+  const { enabled, apiKey, model: defaultModel } = getOpenAIConfig();
 
   if (!enabled) {
     throw new Error(
@@ -38,6 +38,8 @@ async function callOpenAI(prompt: string): Promise<string> {
   if (!apiKey) {
     throw new Error("OPENAI_API_KEY is not set in .env.local");
   }
+
+  const model = modelOverride || defaultModel;
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -64,14 +66,18 @@ async function callOpenAI(prompt: string): Promise<string> {
   return content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
 }
 
-async function translateToolToKorean(tool: ToolInput): Promise<TranslatedTool> {
+async function translateToolToKorean(tool: ToolInput, modelOverride?: string): Promise<TranslatedTool> {
   const detailJson = tool.detail_content
     ? JSON.stringify(tool.detail_content)
     : null;
 
-  const prompt = `You are a professional translator specializing in AI tool localization.
-Translate ALL of the following AI tool fields from English to Korean.
-Maintain natural, user-friendly Korean that beginners can understand.
+  const prompt = `You are a Korean localization expert for an AI tools website targeting 20-30s Korean users.
+
+=== STYLE ===
+- Use 해요체 (polite conversational). Never 하십시오체.
+- Write like a popular Korean IT/AI blog, not an academic paper.
+- Keep established loanwords: 리서치, 프롬프트, 워크플로우, 템플릿, 피드백, 콘텐츠, 슬라이드
+- NEVER translate brand names (ChatGPT, Midjourney, Filmora, etc.)
 
 === FIELDS TO TRANSLATE ===
 
@@ -86,7 +92,7 @@ ${detailJson ? `6. Detail Content (JSON): ${detailJson}` : ""}
 
 Return a JSON object with these exact keys:
 {
-  "name": "translated name (keep brand names like ChatGPT, Midjourney as-is)",
+  "name": "translated name (keep brand names as-is)",
   "description": "translated description",
   "task_category": "translated task category or null",
   "best_for": "translated best_for or null",
@@ -94,16 +100,13 @@ Return a JSON object with these exact keys:
   "detail_content": { "intro": "...", "features": ["...", "..."], "bestFor": ["...", "..."], "whyPicked": "...", "tips": ["...", "..."] }` : ""}
 }
 
-Important:
-- Keep brand names (ChatGPT, Midjourney, Filmora, etc.) as-is
-- Use natural Korean that AI beginners can understand
 - For empty fields, return null
 - For detail_content, translate ALL string values inside the JSON structure
 - Return ONLY the JSON, no other text`;
 
   let raw: string;
   try {
-    raw = await callOpenAI(prompt);
+    raw = await callOpenAI(prompt, modelOverride);
   } catch (e) {
     throw new Error(`[OpenAI 호출] ${e instanceof Error ? e.message : e}`);
   }
@@ -132,6 +135,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { toolId, forceRetranslate, batchSize = 5, delayMs = 3000 } = body;
+
+    const ALLOWED_MODELS = ["gpt-4o-mini", "gpt-4o"];
+    const requestedModel = body.model as string | undefined;
+    const selectedModel = (requestedModel && ALLOWED_MODELS.includes(requestedModel))
+      ? requestedModel
+      : undefined;
 
     const supabase = createAdminSupabase();
 
@@ -229,7 +238,7 @@ export async function POST(req: Request) {
           best_for: tool.best_for,
           why_pick: tool.why_pick,
           detail_content: tool.detail_content,
-        });
+        }, selectedModel);
 
         const { error: upsertError } = await supabase
           .from("tools_i18n")

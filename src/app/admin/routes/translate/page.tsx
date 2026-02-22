@@ -14,6 +14,7 @@ export default function AdminRoutesTranslatePage() {
   const [error, setError] = useState<string | null>(null);
   const [routeSlug, setRouteSlug] = useState("");
   const [forceRetranslate, setForceRetranslate] = useState(false);
+  const [translateModel, setTranslateModel] = useState("gpt-4o-mini");
   const [routes, setRoutes] = useState<Route[]>([]);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
 
@@ -47,8 +48,8 @@ export default function AdminRoutesTranslatePage() {
 
     try {
       const body = mode === "single" 
-        ? { routeSlug: routeSlug.trim(), forceRetranslate } 
-        : { forceRetranslate };
+        ? { routeSlug: routeSlug.trim(), forceRetranslate, model: translateModel } 
+        : { forceRetranslate, model: translateModel };
       
       const res = await fetch("/api/admin/routes/translate-to-kr", {
         method: "POST",
@@ -141,6 +142,22 @@ export default function AdminRoutesTranslatePage() {
             <p className="ml-6 mt-1 text-xs text-muted-foreground">
               이미 번역된 루트도 다시 번역합니다 (기존 데이터 삭제 후 재생성)
             </p>
+          </div>
+
+          {/* Model Selection */}
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-foreground">
+              번역 모델
+            </label>
+            <select
+              value={translateModel}
+              onChange={(e) => setTranslateModel(e.target.value)}
+              disabled={loading}
+              className="w-full rounded-lg border border-border bg-background px-4 py-2 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+            >
+              <option value="gpt-4o-mini">gpt-4o-mini (빠름, 저비용)</option>
+              <option value="gpt-4o">gpt-4o (고품질, 자연스러운 한국어)</option>
+            </select>
           </div>
 
           {/* Buttons */}

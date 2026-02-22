@@ -11,16 +11,37 @@ import OpenAI from "openai";
  * Fetches EN guides and creates KR versions via OpenAI translation
  */
 
-const SYSTEM_PROMPT = `You are a professional translator specializing in AI tool content for Korean users.
+const SYSTEM_PROMPT = `You are a Korean localization expert for an AI tools website targeting 20-30s Korean users.
 
-RULES:
-- Translate from English to Korean naturally and professionally
-- Keep technical terms in English when appropriate (e.g., "AI", "ChatGPT", "Prompt")
-- Make it beginner-friendly and clear
-- Maintain the same tone and intent as the original
-- Do NOT translate tool names or brand names
-- Keep URLs, slugs, and technical identifiers unchanged
-- Preserve markdown formatting in content
+=== TONE ===
+- Use 해요체 (polite conversational). Never 하십시오체 (overly formal).
+- Write like a popular Korean IT/AI blog, not an academic paper.
+- Good: "긴 영상에서 숏폼 10개를 뽑아보세요"
+- Bad: "긴 영상을 숏폼으로 전환하십시오"
+
+=== LOANWORD RULES ===
+Keep established Korean loanwords instead of pure-Korean equivalents:
+- research → 리서치 (NOT 연구)
+- slide → 슬라이드 (NOT 발표 화면)
+- prompt → 프롬프트 (NOT 명령문/지시문)
+- workflow → 워크플로우 (NOT 작업 흐름)
+- template → 템플릿 (NOT 양식)
+- feedback → 피드백 (NOT 의견)
+- content → 콘텐츠 (NOT 내용물)
+- draft → 초안 (Korean is natural here)
+- export → 내보내기 (Korean is natural here)
+- outline → 아웃라인 or 개요 (both OK)
+
+=== TITLES ===
+Titles must be concise and action-oriented, like Korean blog/YouTube titles.
+- Good: "구글보다 빠른 리서치"
+- Bad: "구글보다 더 빠르게 무엇이든 연구하기"
+
+=== CRITICAL RULES ===
+- NEVER translate brand names: ChatGPT, Claude, Filmora, Opus Clip, Canva, etc.
+- Keep URLs, slugs, and technical identifiers unchanged.
+- Preserve markdown formatting in content.
+- Translate the ENTIRE content. Do NOT summarize or shorten.
 
 OUTPUT: Valid JSON only, no markdown code blocks.`;
 
@@ -122,7 +143,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: false, error: "Missing OPENAI_API_KEY" }, { status: 500 });
     }
 
-    const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
     const supabase = createAdminSupabase();
     const openai = new OpenAI({ apiKey });
 
@@ -130,7 +150,13 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({}));
     const guideId = body.guideId as string | undefined;
     const forceRetranslate = body.forceRetranslate === true;
-    const batchSize = body.batchSize ? Math.min(Math.max(1, body.batchSize), 10) : 10; // 1~10개, 기본 10개
+    const batchSize = body.batchSize ? Math.min(Math.max(1, body.batchSize), 10) : 10;
+
+    const ALLOWED_MODELS = ["gpt-4o-mini", "gpt-4o"];
+    const requestedModel = body.model as string | undefined;
+    const model = (requestedModel && ALLOWED_MODELS.includes(requestedModel))
+      ? requestedModel
+      : (process.env.OPENAI_MODEL || "gpt-4o-mini");
 
     // 4) Fetch EN guides that need translation (same condition as /guides page)
     let guidesQuery = supabase
