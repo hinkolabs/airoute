@@ -1,0 +1,126 @@
+---
+name: enterprise-refactoring-safety-protocol
+description: This is a new rule
+---
+
+# Overview
+
+[Enterprise Refactoring & Safety Protocol — Mandatory]
+
+This project is a large-scale production system.
+All refactoring, structural changes, and cross-file edits must follow these rules.
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. Planning Before Coding (MANDATORY)
+━━━━━━━━━━━━━━━━━━━━━━
+Before writing or editing any code:
+- First analyze current architecture.
+- Identify exact files and dependencies.
+- Summarize the change plan briefly.
+- Only then start implementation.
+
+Never directly modify multiple files without a clear plan.
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. Single Responsibility Patch Rule
+━━━━━━━━━━━━━━━━━━━━━━
+- One task = one logical change.
+- Avoid mixing refactoring + feature + formatting.
+- Each patch must have a single purpose.
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. Minimal Diff Principle (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━
+- Always modify the minimum number of files.
+- Prefer small diffs over big rewrites.
+- Never refactor unrelated code for "cleanliness".
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. File Scope Limitation
+━━━━━━━━━━━━━━━━━━━━━━
+- Start with single-file modification.
+- Only expand to multi-file when dependency requires it.
+- Explicitly explain why multiple files are necessary.
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. KR / EN Dual Update Rule
+━━━━━━━━━━━━━━━━━━━━━━
+- If both KR and EN versions exist:
+  → Always update both.
+  → Logic & structure must be identical.
+  → Only text differs.
+- Never update only one side.
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. Workspace / Permission Safety Rule (CRITICAL)
+━━━━━━━━━━━━━━━━━━━━━━
+- Any change touching:
+  - workspace
+  - role
+  - permission
+  - billing
+  - subscription
+  - credits
+Must:
+  - Preserve backward compatibility.
+  - Never break existing permission flows.
+  - Always default to safer access (deny over allow).
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. Execution Safety Protocol
+━━━━━━━━━━━━━━━━━━━━━━
+- All shell commands must:
+  → Wait for explicit user approval.
+  → If approval delay > 10 seconds → cancel & restart.
+- No parallel or chained commands.
+- lint → build → test flow strictly enforced.
+- On first error → stop → minimal fix → re-run.
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. Progressive Refactor Strategy
+━━━━━━━━━━━━━━━━━━━━━━
+Large refactors must be broken into:
+- Step 1: Structure alignment
+- Step 2: Data flow correction
+- Step 3: Permission gating
+- Step 4: UI cleanup
+
+Never perform large refactors in a single pass.
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. Regression Safety Rule
+━━━━━━━━━━━━━━━━━━━━━━
+- Any refactor must:
+  - Preserve existing behavior.
+  - Not change business logic unless explicitly requested.
+  - Not break routes, auth, billing, or workspace.
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. Completion Criteria
+━━━━━━━━━━━━━━━━━━━━━━
+- Type errors: 0
+- Runtime errors: 0
+- lint: pass
+- build: pass
+- test: pass (if exists)
+- No silent failure allowed.
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. Large-Change Safety Lock
+━━━━━━━━━━━━━━━━━━━━━━
+If modification exceeds:
+- 5 files OR
+- 300 lines diff
+
+→ STOP and request confirmation before continuing.
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. Default Bias
+━━━━━━━━━━━━━━━━━━━━━━
+Always prefer:
+- Stability > elegance
+- Explicitness > abstraction
+- Simplicity > cleverness
+
+This rule overrides any "optimization" behavior.
+

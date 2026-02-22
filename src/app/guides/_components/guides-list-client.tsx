@@ -20,7 +20,7 @@ type GuideTypeFilter = "all" | "route_based" | "tool_based" | "safety";
 
 function Badge({ children }: { children: string }) {
   return (
-    <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-1 text-[11px] font-semibold tracking-wide text-emerald-300 ring-1 ring-emerald-500/20">
+    <span className="inline-flex items-center rounded-md bg-primary/15 px-2 py-1 text-[11px] font-semibold tracking-wide text-primary ring-1 ring-primary/20">
       {children}
     </span>
   );
@@ -95,6 +95,8 @@ function buildApiUrl(params: {
 export default function GuidesListClient(props: {
   initialItems: GuideItem[];
   initialCursor: Cursor;
+  lang?: string; // Add lang prop (default to "en")
+  baseUrl?: string; // Add baseUrl prop for links
 }) {
   const [allItems, setAllItems] = useState<GuideItem[]>(props.initialItems);
   const [cursor, setCursor] = useState<Cursor>(props.initialCursor);
@@ -105,6 +107,8 @@ export default function GuidesListClient(props: {
   const [activeType, setActiveType] = useState<GuideTypeFilter>("all");
   const [isInitialMount, setIsInitialMount] = useState(true);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const lang = props.lang || "en"; // Use provided lang or default to "en"
+  const baseUrl = props.baseUrl || "/guides"; // Use provided baseUrl or default to "/guides"
   
   // Client-side filtering: if activeType is not "all", filter items
   const filteredItems = useMemo(() => {
@@ -155,7 +159,7 @@ export default function GuidesListClient(props: {
         const url = buildApiUrl({
           q: debouncedQ,
           activeType,
-          lang: "en",
+          lang, // Use dynamic lang from props
           limit: 10,
         });
 
@@ -221,7 +225,7 @@ export default function GuidesListClient(props: {
       const url = buildApiUrl({
         q: debouncedQ,
         activeType,
-        lang: "en",
+        lang, // Use dynamic lang from props
         limit: 10,
         cursor,
       });
@@ -276,7 +280,7 @@ export default function GuidesListClient(props: {
     <div className="space-y-4">
       {/* Search input */}
       <div className="relative">
-        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/40">
+        <div className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted">
           <SearchIcon />
         </div>
         <input
@@ -284,13 +288,13 @@ export default function GuidesListClient(props: {
           value={searchInput}
           onChange={(e) => setSearchInput(e.target.value)}
           placeholder="Search guides..."
-          className="h-10 w-full rounded-lg border border-white/10 bg-white/5 pl-10 pr-4 text-sm text-white placeholder:text-white/40 transition-all focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+          className="h-10 w-full rounded-lg border border-border bg-card pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       </div>
 
       {/* Searching indicator */}
       {loading && (debouncedQ.trim().length >= 2 || activeType !== "all") && (
-        <p className="text-xs text-white/50">Searching...</p>
+        <p className="text-xs text-muted-foreground">Searching...</p>
       )}
 
       {/* Filter chips */}
@@ -302,8 +306,8 @@ export default function GuidesListClient(props: {
             onClick={() => setActiveType(option.value)}
             className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
               activeType === option.value
-                ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
-                : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
+                ? "border-primary/50 bg-primary/20 text-primary"
+                : "border-border bg-muted/20 text-muted-foreground hover:border-border hover:text-foreground"
             }`}
           >
             {option.label}
@@ -313,14 +317,14 @@ export default function GuidesListClient(props: {
 
       {/* Error state */}
       {error && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/70">
+        <div className="rounded-2xl border border-border bg-card/50 p-6 text-sm text-muted-foreground">
           {error}
         </div>
       )}
 
       {/* Filter hint when search + type filter results in 0 items */}
       {!error && !loading && debouncedQ.trim() && activeType !== "all" && filteredItems.length === 0 && allItems.length > 0 && (
-        <div className="rounded-lg border border-white/10 bg-white/5 px-4 py-3 text-xs text-white/50">
+        <div className="rounded-lg border border-border bg-card/50 px-4 py-3 text-xs text-muted-foreground">
           {activeType === "tool_based" 
             ? "No Quick Start guides match your search. Try 'All' or another filter."
             : `No ${GUIDE_TYPE_LABEL[activeType] ?? activeType} guides match your search. Try switching to All.`}
@@ -329,7 +333,7 @@ export default function GuidesListClient(props: {
 
       {/* Empty state */}
       {!error && empty && !loading && (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-6 text-sm text-white/70 space-y-3">
+        <div className="rounded-2xl border border-border bg-card/50 p-6 text-sm text-muted-foreground space-y-3">
           <p className="font-medium">No guides found</p>
           <p className="text-white/50 text-xs">
             Try a different keyword or switch the filter.
@@ -362,8 +366,8 @@ export default function GuidesListClient(props: {
           {filteredItems.map((g) => (
             <Link
               key={g.id}
-              href={`/guides/${g.slug}`}
-              className="block rounded-2xl border border-white/10 bg-white/5 p-5 transition hover:bg-white/7"
+              href={`${baseUrl}/${g.slug}`}
+              className="block rounded-2xl border border-border bg-card p-5 transition hover:bg-card hover:shadow-md"
             >
               {/* Row 1: Meta row - guide_type badge (left) + date (right) */}
               <div className="mb-3 flex min-h-[1.75rem] items-center justify-between gap-2">
@@ -374,20 +378,20 @@ export default function GuidesListClient(props: {
                     <span className="h-5 w-0" aria-hidden="true" />
                   )}
                 </div>
-                <div className="shrink-0 text-xs text-white/40">
+                <div className="shrink-0 text-xs text-muted">
                   {formatDate(g.created_at)}
                 </div>
               </div>
 
               {/* Row 2: Title (H2 sizing) */}
-              <h2 className="mb-2 line-clamp-2 text-lg font-semibold text-white md:text-xl">
+              <h2 className="mb-2 line-clamp-2 text-lg font-semibold text-card-foreground md:text-xl">
                 {g.title}
               </h2>
 
               {/* Row 3: Intent chip (taxonomy 우선, 없으면 primary_intent) */}
               {(g.taxonomy || g.primary_intent) && (
                 <div className="mb-2 w-full">
-                  <span className="inline-block w-full truncate rounded-md bg-white/5 px-2 py-1 text-[11px] font-semibold text-white/60">
+                  <span className="inline-block w-full truncate rounded-md bg-muted/20 px-2 py-1 text-[11px] font-semibold text-muted-foreground">
                     {prettyLabel(g.taxonomy || g.primary_intent)}
                   </span>
                 </div>
@@ -396,7 +400,7 @@ export default function GuidesListClient(props: {
               {/* Row 4: Excerpt (line-clamp-2) */}
               <div className="mb-3 min-h-[2.5rem]">
                 {g.excerpt ? (
-                  <p className="line-clamp-2 text-sm text-white/70">
+                  <p className="line-clamp-2 text-sm text-muted-foreground">
                     {g.excerpt}
                   </p>
                 ) : (

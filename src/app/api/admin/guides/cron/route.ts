@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { buildFreeGuideEn, computeVariant, type Variant } from "@/lib/guides/free-templates/en";
+import { computeGuideQualityScore } from "@/lib/guides/quality-check";
 
 // =====================================================
 // Vercel Cron job for automatic free guide generation
@@ -291,6 +292,24 @@ async function handleCron(req: Request) {
       });
     }
 
+    // Quality gate: compute score and update guide
+    const qualityResult = computeGuideQualityScore({
+      content,
+      cta_type: safeCtaType,
+      cta_route_slug: selectedRecipe.cta_route_slug ?? null,
+      cta_tool_slug: selectedRecipe.cta_tool_slug ?? null,
+      primary_intent: selectedRecipe.primary_intent,
+      primary_route: selectedRecipe.primary_route ?? null,
+    });
+
+    await supabase
+      .from("guides")
+      .update({
+        quality_score: qualityResult.score,
+        auto_publish_eligible: qualityResult.auto_publish_eligible,
+      })
+      .eq("id", guide.id);
+
     // Insert log with created_by = 'cron'
     // CRITICAL: Must always insert log when guide insert succeeds
     const mode = "auto";
@@ -316,11 +335,21 @@ async function handleCron(req: Request) {
       });
     }
 
+    // =====================================================
+    // Auto-publish gate
+    // Publish up to 2 eligible guides per lang per day (KST)
+    // Only guides with status='review' AND auto_publish_eligible=true
+    // =====================================================
+    const autoPublishResult = await runAutoPublish(supabase);
+
     return NextResponse.json({
       ok: true,
       generated: true,
       todayCount: todayCount + 1,
       limit: 2,
+      quality_score: qualityResult.score,
+      auto_publish_eligible: qualityResult.auto_publish_eligible,
+      auto_published: autoPublishResult,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : "Unknown error";
@@ -329,6 +358,77 @@ async function handleCron(req: Request) {
       { status: 500 }
     );
   }
+}
+
+// =====================================================
+// Auto-publish: publishes up to 2 review+eligible guides per lang per KST day
+// KR and EN are counted separately (each lang gets its own 2/day quota)
+// =====================================================
+type AutoPublishSummary = {
+  en_published: number;
+  kr_published: number;
+  published_ids: string[];
+};
+
+async function runAutoPublish(
+  supabase: ReturnType<typeof createAdminSupabase>
+): Promise<AutoPublishSummary> {
+  const dayStart = getKSTDayStart();
+  const dayEnd = getKSTDayEnd();
+  const AUTO_PUBLISH_LIMIT = 2;
+  const publishedIds: string[] = [];
+  let enPublished = 0;
+  let krPublished = 0;
+
+  for (const lang of ["en", "kr"] as const) {
+    // Count already auto-published today for this lang
+    const { data: todayPublished } = await supabase
+      .from("guides")
+      .select("id")
+      .eq("lang", lang)
+      .eq("status", "published")
+      .eq("auto_publish_eligible", true)
+      .gte("published_at", dayStart)
+      .lt("published_at", dayEnd);
+
+    const alreadyPublishedCount = todayPublished?.length ?? 0;
+    const remainingQuota = AUTO_PUBLISH_LIMIT - alreadyPublishedCount;
+
+    if (remainingQuota <= 0) continue;
+
+    // Fetch eligible guides (review + auto_publish_eligible, oldest first)
+    const { data: eligible } = await supabase
+      .from("guides")
+      .select("id")
+      .eq("lang", lang)
+      .eq("status", "review")
+      .eq("auto_publish_eligible", true)
+      .order("created_at", { ascending: true })
+      .limit(remainingQuota);
+
+    if (!eligible || eligible.length === 0) continue;
+
+    const idsToPublish = eligible.map((g) => g.id);
+    const publishedAt = new Date().toISOString();
+
+    const { data: updated } = await supabase
+      .from("guides")
+      .update({ status: "published", published_at: publishedAt })
+      .in("id", idsToPublish)
+      .select("id");
+
+    const count = updated?.length ?? 0;
+    publishedIds.push(...(updated?.map((g) => g.id) ?? []));
+
+    if (lang === "en") enPublished = count;
+    else krPublished = count;
+  }
+
+  return {
+    en_published: enPublished,
+    kr_published: krPublished,
+    published_ids: publishedIds,
+  };
 }
 
 export async function GET(req: Request) {

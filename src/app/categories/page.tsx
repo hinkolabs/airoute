@@ -42,12 +42,12 @@ export default function CategoriesPage() {
               <Link
                 key={category.key}
                 href={`/categories/${category.key}`}
-                className="group flex h-[140px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-3 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+                className="group flex h-[140px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-3 shadow-sm transition hover:border-primary/30 hover:bg-slate-900"
               >
                 {/* Icon + Title */}
                 <div>
-                  <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-500/10">
-                    <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                  <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                    <Icon className="h-5 w-5 text-slate-400 transition-colors group-hover:text-primary" />
                   </div>
                   <h3 className="mb-1 text-sm font-semibold text-slate-50">
                     {category.title}
@@ -58,7 +58,7 @@ export default function CategoriesPage() {
                 </div>
 
                 {/* Bottom CTA */}
-                <div className="flex items-center justify-between text-[11px] font-medium text-emerald-300">
+                <div className="flex items-center justify-between text-[11px] font-medium text-primary">
                   <span>View best tools</span>
                   <span className="transition group-hover:translate-x-0.5">→</span>
                 </div>

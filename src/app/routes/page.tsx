@@ -20,7 +20,7 @@ export default function RoutesPage() {
   useEffect(() => {
     async function loadRoutes() {
       try {
-        const response = await fetch("/api/routes/list");
+        const response = await fetch("/api/routes/list?locale=en");
         if (response.ok) {
           const data = await response.json();
           setRoutes(data);
@@ -67,12 +67,12 @@ export default function RoutesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background px-4 pb-8 pt-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1200px]">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-50 sm:text-4xl">All Routes</h1>
-          <p className="mt-2 text-sm text-slate-400 sm:text-base">
+          <h1 className="text-3xl font-bold text-foreground sm:text-4xl">All Routes</h1>
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             Quick start workflows built from trusted AI tools.
           </p>
         </header>
@@ -80,31 +80,31 @@ export default function RoutesPage() {
         {/* Search */}
         <div className="mb-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search routes..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-xl border border-slate-800/70 bg-slate-900/70 py-3 pl-10 pr-4 text-sm text-slate-50 placeholder-slate-500 transition focus:border-emerald-400/50 focus:outline-none focus:ring-2 focus:ring-emerald-400/20"
+              className="w-full rounded-xl border border-border bg-card py-3 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground transition focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/20"
             />
           </div>
         </div>
 
         {/* Count */}
-        <p className="mb-4 text-sm text-slate-400">
+        <p className="mb-4 text-sm text-muted-foreground">
           {filteredRoutes.length} {filteredRoutes.length === 1 ? "route" : "routes"} found
         </p>
 
         {/* Routes Grid */}
         {isLoading ? (
-          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/40 p-8 text-center">
-            <p className="text-lg font-medium text-slate-400">Loading routes...</p>
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-border bg-card/40 p-8 text-center">
+            <p className="text-lg font-medium text-muted-foreground">Loading routes...</p>
           </div>
         ) : filteredRoutes.length === 0 ? (
-          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/40 p-8 text-center">
-            <p className="text-lg font-medium text-slate-400">No routes found</p>
-            <p className="mt-2 text-sm text-slate-500">
+          <div className="flex min-h-[300px] flex-col items-center justify-center rounded-2xl border border-border bg-card/40 p-8 text-center">
+            <p className="text-lg font-medium text-muted-foreground">No routes found</p>
+            <p className="mt-2 text-sm text-muted-foreground">
               {searchQuery ? "Try a different search term" : "No routes available"}
             </p>
           </div>
@@ -116,7 +116,7 @@ export default function RoutesPage() {
                 <Link
                   key={route.slug}
                   href={`/routes/${route.slug}`}
-                  className="group relative flex flex-col rounded-2xl border border-slate-800/70 bg-slate-900/70 p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-emerald-400/30 hover:bg-slate-900 hover:shadow-md"
+                  className="group relative flex flex-col rounded-2xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-md"
                 >
                   {/* Star Toggle */}
                   <button
@@ -127,27 +127,27 @@ export default function RoutesPage() {
                     <Star
                       className={`h-5 w-5 transition-colors ${
                         isFavorited
-                          ? "fill-emerald-400 stroke-emerald-400"
-                          : "stroke-slate-500 hover:stroke-slate-300"
+                          ? "fill-primary stroke-primary"
+                          : "stroke-muted hover:stroke-muted-foreground"
                       }`}
                     />
                   </button>
 
                   {/* Icon */}
-                  <div className="mb-3 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-slate-800/50 border border-slate-700/60 transition-all duration-200 group-hover:border-emerald-400/50">
+                  <div className="mb-3 flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-muted/30 border border-border transition-all duration-200 group-hover:border-primary/50">
                     {(() => {
                       const Icon = getRouteIcon(route.slug);
-                      return <Icon className="h-7 w-7 text-slate-400 transition-colors group-hover:text-emerald-300" strokeWidth={1.75} />;
+                      return <Icon className="h-7 w-7 text-muted-foreground transition-colors group-hover:text-primary" strokeWidth={1.75} />;
                     })()}
                   </div>
 
                   {/* Title */}
-                  <h3 className="mb-2 text-lg font-semibold text-slate-50 transition group-hover:text-emerald-300">
+                  <h3 className="mb-2 text-lg font-semibold text-card-foreground transition group-hover:text-primary">
                     {route.title}
                   </h3>
 
                   {/* Description */}
-                  <p className="mb-4 flex-1 text-sm leading-relaxed text-slate-400 line-clamp-2">
+                  <p className="mb-4 flex-1 text-sm leading-relaxed text-muted-foreground line-clamp-2">
                     {route.description}
                   </p>
 
@@ -157,7 +157,7 @@ export default function RoutesPage() {
                       {route.tags.slice(0, 3).map((tag) => (
                         <span
                           key={tag}
-                          className="rounded-full bg-slate-900/40 px-2 py-0.5 text-[10px] text-slate-500"
+                          className="rounded-full bg-muted/40 px-2 py-0.5 text-[10px] text-muted-foreground"
                         >
                           #{tag}
                         </span>
@@ -176,7 +176,7 @@ export default function RoutesPage() {
             className={`fixed left-1/2 top-4 z-50 -translate-x-1/2 rounded-xl border px-4 py-3 shadow-lg backdrop-blur-md ${
               toast.type === "error"
                 ? "border-red-700 bg-red-900/80 text-red-100"
-                : "border-emerald-700 bg-emerald-900/80 text-emerald-100"
+                : "border-primary bg-primary/80 text-primary-foreground"
             }`}
           >
             <span className="text-sm font-medium">{toast.message}</span>

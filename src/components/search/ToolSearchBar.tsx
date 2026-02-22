@@ -57,7 +57,7 @@ export default function ToolSearchBar({
           className={cn(
             'w-full rounded-full border border-slate-700 bg-slate-800/50 py-3 pl-12 pr-4',
             'text-slate-100 placeholder:text-slate-500',
-            'focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20',
+            'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20',
             'transition-colors duration-200'
           )}
         />

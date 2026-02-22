@@ -16,22 +16,22 @@ export function Hero({ query, setQuery }: HeroProps) {
       {/* Hero 섹션 - 텍스트 중심 블록, 왼쪽 정렬 */}
       <section className="flex flex-col gap-4">
         {/* Early Access 배지 - 초록색 점 포함 */}
-        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-emerald-400/30 px-3 py-1 text-xs text-emerald-300">
-          <span className="inline-block h-2 w-2 rounded-full bg-emerald-400" />
+        <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs text-primary">
+          <span className="inline-block h-2 w-2 rounded-full bg-primary animate-pulse" />
           Early Access · v0.5
         </div>
 
         {/* 메인 타이틀 (3줄 구성) */}
-        <h1 className="text-3xl font-bold leading-tight md:text-5xl">
+        <h1 className="text-3xl font-bold leading-tight text-foreground md:text-5xl">
           Too many AI tools?
           <br />
-          We find the <span className="text-emerald-400">best route</span>
+          We find the <span className="text-primary">best route</span>
           <br />
           for you.
         </h1>
 
         {/* 서브 텍스트 (최대 2줄) */}
-        <p className="max-w-xl text-sm text-slate-300 md:text-base">
+        <p className="max-w-xl text-sm text-muted-foreground md:text-base">
           Stop wasting time testing everything. AIROUTE curates honest recommendations for every task.
         </p>
       </section>
@@ -41,7 +41,7 @@ export function Hero({ query, setQuery }: HeroProps) {
         <div className="flex flex-col gap-3 md:flex-row">
           {/* 검색 입력 */}
           <div className="relative flex-1">
-            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">
+            <div className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground">
               <SearchIcon />
             </div>
             <input
@@ -49,14 +49,14 @@ export function Hero({ query, setQuery }: HeroProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder='e.g. "remove background", "logo"'
-              className="h-11 w-full rounded-full border border-slate-700 bg-slate-900/70 pl-11 pr-4 text-sm text-white placeholder:text-slate-500 transition-all focus:border-emerald-500/50 focus:outline-none focus:ring-2 focus:ring-emerald-500/30"
+              className="h-11 w-full rounded-full border border-input bg-card pl-11 pr-4 text-sm text-foreground placeholder:text-muted-foreground transition-all focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring/30"
             />
           </div>
 
           {/* Search 버튼 */}
           <button
             type="button"
-            className="h-11 rounded-full bg-emerald-500 text-sm font-medium transition-colors hover:bg-emerald-400 md:w-32"
+            className="h-11 rounded-full bg-primary px-6 text-sm font-medium text-primary-foreground transition-colors hover:opacity-90 md:w-32"
           >
             Search
           </button>
@@ -76,7 +76,7 @@ export function Hero({ query, setQuery }: HeroProps) {
 // 태그 칩 컴포넌트
 function TagChip({ emoji, text }: { emoji: string; text: string }) {
   return (
-    <span className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-slate-700 bg-slate-900/60 px-3 py-1 text-xs text-slate-300 transition-colors hover:border-emerald-400">
+    <span className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground transition-colors hover:border-primary hover:text-primary">
       <span>{emoji}</span>
       <span>{text}</span>
     </span>

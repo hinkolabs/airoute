@@ -6,7 +6,14 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "check:demo": "tsx scripts/check-demo-mode.ts",
+    "check:guides": "tsx scripts/check-guides-health.ts",
+    "check:guides:dedup": "tsx scripts/check-guides-dedup.ts",
+    "check:guides:quality": "tsx scripts/check-guides-quality-gate.ts",
+    "print:guides:quality-backfill": "tsx scripts/print-guides-quality-backfill-sql.ts",
+    "check:guides:autopublish": "tsx scripts/check-guides-autopublish-e2e.ts https://airoute.com",
+    "check:demo:runtime": "tsx scripts/check-demo-runtime.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
@@ -19,9 +26,12 @@
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
+    "node-fetch": "^3.3.2",
+    "tsx": "^4.19.2",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",

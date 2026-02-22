@@ -1,0 +1,52 @@
+---
+name: build-safety-protocol
+description: This is a new rule
+---
+
+# Overview
+
+[Cursor Execution Safety Protocol — Mandatory]
+
+This project requires strict execution safety rules.
+
+1. Command execution must always wait for explicit user approval (Allow).
+   - If approval wait exceeds 10 seconds, cancel and restart command.
+   - Never continue or chain commands after delayed approval.
+
+2. Single execution rule:
+   - One command → finish → output → next step.
+   - No parallel, background, chained, or batch commands.
+
+3. Build & test standard:
+   - Always run lint → build → test (if exists).
+   - If lint does not exist, run build only.
+
+4. Error handling:
+   - On first error:
+     → stop execution
+     → analyze logs
+     → apply minimal diff fix
+     → re-run single command
+
+5. Output rule:
+   - Do NOT truncate logs with head/tail.
+   - Show full logs → summarize → fix → re-run.
+
+6. Session recovery:
+   - On hanging, stalled, or delayed runs:
+     → cancel immediately
+     → restart in fresh session
+     → never resume mid-process.
+
+7. KR / EN dual maintenance:
+   - If KR and EN versions exist, always update both.
+   - Maintain identical logic and structure, only text differs.
+
+8. Completion criteria:
+   - lint + build (+ test if exists) must pass.
+   - Zero type errors.
+   - Zero runtime errors.
+   - Warnings must be reported.
+
+These rules override any autonomous execution behavior.
+

@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import CategoryDetailContent from "./category-detail-content";
 
+// Force dynamic rendering to avoid SSG issues
+export const dynamic = 'force-dynamic';
+
 interface CategoryDetailPageProps {
   params: Promise<{ slug: string }>;
 }
@@ -31,6 +34,7 @@ export default async function CategoryDetailPage({ params }: CategoryDetailPageP
 
   return <CategoryDetailContent slug={slug} categoryName={categoryName} />;
 }
+
 
 
 

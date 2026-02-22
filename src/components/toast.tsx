@@ -16,13 +16,13 @@ export function Toast({ message, type = "success", onClose, duration = 3000 }: T
   }, [onClose, duration]);
 
   const bgColor = {
-    success: "border-emerald-700 bg-emerald-900/90",
+    success: "border-primary bg-primary/10",
     error: "border-red-700 bg-red-900/90",
     info: "border-slate-600 bg-slate-800/90",
   }[type];
 
   const textColor = {
-    success: "text-emerald-100",
+    success: "text-primary",
     error: "text-red-100",
     info: "text-slate-100",
   }[type];

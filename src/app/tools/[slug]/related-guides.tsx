@@ -17,23 +17,23 @@ export async function RelatedGuides({ toolSlug }: { toolSlug: string }) {
   }
 
   return (
-    <section className="mt-8 border-t border-slate-800/50 pt-8">
-      <div className="mx-auto max-w-4xl px-4">
-        <h3 className="mb-4 text-lg font-semibold text-slate-100">
+    <section className="mt-8 border-t border-border/50 pt-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
+        <h3 className="mb-4 text-xl font-bold text-foreground">
           Related Guides
         </h3>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <div className="space-y-4">
           {guides.map((guide) => (
             <Link
               key={guide.id}
               href={`/guides/${guide.slug}`}
-              className="rounded-2xl border border-slate-800/70 bg-slate-950/40 p-4 transition hover:border-slate-700 hover:bg-slate-900/40"
+              className="block rounded-2xl border border-border bg-card/70 p-5 transition hover:border-primary/30 hover:bg-card hover:shadow-md"
             >
-              <h4 className="mb-2 text-sm font-semibold text-slate-100">
+              <h4 className="mb-2 text-base font-semibold text-foreground leading-snug">
                 {guide.title}
               </h4>
               {guide.excerpt && (
-                <p className="line-clamp-3 text-xs text-slate-400">
+                <p className="line-clamp-2 text-sm text-muted-foreground leading-relaxed">
                   {guide.excerpt}
                 </p>
               )}

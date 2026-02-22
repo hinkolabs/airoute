@@ -49,3 +49,4 @@ COMMENT ON COLUMN public.event_logs.user_id IS 'User ID if logged in, null for a
 COMMENT ON COLUMN public.event_logs.anonymous_id IS 'Anonymous tracking ID stored in localStorage';
 COMMENT ON COLUMN public.event_logs.metadata IS 'Additional event metadata (partner_name, link_url, etc.)';
 
+

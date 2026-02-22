@@ -110,7 +110,7 @@ export function ToolLogo({
     // Fallback: First letter placeholder
     return (
       <div
-        className={`flex items-center justify-center rounded-lg bg-emerald-500/20 font-semibold text-emerald-300 ${className}`}
+        className={`flex items-center justify-center rounded-lg bg-primary/20 font-semibold text-primary ${className}`}
         style={{
           ...boxStyle,
           fontSize: Math.round(size * 0.4),

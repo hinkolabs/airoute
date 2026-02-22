@@ -30,8 +30,8 @@ export default async function RouteDetailPage({ params, searchParams }: RouteDet
   
   // Fetch route metadata and Best3 tools from DB
   const [route, best3Tools] = await Promise.all([
-    getRouteBySlug(slug),
-    getRouteBest3(slug),
+    getRouteBySlug(slug, "en"),
+    getRouteBest3(slug, "en"),
   ]);
 
   console.log("[RouteDetailPage] Route found:", route ? route.slug : "NOT FOUND");
@@ -108,16 +108,16 @@ export default async function RouteDetailPage({ params, searchParams }: RouteDet
   return (
     <>
       {showDebug && (
-        <div className="fixed top-4 left-4 z-50 max-w-md rounded-lg border border-emerald-500 bg-emerald-950/95 p-3 text-xs text-emerald-100 shadow-lg backdrop-blur-sm">
-          <div className="font-semibold mb-2 text-emerald-300">🔍 Debug: Live DB Data</div>
+        <div className="fixed top-4 left-4 z-50 max-w-md rounded-lg border border-primary bg-background/95 p-3 text-xs text-foreground shadow-lg backdrop-blur-sm">
+          <div className="font-semibold mb-2 text-primary">🔍 Debug: Live DB Data</div>
           <div className="space-y-1 font-mono text-[10px]">
-            <div><span className="text-emerald-400">Project:</span> {supabaseProjectRef}</div>
-            <div><span className="text-emerald-400">Slug:</span> {route.slug}</div>
-            <div><span className="text-emerald-400">Steps:</span> {best3Tools.length}</div>
-            <div className="mt-2 pt-2 border-t border-emerald-800/50">
+            <div><span className="text-primary">Project:</span> {supabaseProjectRef}</div>
+            <div><span className="text-primary">Slug:</span> {route.slug}</div>
+            <div><span className="text-primary">Steps:</span> {best3Tools.length}</div>
+            <div className="mt-2 pt-2 border-t border-border/50">
               {best3Tools.map((step, idx) => (
-                <div key={step.id} className="mb-2 pb-2 border-b border-emerald-900/30 last:border-0">
-                  <div className="text-emerald-300 font-semibold">Step {step.position}:</div>
+                <div key={step.id} className="mb-2 pb-2 border-b border-border/30 last:border-0">
+                  <div className="text-primary font-semibold">Step {step.position}:</div>
                   <div className="text-white/90">Title: {step.step_title || "N/A"}</div>
                   <div className="text-white/70 break-words">Why: {step.step_why?.substring(0, 40) || "N/A"}...</div>
                   <div className="text-white/70 break-words">Prompt: {step.step_prompt_example?.substring(0, 40) || "N/A"}...</div>

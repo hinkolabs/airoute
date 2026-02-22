@@ -47,34 +47,42 @@ export default function RoutesMigratePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 p-8">
+    <div className="min-h-screen bg-background p-8">
       <div className="mx-auto max-w-4xl">
-        <h1 className="mb-2 text-3xl font-bold text-slate-50">
-          Routes Migration Tool
+        {/* Back Link */}
+        <a
+          href="/admin"
+          className="mb-4 inline-block text-sm text-primary hover:underline"
+        >
+          ← 관리자 대시보드로 돌아가기
+        </a>
+        
+        <h1 className="mb-2 text-3xl font-bold text-foreground">
+          루트 마이그레이션 도구
         </h1>
-        <p className="mb-8 text-slate-400">
-          Migrate routes from src/lib/routes.ts to Supabase DB
+        <p className="mb-8 text-muted-foreground">
+          src/lib/routes.ts의 루트 데이터를 Supabase DB로 마이그레이션합니다
         </p>
 
         {/* Action Buttons */}
-        <div className="mb-8 space-y-4 rounded-xl border border-slate-800 bg-slate-900/50 p-6">
-          <h2 className="mb-4 text-lg font-semibold text-slate-50">Actions</h2>
+        <div className="mb-8 space-y-4 rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-4 text-lg font-semibold text-foreground">작업 목록</h2>
 
           <div className="space-y-3">
             {/* Step 1: Check */}
             <button
               onClick={() => executeAction("check")}
               disabled={loading}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-medium text-slate-50 transition hover:bg-slate-700 disabled:opacity-50"
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-muted disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">1. Check DB Status</div>
-                  <div className="text-xs text-slate-400">
-                    Check if routes tables exist and tools.id type
+                  <div className="font-semibold">1. DB 상태 확인</div>
+                  <div className="text-xs text-muted-foreground">
+                    routes 테이블 존재 여부 및 tools.id 타입 확인
                   </div>
                 </div>
-                <span className="text-emerald-400">→</span>
+                <span className="text-primary">→</span>
               </div>
             </button>
 
@@ -82,16 +90,16 @@ export default function RoutesMigratePage() {
             <button
               onClick={() => executeAction("create")}
               disabled={loading}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-medium text-slate-50 transition hover:bg-slate-700 disabled:opacity-50"
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-muted disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">2. Generate Create SQL</div>
-                  <div className="text-xs text-slate-400">
-                    Get SQL to create routes and route_tools tables
+                  <div className="font-semibold">2. 테이블 생성 SQL 생성</div>
+                  <div className="text-xs text-muted-foreground">
+                    routes 및 route_tools 테이블 생성 SQL 확인
                   </div>
                 </div>
-                <span className="text-emerald-400">→</span>
+                <span className="text-primary">→</span>
               </div>
             </button>
 
@@ -99,23 +107,23 @@ export default function RoutesMigratePage() {
             <button
               onClick={() => executeAction("seed")}
               disabled={loading}
-              className="w-full rounded-lg border border-slate-700 bg-slate-800 px-4 py-3 text-left text-sm font-medium text-slate-50 transition hover:bg-slate-700 disabled:opacity-50"
+              className="w-full rounded-lg border border-border bg-background px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-muted disabled:opacity-50"
             >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold">3. Seed Data</div>
-                  <div className="text-xs text-slate-400">
-                    Insert 10 routes and their steps from src/lib/routes.ts
+                  <div className="font-semibold">3. 데이터 삽입</div>
+                  <div className="text-xs text-muted-foreground">
+                    src/lib/routes.ts에서 10개 루트 및 단계 삽입
                   </div>
                 </div>
-                <span className="text-emerald-400">→</span>
+                <span className="text-primary">→</span>
               </div>
             </button>
           </div>
 
           {loading && (
-            <div className="mt-4 rounded-lg bg-emerald-500/10 px-4 py-2 text-sm text-emerald-400">
-              Processing...
+            <div className="mt-4 rounded-lg bg-primary/10 px-4 py-2 text-sm text-primary">
+              처리 중...
             </div>
           )}
         </div>
@@ -123,29 +131,29 @@ export default function RoutesMigratePage() {
         {/* Results */}
         {Object.keys(results).length > 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold text-slate-50">Results</h2>
+            <h2 className="text-lg font-semibold text-foreground">실행 결과</h2>
 
             {Object.entries(results).map(([action, result]) => (
               <div
                 key={action}
-                className="rounded-xl border border-slate-800 bg-slate-900/50 p-6"
+                className="rounded-xl border border-border bg-card p-6"
               >
                 <div className="mb-2 flex items-center justify-between">
-                  <h3 className="font-semibold text-slate-50 capitalize">
+                  <h3 className="font-semibold text-foreground capitalize">
                     {action}
                   </h3>
                   <span
                     className={`rounded-full px-2 py-1 text-xs font-medium ${
                       result.status === "success"
-                        ? "bg-emerald-500/20 text-emerald-400"
-                        : "bg-red-500/20 text-red-400"
+                        ? "bg-green-500/20 text-green-500"
+                        : "bg-red-500/20 text-red-500"
                     }`}
                   >
-                    {result.status}
+                    {result.status === "success" ? "성공" : "실패"}
                   </span>
                 </div>
 
-                <pre className="mt-3 overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs text-slate-300">
+                <pre className="mt-3 overflow-x-auto rounded-lg bg-background p-4 text-xs text-foreground">
                   {JSON.stringify(result.data || result.error, null, 2)}
                 </pre>
               </div>
@@ -154,33 +162,34 @@ export default function RoutesMigratePage() {
         )}
 
         {/* Instructions */}
-        <div className="mt-8 rounded-xl border border-slate-800 bg-slate-900/30 p-6">
-          <h2 className="mb-3 text-lg font-semibold text-slate-50">
-            Instructions
+        <div className="mt-8 rounded-xl border border-border bg-card p-6">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
+            사용 방법
           </h2>
-          <ol className="space-y-2 text-sm text-slate-400">
+          <ol className="space-y-2 text-sm text-muted-foreground">
             <li>
-              <span className="font-semibold text-slate-300">1. Check:</span>{" "}
-              Verify current DB state
+              <span className="font-semibold text-foreground">1. 확인:</span>{" "}
+              현재 DB 상태 확인
             </li>
             <li>
-              <span className="font-semibold text-slate-300">2. Create:</span>{" "}
-              Copy SQL and run in Supabase SQL Editor
+              <span className="font-semibold text-foreground">2. 생성:</span>{" "}
+              SQL 복사 후 Supabase SQL 에디터에서 실행
             </li>
             <li>
-              <span className="font-semibold text-slate-300">3. Seed:</span>{" "}
-              Insert route data from src/lib/routes.ts
+              <span className="font-semibold text-foreground">3. 삽입:</span>{" "}
+              src/lib/routes.ts의 루트 데이터 삽입
             </li>
           </ol>
 
-          <div className="mt-4 rounded-lg bg-yellow-500/10 px-3 py-2 text-xs text-yellow-400">
-            ⚠️ Step 2 requires manual SQL execution in Supabase Dashboard
+          <div className="mt-4 rounded-lg bg-yellow-500/10 px-3 py-2 text-xs text-yellow-500">
+            ⚠️ 2단계는 Supabase 대시보드에서 수동으로 SQL을 실행해야 합니다
           </div>
         </div>
       </div>
     </div>
   );
 }
+
 
 
 

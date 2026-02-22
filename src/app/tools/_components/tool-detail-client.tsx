@@ -76,7 +76,7 @@ export function ToolDetailClient({
             {normalizedCategories.map((cat) => (
               <span
                 key={cat}
-                className="inline-flex items-center rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
+                className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
               >
                 {cat}
               </span>
@@ -84,7 +84,7 @@ export function ToolDetailClient({
             {tool.labels?.map((label) => (
               <span
                 key={label}
-                className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300"
+                className="rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary"
               >
                 {label}
               </span>
@@ -98,7 +98,7 @@ export function ToolDetailClient({
             href={tool.officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex flex-1 items-center justify-center rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 hover:bg-emerald-400 sm:flex-none"
+            className="inline-flex flex-1 items-center justify-center rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary-hover sm:flex-none"
           >
             Visit official site
           </a>
@@ -132,7 +132,7 @@ export function ToolDetailClient({
               <Link
                 key={item.slug}
                 href={`/tools/${item.slug}`}
-                className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-emerald-400 hover:bg-slate-900"
+                className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 transition hover:border-primary hover:bg-slate-900"
               >
                 <p className="text-sm font-semibold text-white">{item.name}</p>
                 {item.tagline && (
@@ -150,6 +150,7 @@ export function ToolDetailClient({
     </main>
   );
 }
+
 
 
 

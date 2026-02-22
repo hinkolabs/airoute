@@ -105,12 +105,13 @@ function filterDisplayTags(tags: string[] | null | undefined): string[] {
 // ============================================================
 type ToolsListClientProps = {
   tools: ToolRecord[];
+  basePath?: string;
 };
 
 // ============================================================
 // Component
 // ============================================================
-export function ToolsListClient({ tools }: ToolsListClientProps) {
+export function ToolsListClient({ tools, basePath }: ToolsListClientProps) {
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const [search, setSearch] = useState("");
@@ -118,6 +119,9 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
   const [favoriteSlugs, setFavoriteSlugs] = useState<string[]>([]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [categoryInitialized, setCategoryInitialized] = useState(false);
+  
+  // Resolve base path for link construction
+  const resolvedBase = basePath ?? "";
 
   // Initialize category from URL query parameter (only once on mount)
   useEffect(() => {
@@ -263,7 +267,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
         tags: displayTags,
         badge: tool.badge ?? undefined,
         href: tool.affiliate_url ?? tool.url ?? undefined,
-        detailsHref: tool.slug ? `/tools/${tool.slug}` : undefined,
+        detailsHref: tool.slug ? `${resolvedBase}/tools/${tool.slug}` : undefined,
         isFavorited: favoriteSlugs.includes(toolSlug),
         onFavoriteToggle: () => handleFavoriteToggle(toolSlug),
         // For logo rendering
@@ -278,10 +282,10 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
       <div className="mx-auto max-w-6xl px-4 py-8 sm:py-10">
         {/* Header */}
         <header className="mb-8">
-          <h1 className="text-2xl font-bold text-slate-50 sm:text-3xl">
+          <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
             All tools
           </h1>
-          <p className="mt-2 text-sm text-slate-400 sm:text-base">
+          <p className="mt-2 text-sm text-muted-foreground sm:text-base">
             Browse all AI tools listed on Airoute.
           </p>
         </header>
@@ -294,9 +298,9 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tools by name, description, or tags..."
-              className="w-full rounded-xl border border-slate-700/70 bg-slate-900/70 px-4 py-3 pl-10 text-sm text-slate-100 shadow-sm outline-none ring-0 placeholder:text-slate-400 focus:border-emerald-400"
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 pl-10 text-sm text-foreground shadow-sm outline-none ring-0 placeholder:text-muted-foreground focus:border-primary"
             />
-            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-slate-500">
+            <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
               <Search className="h-4 w-4" />
             </div>
           </div>
@@ -312,8 +316,8 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
                 onClick={() => setSelectedCategory(category)}
                 className={`shrink-0 rounded-lg border px-3 py-1.5 text-xs font-medium transition ${
                   selectedCategory === category
-                    ? "border-emerald-500/50 bg-emerald-500/20 text-emerald-300"
-                    : "border-white/10 bg-white/5 text-white/60 hover:border-white/20 hover:text-white/80"
+                    ? "border-primary/50 bg-primary/20 text-primary"
+                    : "border-border bg-muted text-muted-foreground hover:border-border hover:text-foreground"
                 }`}
               >
                 {category}
@@ -324,23 +328,23 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
 
 
         {/* Results count */}
-        <div className="mb-4 text-xs text-slate-400 sm:text-sm">
+        <div className="mb-4 text-xs text-muted-foreground sm:text-sm">
           {filteredTools.length} tool{filteredTools.length !== 1 ? "s" : ""} found
           {search && (
             <span className="ml-2">
-              for &quot;<span className="text-slate-200">{search}</span>&quot;
+              for &quot;<span className="text-foreground">{search}</span>&quot;
             </span>
           )}
           {selectedCategory !== "All" && (
             <span className="ml-2">
-              in <span className="text-slate-200">{selectedCategory}</span>
+              in <span className="text-foreground">{selectedCategory}</span>
             </span>
           )}
         </div>
 
         {/* Tools Grid */}
         {toolCards.length === 0 ? (
-          <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30 px-4 text-center text-slate-400">
+          <div className="flex min-h-[200px] items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-4 text-center text-muted-foreground">
             <div>
               {tools.length === 0 ? (
                 <p>No tools available yet.</p>
@@ -350,7 +354,7 @@ export function ToolsListClient({ tools }: ToolsListClientProps) {
                   <br />
                   <button
                     onClick={() => setSearch("")}
-                    className="mt-2 text-emerald-400 hover:underline"
+                    className="mt-2 text-primary hover:underline"
                   >
                     Clear search
                   </button>

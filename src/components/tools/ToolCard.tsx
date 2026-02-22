@@ -50,7 +50,7 @@ export default function ToolCard({
         <div className="flex flex-1 items-start justify-between">
           <h3 className="text-lg font-semibold text-slate-100">{tool.name}</h3>
           {tool.badge && (
-            <Badge tone="emerald" className="ml-2 flex-shrink-0">
+            <Badge tone="primary" className="ml-2 flex-shrink-0">
               {tool.badge}
             </Badge>
           )}

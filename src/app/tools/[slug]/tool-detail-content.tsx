@@ -41,16 +41,16 @@ export function ToolNotFoundContent() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-20 text-slate-50">
+    <div className="min-h-screen bg-background px-4 py-20 text-foreground">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center justify-center text-center">
         <div className="mb-4 text-6xl">🔍</div>
         <h1 className="mb-2 text-2xl font-bold">Tool Not Found</h1>
-        <p className="mb-6 text-slate-400">
+        <p className="mb-6 text-muted-foreground">
           This tool does not exist or has been removed.
         </p>
         <Link
           href="/"
-          className="inline-flex items-center gap-2 rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-emerald-400"
+          className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to home
@@ -61,13 +61,57 @@ export function ToolNotFoundContent() {
 }
 
 // ============================================================
+// i18n labels
+// ============================================================
+const labels = {
+  en: {
+    visitSite: "Visit official site",
+    save: "Save",
+    saved: "Saved",
+    taskCategory: "TASK CATEGORY",
+    bestFor: "BEST FOR",
+    whyPicked: "WHY WE PICKED IT",
+    tags: "TAGS",
+    aboutPrefix: "About",
+    keyFeatures: "Key Features",
+    perfectFor: "Perfect For",
+    whyWePickedIt: "Why We Picked It",
+    proTips: "Pro Tips",
+    guestLimit: "Guest limit reached (3 tools). Sign in for unlimited saves!",
+    addedToolbox: "Added to Toolbox",
+    removedToolbox: "Removed from Toolbox",
+    failedUpdate: "Failed to update toolbox",
+  },
+  kr: {
+    visitSite: "공식 사이트 방문",
+    save: "저장",
+    saved: "저장됨",
+    taskCategory: "작업 카테고리",
+    bestFor: "추천 대상",
+    whyPicked: "선정 이유",
+    tags: "태그",
+    aboutPrefix: "소개:",
+    keyFeatures: "주요 기능",
+    perfectFor: "이런 분께 추천",
+    whyWePickedIt: "선정 이유",
+    proTips: "활용 팁",
+    guestLimit: "게스트 한도 도달 (3개). 로그인하면 무제한 저장!",
+    addedToolbox: "툴박스에 추가됨",
+    removedToolbox: "툴박스에서 제거됨",
+    failedUpdate: "업데이트 실패",
+  },
+} as const;
+
+// ============================================================
 // Tool Detail Content
 // ============================================================
 type ToolDetailContentProps = {
   tool: ToolRecord;
+  locale?: "en" | "kr";
 };
 
-export function ToolDetailContent({ tool }: ToolDetailContentProps) {
+export function ToolDetailContent({ tool, locale = "en" }: ToolDetailContentProps) {
+  const t = labels[locale];
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -75,8 +119,8 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
 
   const mainDescription =
-    tool.desc_en ??
     tool.description ??
+    tool.desc_en ??
     "Premium AI tool for your creative workflow.";
   const displayTags = filterDisplayTags(tool.tags);
   const visitUrl = tool.affiliate_url ?? tool.website_url ?? tool.url;
@@ -106,10 +150,9 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
     
     const wasLiked = isFavorited;
     
-    // Optimistic update
     setIsFavorited(!isFavorited);
     setToast({ 
-      message: !wasLiked ? "Added to Toolbox" : "Removed from Toolbox", 
+      message: !wasLiked ? t.addedToolbox : t.removedToolbox, 
       type: "success" 
     });
     
@@ -117,11 +160,10 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
       const result = await toggleToolFavorite(toolSlug);
       
       if (result.blocked) {
-        // Rollback
         setIsFavorited(wasLiked);
         setShowLimitWarning(true);
         setToast({ 
-          message: "Guest limit reached (3 tools). Sign in for unlimited saves!", 
+          message: t.guestLimit, 
           type: "error" 
         });
         setTimeout(() => setShowLimitWarning(false), 3000);
@@ -131,14 +173,14 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
     } catch (error) {
       // Rollback on error
       setIsFavorited(wasLiked);
-      setToast({ message: "Failed to update toolbox", type: "error" });
+      setToast({ message: t.failedUpdate, type: "error" });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 pb-8 pt-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background px-4 pb-8 pt-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-[1200px]">
         {/* Tool Name & Logo */}
         <header className="mb-6 flex items-start gap-4">
@@ -147,13 +189,13 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
             size={56}
           />
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-slate-50 lg:text-3xl">{tool.name}</h1>
+            <h1 className="text-2xl font-bold text-foreground lg:text-3xl">{tool.name}</h1>
           </div>
         </header>
 
         {/* Description */}
-        <section className="mb-6 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-5">
-          <p className="text-sm leading-relaxed text-slate-300 lg:text-base">
+        <section className="mb-6 rounded-2xl border border-border/70 bg-card/70 p-5">
+          <p className="text-sm leading-relaxed text-muted-foreground lg:text-base">
             {mainDescription}
           </p>
         </section>
@@ -172,7 +214,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
                 className="w-full sm:w-auto gap-2 rounded-xl"
               >
                 <ExternalLink className="h-4 w-4" />
-                Visit official site
+                {t.visitSite}
               </AffiliateLinkButton>
             )}
             <button
@@ -180,20 +222,20 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
               disabled={isLoading}
               className={`inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition ${
                 isFavorited
-                  ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
-                  : 'border border-slate-700 bg-slate-900/50 text-slate-300 hover:border-emerald-500/50 hover:bg-slate-800'
+                  ? 'bg-primary/20 text-primary hover:bg-primary/30 border border-primary/40'
+                  : 'border border-border bg-card text-muted-foreground hover:border-primary/50 hover:bg-muted hover:text-primary'
               } disabled:opacity-50 disabled:cursor-not-allowed`}
             >
-              <Bookmark className={`h-4 w-4 ${isFavorited ? 'fill-emerald-400' : ''}`} />
-              {isFavorited ? 'Saved' : 'Save'}
+              <Bookmark className={`h-4 w-4 ${isFavorited ? 'fill-primary' : ''}`} />
+              {isFavorited ? t.saved : t.save}
             </button>
             <CopyLinkButton />
           </div>
           
           {/* Guest Limit Warning */}
           {showLimitWarning && !user && (
-            <div className="rounded-lg border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-sm text-amber-400">
-              Guest limit reached (3 tools). Sign in for unlimited saves!
+            <div className="rounded-lg border border-destructive/50 bg-destructive/10 px-4 py-2 text-sm text-destructive">
+              {t.guestLimit}
             </div>
           )}
         </section>
@@ -201,25 +243,25 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         {/* Info Cards */}
         <section className="mb-8 space-y-3">
           {tool.task_category && (
-            <InfoCard label="TASK CATEGORY" value={tool.task_category} />
+            <InfoCard label={t.taskCategory} value={tool.task_category} />
           )}
           {tool.best_for && (
-            <InfoCard label="BEST FOR" value={tool.best_for} />
+            <InfoCard label={t.bestFor} value={tool.best_for} />
           )}
           {tool.why_pick && (
-            <InfoCard label="WHY WE PICKED IT" value={tool.why_pick} />
+            <InfoCard label={t.whyPicked} value={tool.why_pick} />
           )}
           {displayTags.length > 0 && (
-            <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4">
-              <div className="mb-2 flex items-center gap-2 text-emerald-400">
+            <div className="rounded-2xl border border-border/70 bg-card/70 p-4">
+              <div className="mb-2 flex items-center gap-2 text-primary">
                 <Tag className="h-4 w-4" />
-                <h3 className="text-xs font-semibold uppercase tracking-wider">TAGS</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wider">{t.tags}</h3>
               </div>
               <div className="flex flex-wrap gap-2">
                 {displayTags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded-full bg-slate-800 px-2.5 py-1 text-xs text-slate-300"
+                    className="rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground"
                   >
                     #{tag}
                   </span>
@@ -230,7 +272,7 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
         </section>
 
         {/* Rich Content (for priority tools) */}
-        <RichContent toolSlug={toolSlug} tool={tool} />
+        <RichContent toolSlug={toolSlug} tool={tool} locale={locale} />
 
         {/* Toast */}
         {toast && (
@@ -250,11 +292,11 @@ export function ToolDetailContent({ tool }: ToolDetailContentProps) {
 // ============================================================
 function InfoCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4">
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+    <div className="rounded-2xl border border-border/70 bg-card/70 p-4">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-primary">
         {label}
       </h3>
-      <p className="text-sm leading-relaxed text-slate-300">{value}</p>
+      <p className="text-sm leading-relaxed text-muted-foreground">{value}</p>
     </div>
   );
 }
@@ -323,8 +365,8 @@ function normalizeDetailContent(raw: any): DetailContent | null {
   return Object.keys(result).length > 0 ? result : null;
 }
 
-function RichContent({ toolSlug, tool }: { toolSlug: string; tool?: ToolRecord }) {
-  console.log("[tool-detail] slug", toolSlug, "has_detail_content", Boolean((tool as any)?.detail_content));
+function RichContent({ toolSlug, tool, locale = "en" }: { toolSlug: string; tool?: ToolRecord; locale?: "en" | "kr" }) {
+  const t = labels[locale];
   
   const dbContent = normalizeDetailContent((tool as any)?.detail_content);
   const legacyContent = getToolDetailContent(toolSlug);
@@ -332,27 +374,27 @@ function RichContent({ toolSlug, tool }: { toolSlug: string; tool?: ToolRecord }
   
   if (!content) return null;
 
+  const displayName = toolSlug.charAt(0).toUpperCase() + toolSlug.slice(1);
+
   return (
     <div className="space-y-6">
-      {/* Introduction */}
       {content.intro && (
-        <section className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-          <h2 className="mb-3 text-lg font-bold text-slate-50">About {toolSlug.charAt(0).toUpperCase() + toolSlug.slice(1)}</h2>
-          <p className="text-sm leading-relaxed text-slate-300">{content.intro}</p>
+        <section className="rounded-2xl border border-border/70 bg-card/70 p-6">
+          <h2 className="mb-3 text-lg font-bold text-foreground">{t.aboutPrefix} {displayName}</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">{content.intro}</p>
         </section>
       )}
 
-      {/* Features */}
       {content.features && content.features.length > 0 && (
-        <section className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
+        <section className="rounded-2xl border border-border/70 bg-card/70 p-6">
           <div className="mb-4 flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-lg font-bold text-slate-50">Key Features</h2>
+            <CheckCircle className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold text-foreground">{t.keyFeatures}</h2>
           </div>
           <ul className="space-y-2">
             {content.features.map((feature, index) => (
-              <li key={index} className="flex gap-3 text-sm text-slate-300">
-                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-300">
+              <li key={index} className="flex gap-3 text-sm text-muted-foreground">
+                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
                   ✓
                 </span>
                 <span className="leading-relaxed">{feature}</span>
@@ -364,13 +406,13 @@ function RichContent({ toolSlug, tool }: { toolSlug: string; tool?: ToolRecord }
 
       {/* Best For */}
       {content.bestFor && content.bestFor.length > 0 && (
-        <section className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
-          <h2 className="mb-3 text-lg font-bold text-slate-50">Perfect For</h2>
+        <section className="rounded-2xl border border-border/70 bg-card/70 p-6">
+          <h2 className="mb-3 text-lg font-bold text-foreground">{t.perfectFor}</h2>
           <div className="flex flex-wrap gap-2">
             {content.bestFor.map((item, index) => (
               <span
                 key={index}
-                className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-medium text-emerald-300"
+                className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-medium text-primary"
               >
                 {item}
               </span>
@@ -381,56 +423,32 @@ function RichContent({ toolSlug, tool }: { toolSlug: string; tool?: ToolRecord }
 
       {/* Why We Picked It */}
       {content.whyPicked && (
-        <section className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-slate-900/70 p-6">
+        <section className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 to-background/70 p-6">
           <div className="mb-3 flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-lg font-bold text-slate-50">Why We Picked It</h2>
+            <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold text-foreground">{t.whyWePickedIt}</h2>
           </div>
-          <p className="text-sm leading-relaxed text-slate-300">{content.whyPicked}</p>
+          <p className="text-sm leading-relaxed text-muted-foreground">{content.whyPicked}</p>
         </section>
       )}
 
       {/* Pro Tips */}
       {content.tips && content.tips.length > 0 && (
-        <section className="rounded-2xl border border-slate-800/70 bg-slate-900/70 p-6">
+        <section className="rounded-2xl border border-border/70 bg-card/70 p-6">
           <div className="mb-4 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-amber-400" />
-            <h2 className="text-lg font-bold text-slate-50">Pro Tips</h2>
+            <Lightbulb className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-bold text-foreground">{t.proTips}</h2>
           </div>
           <ul className="space-y-3">
             {content.tips.map((tip, index) => (
-              <li key={index} className="flex gap-3 text-sm text-slate-300">
-                <span className="mt-0.5 text-amber-400">💡</span>
+              <li key={index} className="flex gap-3 text-sm text-muted-foreground">
+                <span className="mt-0.5 text-primary">💡</span>
                 <span className="leading-relaxed">{tip}</span>
               </li>
             ))}
           </ul>
         </section>
       )}
-
-      {/* Related Guides CTA */}
-      <section className="rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 to-slate-900/70 p-6 text-center">
-        <h3 className="mb-2 text-lg font-semibold text-slate-50">
-          Want more guidance?
-        </h3>
-        <p className="mb-4 text-sm text-slate-400">
-          Check out our detailed guides and workflows featuring this tool.
-        </p>
-        <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
-          <Link
-            href={`/guides?tool=${toolSlug}`}
-            className="inline-flex items-center justify-center rounded-xl bg-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-100 transition hover:bg-slate-600"
-          >
-            Browse Guides
-          </Link>
-          <Link
-            href="/routes"
-            className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400"
-          >
-            View Workflows
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

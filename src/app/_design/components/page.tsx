@@ -41,7 +41,7 @@ export function SearchBar({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         className={cn(
-          "w-full rounded-xl border px-4 py-3 pl-10 text-sm shadow-sm outline-none ring-0 focus:border-emerald-400",
+          "w-full rounded-xl border px-4 py-3 pl-10 text-sm shadow-sm outline-none ring-0 focus:border-primary",
           theme === "day"
             ? "border-slate-300 bg-white text-slate-900 placeholder:text-slate-400"
             : "border-slate-700/70 bg-slate-900/70 text-slate-100 placeholder:text-slate-400"
@@ -171,7 +171,7 @@ export function ToolCard({
         "hover:-translate-y-0.5 hover:shadow-md",
         isCompact ? "p-4 sm:p-5" : "p-5",
         theme === "day"
-          ? "border-slate-200 bg-white hover:border-emerald-400/70"
+          ? "border-slate-200 bg-white hover:border-primary/70"
           : "border-slate-800/80 bg-slate-950/35 hover:border-slate-700 hover:bg-slate-900/40"
       )}
     >
@@ -194,7 +194,7 @@ export function ToolCard({
             className={cn(
               "h-4 w-4 transition-all",
               isFavorited
-                ? "fill-emerald-400 stroke-emerald-400"
+                ? "fill-primary stroke-primary"
                 : theme === "day"
                 ? "stroke-slate-400"
                 : "stroke-slate-500"
@@ -282,10 +282,10 @@ export function ToolCard({
             partnerName={name}
             placement="tool_card"
             toolSlug={slug}
-            variant="primary"
+            variant="ghost"
             size={isCompact ? "sm" : "md"}
             className={cn(
-              "flex-1 font-semibold",
+              "flex-1 font-semibold !bg-primary !text-primary-foreground hover:!bg-primary-hover active:!bg-primary-hover",
               isCompact ? "h-8 text-xs" : "h-9 text-sm"
             )}
           >
@@ -293,10 +293,10 @@ export function ToolCard({
           </AffiliateLinkButton>
         ) : (
           <Button
-            variant="primary"
+            variant="ghost"
             disabled
             className={cn(
-              "flex-1 cursor-not-allowed font-semibold opacity-50",
+              "flex-1 cursor-not-allowed font-semibold !bg-primary/50 !text-primary-foreground/70 opacity-50",
               isCompact ? "h-8 text-xs" : "h-9 text-sm"
             )}
           >
@@ -378,8 +378,7 @@ type MobileNavItem = {
 const MOBILE_NAV_ITEMS: MobileNavItem[] = [
   { label: "Home", href: "/", icon: Home },
   { label: "Guides", href: "/guides", icon: FileText },
-  { label: "Studio", href: "/studio", icon: Sparkles },
-  { label: "My", href: "/my", icon: User },
+  { label: "Workspace", href: "/workspace", icon: User },
 ];
 
 // Desktop nav links (after mode toggle)
@@ -416,8 +415,8 @@ export function ModeSwitch({ className }: ModeSwitchProps) {
         theme === "day"
           ? "border-slate-200 bg-white/80"
           : isExploreMode
-            ? "border-emerald-500/50 bg-emerald-500/10"
-            : "border-amber-400/50 bg-amber-400/10",
+            ? "border-primary/50 bg-primary/10"
+            : "border-primary/50 bg-primary/10",
         className
       )}
     >
@@ -427,8 +426,8 @@ export function ModeSwitch({ className }: ModeSwitchProps) {
           "rounded-full px-3 py-1.5 text-xs font-medium border transition-colors",
           isNormalActive
             ? theme === "day"
-              ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-              : "bg-emerald-400/20 text-emerald-200 border-emerald-400/40"
+              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+              : "bg-primary/20 text-primary border-primary/40"
             : theme === "day"
               ? "bg-white text-slate-600 border-transparent hover:text-slate-900"
               : "bg-transparent text-slate-300 border-transparent hover:text-slate-100"
@@ -442,8 +441,8 @@ export function ModeSwitch({ className }: ModeSwitchProps) {
           "rounded-full px-3 py-1.5 text-xs font-medium border transition-colors",
           isSimpleActive
             ? theme === "day"
-              ? "bg-amber-400 text-slate-900 border-amber-400 shadow-sm"
-              : "bg-amber-300/20 text-amber-100 border-amber-300/40"
+              ? "bg-primary text-primary-foreground border-primary shadow-sm"
+              : "bg-primary/20 text-primary border-primary/40"
             : theme === "day"
               ? "bg-white text-slate-600 border-transparent hover:text-slate-900"
               : "bg-transparent text-slate-300 border-transparent hover:text-slate-100"
@@ -479,13 +478,7 @@ export function DesktopNav() {
             className={cn(
               "rounded-full px-3 py-1 text-xs font-medium transition",
               isActive
-                ? isExploreMode
-                  ? theme === "day"
-                    ? "text-emerald-600"
-                    : "text-emerald-400"
-                  : theme === "day"
-                  ? "text-amber-600"
-                  : "text-amber-300"
+                ? "text-primary"
                 : theme === "day"
                 ? "text-slate-600 hover:text-slate-900"
                 : "text-slate-300 hover:text-slate-100"
@@ -496,25 +489,19 @@ export function DesktopNav() {
         );
       })}
 
-      {/* My button (replaces Login) */}
+      {/* Workspace button (replaces My) */}
       <Link
-        href="/my"
+        href="/workspace"
         className={cn(
           "ml-1 rounded-full border px-3 py-1 text-xs font-semibold transition",
-          pathname === "/my"
-            ? isExploreMode
-              ? theme === "day"
-                ? "border-emerald-500 text-emerald-600"
-                : "border-emerald-400 text-emerald-300"
-              : theme === "day"
-              ? "border-amber-500 text-amber-600"
-              : "border-amber-400 text-amber-300"
+          pathname === "/workspace"
+            ? "border-primary text-primary"
             : theme === "day"
-            ? "border-slate-400 text-slate-700 hover:border-emerald-500 hover:text-emerald-600"
-            : "border-slate-600 text-slate-100 hover:border-emerald-400 hover:text-emerald-300"
+            ? "border-slate-400 text-slate-700 hover:border-primary hover:text-primary"
+            : "border-slate-600 text-slate-100 hover:border-primary hover:text-primary"
         )}
       >
-        My
+        Workspace
       </Link>
     </nav>
   );
@@ -545,12 +532,8 @@ export function MobileBottomNav() {
 
           // Determine active color based on current mode
           // All tabs use emerald (Normal mode) or amber (Simple mode) based on current route
-          const activeTextColor = isExploreMode
-            ? theme === "day" ? "text-emerald-600" : "text-emerald-400"
-            : theme === "day" ? "text-amber-600" : "text-amber-300";
-          const activeIndicatorColor = isExploreMode
-            ? theme === "day" ? "bg-emerald-600" : "bg-emerald-400"
-            : theme === "day" ? "bg-amber-600" : "bg-amber-300";
+          const activeTextColor = "text-primary";
+          const activeIndicatorColor = "bg-primary";
 
           return (
             <Link

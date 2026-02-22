@@ -4,14 +4,14 @@
  * useSavedRoutes Hook
  * Hybrid storage strategy for saved routes:
  * - Guest (not logged in): localStorage only, limit = 1
- * - User (logged in): Supabase favorites_routes table, limit = 3
+ * - User (logged in): Supabase saved_routes table, limit = 3
  * 
  * IMPORTANT: This hook must only be used in client components
  */
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '@/app/_providers/auth-provider';
-import { getSupabaseBrowserClient } from '@/lib/supabase/client';
+import { getBrowserSupabaseClient } from '@/lib/supabase/browser';
 
 // Constants
 const GUEST_STORAGE_KEY = 'airoute_saved_routes_guest_v1';
@@ -88,24 +88,37 @@ export function useSavedRoutes() {
   // Load saved routes on mount and auth change
   useEffect(() => {
     async function loadSavedRoutes() {
+      if (authStatus === 'loading') {
+        // Wait for auth to resolve - don't change isLoading yet
+        if (process.env.NODE_ENV !== 'production') {
+          console.log('[useSavedRoutes] Auth still loading, waiting...');
+        }
+        return;
+      }
+
       setIsLoading(true);
 
       try {
-        if (authStatus === 'loading') {
-          // Wait for auth to resolve
-          return;
-        }
-
         if (!user) {
           // Guest: load from localStorage only (NO DB calls)
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[useSavedRoutes] Guest mode - loading from localStorage');
+          }
           const guestRoutes = loadGuestRoutes();
           setRouteSlugs(guestRoutes);
         } else {
-          // User: load from Supabase
-          const supabase = getSupabaseBrowserClient();
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('[useSavedRoutes] User mode - fetching saved routes from DB for user:', user.id);
+          }
+          const supabase = getBrowserSupabaseClient();
           const { data, error } = await supabase
-            .from('favorites_routes')
-            .select('route_slug')
+            .from('saved_routes')
+            .select(`
+              route_id,
+              routes!inner(
+                slug
+              )
+            `)
             .eq('user_id', user.id)
             .order('created_at', { ascending: false })
             .limit(USER_ROUTE_LIMIT);
@@ -114,7 +127,11 @@ export function useSavedRoutes() {
             console.error('Error loading saved routes:', error);
             setRouteSlugs([]);
           } else {
-            setRouteSlugs(data?.map(r => r.route_slug) || []);
+            const slugs = (data || [])
+              .map((entry: any) => entry.routes?.[0]?.slug || entry.routes?.slug)
+              .filter((slug: any): slug is string => Boolean(slug));
+
+            setRouteSlugs(slugs);
           }
         }
       } catch (error) {
@@ -158,17 +175,29 @@ export function useSavedRoutes() {
       }
     } else {
       // =============================
-      // USER: Supabase DB
+      // USER: Supabase DB (saved_routes)
       // =============================
-      const supabase = getSupabaseBrowserClient();
+      const supabase = getBrowserSupabaseClient();
+
+      const { data: routeRecord, error: routeError } = await supabase
+        .from('routes')
+        .select('id')
+        .eq('slug', routeSlug)
+        .maybeSingle();
+
+      if (routeError || !routeRecord) {
+        console.error('Error resolving route ID for toggle:', routeError);
+        return { blocked: false, routeSlugs };
+      }
+
+      const routeId = routeRecord.id;
 
       if (isCurrentlySaved) {
-        // Remove from DB
         const { error } = await supabase
-          .from('favorites_routes')
+          .from('saved_routes')
           .delete()
           .eq('user_id', user.id)
-          .eq('route_slug', routeSlug);
+          .eq('route_id', routeId);
 
         if (error) {
           console.error('Error removing saved route:', error);
@@ -178,26 +207,25 @@ export function useSavedRoutes() {
         const newRoutes = routeSlugs.filter(s => s !== routeSlug);
         setRouteSlugs(newRoutes);
         return { blocked: false, routeSlugs: newRoutes };
-      } else {
-        // Check limit before adding
-        if (routeSlugs.length >= USER_ROUTE_LIMIT) {
-          return { blocked: true, routeSlugs };
-        }
-
-        // Add to DB
-        const { error } = await supabase
-          .from('favorites_routes')
-          .insert({ user_id: user.id, route_slug: routeSlug });
-
-        if (error) {
-          console.error('Error adding saved route:', error);
-          return { blocked: false, routeSlugs };
-        }
-
-        const newRoutes = [routeSlug, ...routeSlugs];
-        setRouteSlugs(newRoutes);
-        return { blocked: false, routeSlugs: newRoutes };
       }
+
+      // Add new saved route
+      if (routeSlugs.length >= USER_ROUTE_LIMIT) {
+        return { blocked: true, routeSlugs };
+      }
+
+      const { error } = await supabase
+        .from('saved_routes')
+        .insert({ user_id: user.id, route_id: routeId });
+
+      if (error) {
+        console.error('Error adding saved route:', error);
+        return { blocked: false, routeSlugs };
+      }
+
+      const newRoutes = [routeSlug, ...routeSlugs];
+      setRouteSlugs(newRoutes);
+      return { blocked: false, routeSlugs: newRoutes };
     }
   }, [user, routeSlugs, savedRouteIdsSet]);
 
@@ -214,6 +242,7 @@ export function useSavedRoutes() {
 
 // Export constants for use elsewhere
 export { GUEST_ROUTE_LIMIT, USER_ROUTE_LIMIT };
+
 
 
 

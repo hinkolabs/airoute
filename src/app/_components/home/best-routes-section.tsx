@@ -59,10 +59,10 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
       <div className="mx-auto max-w-[1200px]">
         {/* Section Header */}
         <div className="mb-4 flex items-center justify-between lg:mb-5">
-          <h2 className="text-base font-semibold leading-6 text-slate-50">Best Routes</h2>
+          <h2 className="text-base font-semibold leading-6 text-foreground">Best Routes</h2>
           <Link
             href="/routes"
-            className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-emerald-300"
+            className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             <span>More</span>
             <span>→</span>
@@ -78,26 +78,26 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
               <Link
                 key={featuredPrimary.id}
                 href={`/routes/${featuredPrimary.slug}`}
-                className="group relative flex min-h-[90px] flex-col gap-2 overflow-hidden rounded-lg border border-white/10 bg-slate-900/35 px-4 py-3 shadow-[0_20px_60px_rgba(2,6,23,0.45)] transition hover:border-emerald-400/30 hover:bg-slate-900/40 backdrop-blur-xl"
+                className="group relative flex min-h-[90px] flex-col gap-2 overflow-hidden rounded-lg border border-border bg-card/60 px-4 py-3 shadow-sm transition hover:border-primary/30 hover:shadow-md backdrop-blur-xl"
               >
-                <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-br from-sky-500/25 via-indigo-500/15 to-transparent opacity-80" />
+                <div className="pointer-events-none absolute inset-0 rounded-lg bg-gradient-to-br from-primary/10 via-accent/5 to-transparent opacity-80" />
                 <div className="flex flex-1 flex-col gap-2">
                   {/* Header row */}
                   <div className="flex w-full items-center gap-2.5">
                     {/* Icon */}
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
-                      <Icon className="text-emerald-400 transition-colors group-hover:text-emerald-300" size={22} strokeWidth={2} />
+                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 transition-transform group-hover:scale-105">
+                      <Icon className="text-primary transition-colors group-hover:text-primary" size={22} strokeWidth={2} />
                     </div>
 
                     {/* Title */}
-                    <h3 className="flex-1 text-sm font-semibold leading-5 text-slate-50 line-clamp-2">
+                    <h3 className="flex-1 text-sm font-semibold leading-5 text-card-foreground line-clamp-2">
                       {featuredPrimary.title}
                     </h3>
                   </div>
 
                   {/* Description */}
                   {featuredPrimary.description && (
-                    <p className="text-sm leading-5 text-slate-400 line-clamp-1">
+                    <p className="text-sm leading-5 text-muted-foreground line-clamp-1">
                       {featuredPrimary.description}
                     </p>
                   )}
@@ -114,16 +114,16 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
                 <Link
                   key={route.id}
                   href={`/routes/${route.slug}`}
-                  className="group relative flex min-h-[52px] items-center gap-2.5 rounded-lg border border-white/10 bg-slate-900/25 px-3 py-2 transition hover:border-emerald-400/30 hover:bg-slate-900/35"
+                  className="group relative flex min-h-[52px] items-center gap-2.5 rounded-lg border border-border bg-card/40 px-3 py-2 transition hover:border-primary/30 hover:bg-card/60"
                 >
                   {/* Icon */}
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-emerald-500/10 transition-transform group-hover:scale-105">
-                    <Icon className="text-emerald-400 transition-colors group-hover:text-emerald-300" size={22} strokeWidth={2} />
+                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md bg-primary/10 transition-transform group-hover:scale-105">
+                    <Icon className="text-primary transition-colors" size={22} strokeWidth={2} />
                   </div>
 
                   {/* Title */}
                   <div className="flex flex-1 min-w-0 flex-col justify-center text-left">
-                    <h3 className="text-sm font-semibold leading-5 text-slate-50 truncate">
+                    <h3 className="text-sm font-semibold leading-5 text-card-foreground truncate">
                       {route.title}
                     </h3>
                   </div>
@@ -145,19 +145,19 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
                 href={`/routes/${route.slug}`}
                 className={`
                   group relative flex h-full flex-col cursor-pointer overflow-visible rounded-xl 
-                  border bg-slate-900/40 p-5 shadow-sm
+                  border bg-card p-5 shadow-sm
                   transition-all duration-200 ease-out
                   ${isFeatured 
-                    ? 'border-emerald-400/20 hover:border-emerald-400/50 hover:bg-slate-900/55 hover:shadow-lg hover:shadow-emerald-500/10 hover:-translate-y-0.5' 
-                    : 'border-slate-600/60 hover:border-slate-500/60 hover:bg-slate-900/55 hover:shadow-lg hover:-translate-y-0.5'
+                    ? 'border-primary/20 hover:border-primary/50 hover:bg-card hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5' 
+                    : 'border-border hover:border-border hover:bg-card hover:shadow-lg hover:-translate-y-0.5'
                   }
                 `}
               >
                 {/* Icon - Large & Prominent (44-48px) */}
-                <div className={`mb-4 flex flex-shrink-0 items-center justify-center rounded-xl bg-slate-800/50 transition-all duration-200 lg:h-12 lg:w-12 group-hover:scale-110 ${isFeatured ? 'group-hover:shadow-md group-hover:shadow-emerald-500/20' : ''}`}>
+                <div className={`mb-4 flex flex-shrink-0 items-center justify-center rounded-xl bg-muted/30 transition-all duration-200 lg:h-12 lg:w-12 group-hover:scale-110 ${isFeatured ? 'group-hover:shadow-md group-hover:shadow-primary/20' : ''}`}>
                   <Icon 
                     size={32}
-                    className={`transition-all duration-200 ${isFeatured ? 'text-emerald-300 group-hover:text-emerald-300' : 'text-emerald-300 group-hover:text-emerald-400'}`} 
+                    className={`transition-all duration-200 ${isFeatured ? 'text-primary group-hover:text-primary' : 'text-primary group-hover:text-accent'}`} 
                     strokeWidth={1.75} 
                   />
                 </div>
@@ -165,13 +165,13 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
                 {/* Content */}
                 <div className="flex-1 space-y-2">
                   {/* Title - White, prominent */}
-                  <h3 className="text-xl font-semibold leading-tight text-white line-clamp-2 group-hover:text-emerald-50 transition-colors duration-200">
+                  <h3 className="text-xl font-semibold leading-tight text-card-foreground line-clamp-2 group-hover:text-primary transition-colors duration-200">
                     {route.title}
                   </h3>
 
                   {/* Description - 2 lines, readable gray */}
                   {route.description && (
-                    <p className="text-sm leading-relaxed text-slate-300 line-clamp-2">
+                    <p className="text-sm leading-relaxed text-muted-foreground line-clamp-2">
                       {route.description}
                     </p>
                   )}
@@ -193,7 +193,7 @@ export function BestRoutesSection({ routes, steps }: BestRoutesSectionProps) {
                     return chips.map((label, idx) => (
                       <span 
                         key={idx}
-                        className="inline-flex items-center rounded-full bg-slate-800/70 border border-slate-600/50 px-2.5 py-1 text-xs font-medium text-slate-200"
+                        className="inline-flex items-center rounded-full bg-muted/50 border border-border px-2.5 py-1 text-xs font-medium text-muted-foreground"
                       >
                         {label}
                       </span>

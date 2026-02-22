@@ -217,6 +217,22 @@ npm run dev
 
 **Note**: Vercel preview deployments are automatically tagged as `is_internal_traffic: true`.
 
+### DEMO_MODE production check (protected routes)
+
+Production에서 DEMO_MODE 동작을 검증하려면 아래 스크립트를 실행한다.  
+`CHECK_URL`에 검사할 베이스 URL을 넣고 실행하면, 로그인/회원가입/워크스페이스/빌링/API 등 보호 라우트의 HTTP 상태를 출력하고 최종 PASS/FAIL을 낸다.
+
+```bash
+# 예: 프로덕션 도메인 기준 검사 (Windows PowerShell / Mac / Linux 공통)
+npm run check:demo -- https://airoute.com
+```
+
+Windows PowerShell에서 환경변수로 넘기려면:
+
+```powershell
+$env:CHECK_URL="https://airoute.com"; npm run check:demo
+```
+
 ---
 
 ## ## 🧭 Roadmap

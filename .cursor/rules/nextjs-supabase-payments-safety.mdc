@@ -1,0 +1,137 @@
+---
+name: nextjs-supabase-payments-safety
+description: This is a new rule
+---
+
+# Overview
+
+[nextjs supabase payments safety protocol — mandatory]
+
+This rule applies to changes involving:
+- next.js app router (app/)
+- route handlers (app/api/**/route.ts)
+- server actions
+- supabase (auth, rls, queries)
+- payments (stripe, toss, webhooks)
+- secrets/env (api keys, webhook secrets)
+- workspace switching and entitlements
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. app router correctness (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+- Respect server/client boundaries:
+  - "use client" only when needed.
+  - Never import server-only modules into client components.
+- Prefer server-side data fetching for sensitive data.
+- Avoid leaking secrets into the client bundle.
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. env & secret handling (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+- Never print, log, or expose secrets:
+  - api keys
+  - webhook secrets
+  - tokens
+  - supabase service role key
+- Never put secrets into NEXT_PUBLIC_* variables.
+- Do not add verbose request logging in webhook routes.
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. webhook security baseline (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+For webhook endpoints:
+- Always verify signature (stripe/toss).
+- Always make handler idempotent:
+  - store event_id
+  - ignore duplicates
+- Never rely on request order.
+- Return 200 quickly after safe persistence.
+- No external network calls before verification.
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. payment lifecycle invariants (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+- checkout success must be confirmed by webhook, not by redirect page.
+- redirects only show status; they do not create entitlements.
+- entitlements/subscriptions must only be activated via verified webhook.
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. supabase client separation (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+- Browser client:
+  - only for user-level operations.
+  - never use service role key.
+- Server client:
+  - can use service role (if needed) but must be isolated to server code.
+- All privileged DB writes must occur on the server.
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. workspace and entitlement gating
+━━━━━━━━━━━━━━━━━━━━━━
+- Every workspace page must:
+  - resolve active workspace
+  - load entitlements
+  - gate UI and actions consistently
+- Never silently fallback to "allow" if entitlement lookup fails.
+- If entitlement cannot be confirmed → show safe degraded UI (read-only or paywall).
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. kr/en dual update (mandatory)
+━━━━━━━━━━━━━━━━━━━━━━
+If KR and EN pages/components exist for the same feature:
+- Always apply equivalent changes to both.
+- Keep logic identical; text only differs.
+- Do not ship asymmetrical behavior.
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. routing and path safety
+━━━━━━━━━━━━━━━━━━━━━━
+- Avoid open redirects:
+  - "next" params must be path-only and validated.
+- Keep marketing vs workspace layout rules intact:
+  - (marketing) has public header
+  - (workspace) uses workspace header only
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. data fetching reliability
+━━━━━━━━━━━━━━━━━━━━━━
+- Use explicit loading/error states.
+- Avoid infinite spinners:
+  - add timeouts or bounded retries where appropriate.
+- Never swallow exceptions in auth/workspace resolution.
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. logging policy (prod safe)
+━━━━━━━━━━━━━━━━━━━━━━
+- No sensitive logging.
+- In dev, logs must be behind a __DEV__ guard.
+- Webhook logs must never include payload bodies or headers in full.
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. execution & verification steps (mandatory)
+━━━━━━━━━━━━━━━━━━━━━━
+After changes:
+- run: lint
+- run: typecheck (if configured)
+- run: build
+- fix minimal issues only, then re-run build
+No refactoring during fix passes.
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. hard stop conditions
+━━━━━━━━━━━━━━━━━━━━━━
+STOP and ask before proceeding if:
+- a change requires modifying more than 5 files
+- a change affects webhook handlers + billing + rls at once
+- schema cannot be verified via information_schema
+- any secret handling is unclear
+
+━━━━━━━━━━━━━━━━━━━━━━
+13. completion criteria
+━━━━━━━━━━━━━━━━━━━━━━
+- build passes
+- no type errors
+- webhook verified + idempotent
+- no secret exposure
+- kr/en parity maintained
+

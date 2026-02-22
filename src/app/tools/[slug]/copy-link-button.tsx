@@ -20,11 +20,11 @@ export function CopyLinkButton() {
     <button
       type="button"
       onClick={handleCopy}
-      className="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900/60 px-6 py-3 text-sm font-medium text-slate-200 transition hover:border-slate-600 hover:text-slate-100"
+      className="inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-6 py-3 text-sm font-medium text-foreground transition hover:border-primary hover:text-primary"
     >
       {copied ? (
         <>
-          <Check className="h-4 w-4 text-emerald-400" />
+          <Check className="h-4 w-4 text-primary" />
           Copied!
         </>
       ) : (

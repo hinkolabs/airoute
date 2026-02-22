@@ -1,0 +1,167 @@
+---
+name: billing-and-workspace-critical-safety
+description: This is a new rule
+---
+
+# Overview
+
+[billing and workspace critical safety protocol — mandatory]
+
+This rule applies to any change touching:
+- billing
+- subscription
+- payments
+- credits
+- entitlements
+- workspace
+- roles
+- permissions
+- seat management
+- webhook processing
+- cron jobs
+- automation pipelines (n8n, queues)
+
+These areas are considered production-critical.
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. pre-change analysis (mandatory)
+━━━━━━━━━━━━━━━━━━━━━━
+Before writing any code:
+- Analyze current billing + workspace architecture.
+- Identify:
+  - data flow
+  - permission flow
+  - payment lifecycle
+  - webhook sequence
+- Summarize risks in 3~5 bullet points.
+- Only then start implementation.
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. no destructive changes
+━━━━━━━━━━━━━━━━━━━━━━
+- Never delete tables, columns, or APIs.
+- Never rename DB columns or enums without backward compatibility.
+- Never drop constraints without explicit instruction.
+- Prefer additive schema changes only.
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. backward compatibility guarantee (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+All changes must:
+- Preserve existing subscriptions.
+- Preserve existing entitlements.
+- Preserve existing workspace memberships.
+- Preserve existing credit balances.
+- Preserve historical logs.
+
+If backward compatibility cannot be guaranteed → STOP and ask.
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. permission safety bias (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+- Always default to stricter permission.
+- If permission is unclear:
+  → deny access rather than allow.
+- Never escalate privileges implicitly.
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. webhook safety protocol
+━━━━━━━━━━━━━━━━━━━━━━
+- Webhook handlers must be:
+  - idempotent
+  - retry-safe
+  - order-safe
+- Never assume single execution.
+- Always guard against:
+  - duplicate events
+  - delayed events
+  - out-of-order events.
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. credit accounting safety
+━━━━━━━━━━━━━━━━━━━━━━
+- Credits must:
+  - never go negative
+  - never be silently overwritten
+  - always be logged
+- All credit mutations must be:
+  - atomic
+  - transactional (or logically equivalent)
+  - auditable.
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. workspace isolation rule
+━━━━━━━━━━━━━━━━━━━━━━
+- Data must never leak across workspaces.
+- Every query touching workspace data must:
+  - explicitly filter by workspace_id.
+- Cross-workspace access must be impossible by default.
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. seat & team billing integrity
+━━━━━━━━━━━━━━━━━━━━━━
+- Seat addition/removal must:
+  - update entitlement immediately.
+  - not retroactively change past invoices.
+- Team member changes must never:
+  - silently affect billing state.
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. incremental rollout only
+━━━━━━━━━━━━━━━━━━━━━━
+Large billing or workspace changes must be:
+- Implemented in stages.
+- Behind feature flags when possible.
+- Backward compatible at every step.
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. regression protection
+━━━━━━━━━━━━━━━━━━━━━━
+Any change in these areas requires:
+- scenario-based reasoning:
+  - existing paid user
+  - mid-cycle upgrade
+  - mid-cycle downgrade
+  - cancellation + expiry
+  - team member add/remove
+- Logic must be validated for all scenarios.
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. execution safety
+━━━━━━━━━━━━━━━━━━━━━━
+Follow execution safety protocol:
+- single command execution
+- no chained runs
+- cancel & restart on delay
+- lint → build → test mandatory.
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. hard stop condition
+━━━━━━━━━━━━━━━━━━━━━━
+If a change affects:
+- billing flow
+- subscription lifecycle
+- credit accounting
+- workspace membership resolution
+
+and the impact is not fully clear → STOP and ask before proceeding.
+
+━━━━━━━━━━━━━━━━━━━━━━
+13. completion criteria
+━━━━━━━━━━━━━━━━━━━━━━
+- build passes
+- no type errors
+- no silent fallback logic
+- no hidden permission escalation
+
+## workspace_scope_policy
+
+- Workspace 개발 범위는 **KR 전용**이다.
+- EN Workspace는 **운영 차단 상태**이며 기능 구현 대상이 아니다.
+
+- 모든 Workspace 개발은:
+  → /kr/workspace 경로 기준
+
+- EN Workspace:
+  → Coming Soon UI만 유지
+  → 기능 추가, 수정, 연결 금지

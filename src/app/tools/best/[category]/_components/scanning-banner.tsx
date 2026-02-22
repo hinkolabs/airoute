@@ -20,8 +20,8 @@ export function ScanningBanner() {
   }, []);
 
   return (
-    <div className="mb-6 rounded-2xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3 text-center">
-      <p className="text-sm font-medium text-emerald-300">{text}</p>
+    <div className="mb-6 rounded-2xl border border-primary/20 bg-primary/5 px-4 py-3 text-center">
+      <p className="text-sm font-medium text-primary">{text}</p>
     </div>
   );
 }

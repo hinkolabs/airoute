@@ -1,0 +1,145 @@
+---
+name: supabase-db-safety
+description: This is a new rule
+---
+
+# Overview
+
+[supabase db safety protocol — mandatory]
+
+This rule applies to any work involving:
+- supabase postgres schema changes
+- migrations
+- rls policies
+- triggers / functions
+- billing/credits/workspace tables
+- seed scripts or backfills
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. db changes are staged (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Never propose or apply INSERT/UPDATE/ALTER/DROP first.
+Always follow this order:
+1) information_schema verification (columns, types, constraints)
+2) SELECT to inspect current data and edge cases
+3) Only then propose safe DDL/DML
+4) Provide rollback plan (or safety alternative)
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. schema verification is mandatory
+━━━━━━━━━━━━━━━━━━━━━━
+Before writing any migration:
+- Query information_schema.columns for affected tables
+- Query pg_constraint / foreign keys where relevant
+- Confirm:
+  - column types
+  - nullability
+  - defaults
+  - indexes / unique constraints
+Do not assume schema.
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. additive-first, destructive-last
+━━━━━━━━━━━━━━━━━━━━━━
+Prefer additive changes only:
+- add new columns
+- add new tables
+- add new indexes
+- add new policies
+
+Avoid destructive operations:
+- drop column/table
+- rename column/type
+- change type in-place
+
+If destructive change is required:
+- create compatibility columns
+- dual-write period
+- backfill
+- switch reads
+- only then remove legacy (explicit approval required)
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. rls is not optional (workspace app)
+━━━━━━━━━━━━━━━━━━━━━━
+For tables that store user/workspace data:
+- RLS must be enabled
+- Policies must prevent cross-workspace leakage
+- Default stance: deny
+
+Never introduce a table with public read/write without explicit instruction.
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. workspace isolation rule (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Any table with workspace_id must enforce:
+- workspace_id filtering in policies
+- membership-based access checks
+- no cross-workspace joins without explicit workspace_id predicate
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. billing/credits mutation safety
+━━━━━━━━━━━━━━━━━━━━━━
+For credits/billing tables:
+- all mutations must be auditable (ledger-style or equivalent)
+- avoid overwriting balances without logging
+- ensure no negative balances
+- require transactional safety where possible
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. migrations must be reversible
+━━━━━━━━━━━━━━━━━━━━━━
+Every migration proposal must include one of:
+- explicit rollback SQL
+OR
+- safe no-rollback explanation + mitigation (feature flag / compatibility columns)
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. backfill rules
+━━━━━━━━━━━━━━━━━━━━━━
+If backfill is needed:
+- use batched updates
+- avoid locking large tables
+- provide a SELECT to estimate affected rows first
+- never backfill blindly
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. triggers/functions safety
+━━━━━━━━━━━━━━━━━━━━━━
+- Avoid triggers unless necessary.
+- If using triggers:
+  - ensure idempotency
+  - ensure performance (no heavy queries per row)
+  - document side effects
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. naming conventions and enums
+━━━━━━━━━━━━━━━━━━━━━━
+- Do not rename enums or values in-place.
+- Add new values; keep old until reads are migrated.
+- Use consistent snake_case naming.
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. environment safety
+━━━━━━━━━━━━━━━━━━━━━━
+- Never run destructive migrations on production first.
+- Prefer: local → staging → production.
+- If staging is not available, require explicit approval before any migration.
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. hard stop conditions
+━━━━━━━━━━━━━━━━━━━━━━
+STOP and ask before proceeding if:
+- schema differs from assumption
+- RLS impact is uncertain
+- migration affects billing/credits/workspace membership
+- row count is large and risk of lock/timeouts exists
+
+━━━━━━━━━━━━━━━━━━━━━━
+13. completion criteria
+━━━━━━━━━━━━━━━━━━━━━━
+- migrations apply cleanly
+- app build passes after schema change
+- no type errors
+- no policy that allows cross-tenant access
+

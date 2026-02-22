@@ -33,7 +33,7 @@ export function SectionTitle({
         <p
           className={cn(
             "text-[10px] sm:text-xs font-semibold uppercase tracking-[0.18em]",
-            theme === "day" ? "text-emerald-600" : "text-emerald-400"
+            "text-primary"
           )}
         >
           {eyebrow}

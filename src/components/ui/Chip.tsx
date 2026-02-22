@@ -29,10 +29,10 @@ export default function Chip({
       className={cn(
         'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-medium',
         'transition-colors duration-200',
-        'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         active
-          ? 'border-emerald-500 bg-emerald-500/20 text-emerald-400'
-          : 'border-slate-700 bg-slate-800/50 text-slate-300 hover:border-slate-600 hover:bg-slate-800',
+          ? 'border-primary bg-primary/20 text-primary'
+          : 'border-border bg-secondary/50 text-muted-foreground hover:border-muted-foreground hover:bg-secondary',
         className
       )}
     >
@@ -41,6 +41,7 @@ export default function Chip({
     </button>
   );
 }
+
 
 
 

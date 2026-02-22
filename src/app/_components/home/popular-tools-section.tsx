@@ -97,7 +97,7 @@ export default function PopularToolsSection({
               {/* CTA Link */}
               <Link
                 href={`/tools/${tool.slug}`}
-                className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-emerald-600 transition-colors hover:text-emerald-700"
+                className="mt-auto inline-flex items-center gap-2 text-sm font-semibold text-primary transition-colors hover:text-primary-hover"
               >
                 자세히 보기
                 <span className="transition-transform group-hover:translate-x-1">
@@ -111,6 +111,7 @@ export default function PopularToolsSection({
     </section>
   );
 }
+
 
 
 

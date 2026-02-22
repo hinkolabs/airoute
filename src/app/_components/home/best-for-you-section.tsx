@@ -60,7 +60,7 @@ export default function BestForYouSection({ tools }: BestForYouSectionProps) {
               {/* Emoji & Badge */}
               <div className="mb-4 flex items-center gap-3">
                 <span className="text-3xl">{role.emoji}</span>
-                <span className="inline-block rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-semibold text-emerald-700">
+                <span className="inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-semibold text-primary">
                   Best for {role.label}
                 </span>
               </div>
@@ -87,6 +87,7 @@ export default function BestForYouSection({ tools }: BestForYouSectionProps) {
     </section>
   );
 }
+
 
 
 

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
-import { requireAdminOrThrow } from "@/lib/admin-auth";
+import { createClient } from "@/lib/supabase/server";
 
 // =====================================================
 // Daily generation quota check (KST-based)
@@ -25,11 +25,38 @@ function getKSTDayEnd(): string {
 }
 
 export async function GET() {
+  // Admin auth - check Supabase user + system_admins table (consistent with layout)
   try {
-    await requireAdminOrThrow();
-  } catch {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized: Not logged in" },
+        { status: 401 }
+      );
+    }
+
+    // Check system_admin status
+    const { data: systemAdminRow } = await supabase
+      .from("system_admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!systemAdminRow) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized: Not a system admin" },
+        { status: 403 }
+      );
+    }
+  } catch (err) {
+    console.error("[quota] Auth error:", err);
     return NextResponse.json(
-      { ok: false, error: "Unauthorized" },
+      { ok: false, error: "Authentication failed" },
       { status: 401 }
     );
   }

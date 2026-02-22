@@ -84,16 +84,16 @@ export default async function GuidesPage({ searchParams }: GuidesPageProps) {
     return (
       <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8">
         <div className="mb-6">
-          <h1 className="mb-3 text-2xl font-bold text-white">
+          <h1 className="mb-3 text-2xl font-bold text-foreground">
             {isRouteMode ? "Guides for this Route" : "Getting started with AI"}
           </h1>
-          <p className="max-w-lg text-sm leading-relaxed text-white/70">
+          <p className="max-w-lg text-sm leading-relaxed text-muted-foreground">
             Simple, step-by-step guides
             <br />
             to help you choose the right AI tools
           </p>
           {routeFilter && (
-            <p className="mt-2 text-xs text-emerald-400">
+            <p className="mt-2 text-xs text-primary">
               Showing guides for this Route
             </p>
           )}

@@ -21,19 +21,17 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const STORAGE_KEY = "airoute-theme";
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  // Always start with "night" for SSR consistency
+  // Start with "night" for SSR consistency (dark mode default)
   const [theme, setTheme] = useState<Theme>("night");
   const [mounted, setMounted] = useState(false);
 
   // Load theme from localStorage after mount (client-side only)
   useEffect(() => {
     setMounted(true);
-    // For now, always use night mode (dark mode)
-    // Uncomment below to use localStorage:
-    // const stored = window.localStorage.getItem(STORAGE_KEY);
-    // if (stored === "day" || stored === "night") {
-    //   setTheme(stored as Theme);
-    // }
+    const stored = window.localStorage.getItem(STORAGE_KEY);
+    if (stored === "day" || stored === "night") {
+      setTheme(stored as Theme);
+    }
   }, []);
 
   // Sync theme to localStorage and DOM when it changes

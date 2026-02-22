@@ -2,27 +2,52 @@
 alwaysApply: true
 ---
 
-# AIRoute UI & CSS reuse rules
+# AIROUTE UI & CSS RULES (CURRENT)
 
-1. Global CSS safety
-   - Never modify `src/app/globals.css` unless the user explicitly asks for a global style change.
-   - Prefer local styles via Tailwind classes inside each component.
-   - Do NOT reset base fonts, body margins, or global background colors without confirmation.
+====================================================
+## 1) Global CSS Safety (DO NOT BREAK)
+====================================================
 
-2. Reuse shared UI components
-   - When implementing or updating any page UI, always reuse existing components from `src/components` instead of re-creating similar styles.
-   - Prefer these components:
-     - Layout: `PageShell`, `PageHeader` from `src/components/layout`.
-     - Basic UI: `Button`, `Badge`, `Chip` from `src/components/ui`.
-     - Search: `ToolSearchBar`, `ToolFilterChips` from `src/components/search`.
-     - Tools: `ToolCard`, `ToolGrid` from `src/components/tools`.
-   - If you need a new variation, extend the existing component with props (e.g. `variant`, `size`) instead of cloning the same JSX in a new file.
+- NEVER modify these unless user explicitly asks:
+  - `src/app/globals.css`
+  - `tailwind.config.ts`
 
-3. UI Lab page
-   - `/ui-lab` is the internal playground for components.
-   - When adding or changing shared UI components, update `/ui-lab` as well so we can visually check them.
-   - Do NOT link `/ui-lab` from the public navigation.
+If UI looks broken:
+1) inspect the actual component/page code first
+2) apply minimal local Tailwind fixes
+3) do not rewrite global styles
 
-4. Language
-   - All code comments, component names, and file names should stay in English.
-   - Explanations and summaries for the user should be written in Korean.
+====================================================
+## 2) Reuse Components (NO CLONING)
+====================================================
+
+- Reuse existing components from `src/components` whenever possible.
+- Do NOT invent paths/components. Verify they exist.
+- If you need a variation, extend via props (variant/size) instead of copy-pasting.
+
+====================================================
+## 3) UI-Lab
+====================================================
+
+- `/ui-lab` is internal playground.
+- When you change shared UI components, update `/ui-lab` for visual check.
+- Never link `/ui-lab` in public navigation.
+
+====================================================
+## 4) Mobile & Readability Defaults
+====================================================
+
+- Mobile-first readability is mandatory:
+  - side padding: `px-4` or `px-5`
+  - body text not smaller than `text-sm`
+  - use `leading-relaxed` for paragraphs
+- Keep UI simple: fewer badges, fewer micro-metrics.
+
+====================================================
+## 5) KR UI Tone (Workspace / B2B)
+====================================================
+
+- Prefer clear Korean labels.
+- Big buttons, simple states.
+- Status > settings.
+- "결과가 곧 콘텐츠" (email content is the deliverable).

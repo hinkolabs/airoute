@@ -4,7 +4,7 @@ export type Variant = "A" | "B" | "C";
 
 export type FreeRecipeInput = {
   recipe_key: string; // for deterministic pick
-  guide_type: "route_based" | "tool_based" | "safety";
+  guide_type: "route_based" | "tool_based" | "theme" | "safety";
   primary_intent: string; // kebab-case
   primary_route?: string | null; // kebab-case
   cta_type: "route" | "tool" | "mixed" | null;

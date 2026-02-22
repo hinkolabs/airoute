@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clear Auth Storage</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #0a0a0a;
+      color: #fff;
+    }
+    button {
+      background: #10b981;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 0;
+    }
+    button:hover {
+      background: #059669;
+    }
+    .danger {
+      background: #ef4444;
+    }
+    .danger:hover {
+      background: #dc2626;
+    }
+    .output {
+      background: #1a1a1a;
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🧹 Clear Airoute Auth Storage</h1>
+  <p>이 페이지는 로컬호스트에서 발생하는 Auth 무한 로딩 문제를 해결합니다.</p>
+  
+  <button onclick="clearAuth()">Clear Supabase Auth Only</button>
+  <button class="danger" onclick="clearAll()">Clear ALL Storage (모든 데이터 삭제)</button>
+  <button onclick="checkStorage()">Check Current Storage</button>
+  
+  <div class="output" id="output">
+    클릭하여 스토리지 상태를 확인하세요.
+  </div>
+
+  <script>
+    function log(msg) {
+      const output = document.getElementById('output');
+      output.innerHTML += msg + '<br>';
+      console.log(msg);
+    }
+
+    function clearOutput() {
+      document.getElementById('output').innerHTML = '';
+    }
+
+    function clearAuth() {
+      clearOutput();
+      log('🔍 Supabase 관련 키 검색 중...');
+      
+      let count = 0;
+      const keysToRemove = [];
+      
+      // LocalStorage
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('sb-'))) {
+          keysToRemove.push(key);
+          count++;
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        log(`❌ Removing: ${key}`);
+        localStorage.removeItem(key);
+      });
+      
+      // SessionStorage
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const key = sessionStorage.key(i);
+        if (key && (key.includes('supabase') || key.includes('sb-'))) {
+          log(`❌ Removing from session: ${key}`);
+          sessionStorage.removeItem(key);
+          count++;
+        }
+      }
+      
+      log('');
+      log(`✅ ${count}개의 Supabase 키를 제거했습니다.`);
+      log('');
+      log('⚠️ 5초 후 자동으로 localhost:3000으로 리다이렉트합니다...');
+      
+      setTimeout(() => {
+        window.location.href = 'http://localhost:3000';
+      }, 5000);
+    }
+
+    function clearAll() {
+      if (!confirm('⚠️ 모든 localStorage와 sessionStorage를 삭제합니다.\n\n저장된 즐겨찾기 등도 사라집니다. 계속하시겠습니까?')) {
+        return;
+      }
+      
+      clearOutput();
+      log('🗑️ 모든 스토리지 삭제 중...');
+      
+      localStorage.clear();
+      sessionStorage.clear();
+      
+      log('✅ 완료!');
+      log('⚠️ 3초 후 자동으로 localhost:3000으로 리다이렉트합니다...');
+      
+      setTimeout(() => {
+        window.location.href = 'http://localhost:3000';
+      }, 3000);
+    }
+
+    function checkStorage() {
+      clearOutput();
+      log('📊 현재 Storage 상태:');
+      log('');
+      
+      log('=== LocalStorage ===');
+      if (localStorage.length === 0) {
+        log('(비어있음)');
+      } else {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          const value = localStorage.getItem(key);
+          const isSupabase = key.includes('supabase') || key.includes('sb-');
+          const prefix = isSupabase ? '🔴 ' : '  ';
+          log(`${prefix}${key}: ${value.substring(0, 50)}...`);
+        }
+      }
+      
+      log('');
+      log('=== SessionStorage ===');
+      if (sessionStorage.length === 0) {
+        log('(비어있음)');
+      } else {
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          const value = sessionStorage.getItem(key);
+          log(`  ${key}: ${value.substring(0, 50)}...`);
+        }
+      }
+    }
+
+    // Auto-check on load
+    window.addEventListener('load', () => {
+      checkStorage();
+    });
+  </script>
+</body>
+</html>

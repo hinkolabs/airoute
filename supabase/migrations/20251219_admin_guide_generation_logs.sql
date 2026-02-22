@@ -24,3 +24,4 @@ GRANT SELECT, INSERT ON public.admin_guide_generation_logs TO authenticated;
 
 
 
+

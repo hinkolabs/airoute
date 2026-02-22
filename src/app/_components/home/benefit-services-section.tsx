@@ -52,7 +52,7 @@ export default function BenefitServicesSection() {
               className="flex flex-col rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-all hover:border-slate-300 hover:shadow-md"
             >
               {/* Icon */}
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-2xl">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-2xl">
                 {service.icon}
               </div>
 
@@ -63,7 +63,7 @@ export default function BenefitServicesSection() {
 
               {/* Benefit Badge */}
               <div className="mb-3">
-                <span className="inline-block rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+                <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
                   {service.benefit}
                 </span>
               </div>
@@ -90,6 +90,7 @@ export default function BenefitServicesSection() {
     </section>
   );
 }
+
 
 
 

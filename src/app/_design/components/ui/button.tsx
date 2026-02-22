@@ -14,13 +14,13 @@ type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-emerald-500 text-slate-900 hover:bg-emerald-400 shadow-sm",
+    "bg-primary text-primary-foreground hover:bg-primary-hover shadow-sm",
   secondary:
     "bg-slate-800 text-slate-100 hover:bg-slate-700 shadow-sm",
   outline:
-    "border border-slate-700 text-slate-200 hover:border-emerald-400 hover:text-emerald-300 bg-transparent",
+    "border border-slate-700 text-slate-200 hover:border-primary hover:text-primary bg-transparent",
   ghost:
-    "text-slate-300 hover:text-emerald-400 bg-transparent",
+    "text-slate-300 hover:text-primary bg-transparent",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -40,7 +40,7 @@ export function Button({
   const baseStyles = cn(
     "inline-flex items-center justify-center rounded-2xl font-medium",
     "transition-all duration-150",
-    "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950",
+    "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background",
     "disabled:opacity-50 disabled:cursor-not-allowed",
     variantStyles[variant],
     sizeStyles[size],

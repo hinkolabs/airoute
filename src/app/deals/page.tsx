@@ -47,22 +47,22 @@ export default async function DealsPage() {
               <Link
                 key={tool.slug}
                 href={`/tools/${tool.slug}`}
-                className="group flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+                className="group flex items-center justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-primary/30 hover:bg-slate-900"
               >
                 <div className="flex items-center gap-4">
                   {/* Icon/Logo */}
-                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
+                  <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl">
                     💎
                   </div>
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <div className="mb-1 flex items-center gap-2">
-                      <h3 className="text-base font-semibold text-slate-50 group-hover:text-emerald-300">
+                      <h3 className="text-base font-semibold text-slate-50 group-hover:text-primary">
                         {tool.name}
                       </h3>
                       {metadata?.tag && (
-                        <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-300">
+                        <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-[11px] font-medium text-primary">
                           {metadata.tag}
                         </span>
                       )}
@@ -76,7 +76,7 @@ export default async function DealsPage() {
                 </div>
 
                 {/* Arrow */}
-                <div className="flex-shrink-0 text-slate-500 transition group-hover:translate-x-1 group-hover:text-emerald-400">
+                <div className="flex-shrink-0 text-slate-500 transition group-hover:translate-x-1 group-hover:text-primary">
                   →
                 </div>
               </Link>

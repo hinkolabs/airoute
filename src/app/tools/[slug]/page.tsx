@@ -18,7 +18,7 @@ export async function generateMetadata({
   params,
 }: ToolDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
-  let tool = await getToolBySlug(slug);
+  let tool = await getToolBySlug(slug, "en");
 
   // Try fallback if not in DB
   if (!tool) {
@@ -49,7 +49,7 @@ export async function generateMetadata({
 // ============================================================
 export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
   const { slug } = await params;
-  let tool = await getToolBySlug(slug);
+  let tool = await getToolBySlug(slug, "en");
 
   // Try fallback if not in DB
   if (!tool) {
@@ -63,7 +63,7 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
 
   return (
     <>
-      <ToolDetailContent tool={tool} />
+      <ToolDetailContent tool={tool} locale="en" />
       <RelatedGuides toolSlug={slug} />
     </>
   );

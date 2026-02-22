@@ -104,10 +104,10 @@ export default async function BestCategoryPage({
   // If invalid category, return 404 (don't fallback)
   if (!categoryKey) {
     return (
-      <main className="min-h-screen bg-[#020617] flex items-center justify-center px-4">
+      <main className="min-h-screen bg-background flex items-center justify-center px-4">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold text-slate-50 mb-2">Category not found</h1>
-          <p className="text-sm text-slate-400">The requested category does not exist.</p>
+          <h1 className="text-2xl font-semibold text-foreground mb-2">Category not found</h1>
+          <p className="text-sm text-muted-foreground">The requested category does not exist.</p>
         </div>
       </main>
     );
@@ -210,25 +210,25 @@ export default async function BestCategoryPage({
   const encodedCategory = encodeURIComponent(categoryLabel);
 
   return (
-    <main className="min-h-screen bg-[#020617]">
-      <div className="mx-auto flex max-w-6xl flex-col px-4 pt-1 pb-24 text-slate-50">
+    <main className="min-h-screen bg-background">
+      <div className="mx-auto flex max-w-6xl flex-col px-4 pt-1 pb-24 text-foreground">
         {/* Header */}
         <header className="mb-6">
-          <div className="inline-flex items-center rounded-full bg-emerald-500/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-emerald-300">
+          <div className="inline-flex items-center rounded-full bg-primary/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
             <span className="mr-1.5 text-xs">✨</span>
             <span>Airoute best 3</span>
           </div>
-          <h1 className="mt-3 text-2xl font-semibold text-slate-50">
+          <h1 className="mt-3 text-2xl font-semibold text-foreground">
             Best 3 tools for {meta.title}
           </h1>
-          <p className="mt-2 text-sm text-slate-300">{meta.description}</p>
+          <p className="mt-2 text-sm text-muted-foreground">{meta.description}</p>
         </header>
 
         {/* Best 3 Cards */}
         <section className="mb-6">
           {sortedBest3.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/30 p-8 text-center">
-              <p className="text-sm text-slate-400">
+            <div className="rounded-2xl border border-dashed border-border bg-muted/30 p-8 text-center">
+              <p className="text-sm text-muted-foreground">
                 No recommended tools yet for this category.
               </p>
             </div>
@@ -243,11 +243,11 @@ export default async function BestCategoryPage({
                 return (
                   <article
                     key={tool.id}
-                    className="relative flex flex-col gap-4 rounded-2xl border border-slate-700/70 bg-slate-900/80 p-5 shadow-sm hover:border-slate-600 transition-colors"
+                    className="relative flex flex-col gap-4 rounded-2xl border border-border bg-card/80 p-5 shadow-sm hover:border-border transition-colors"
                   >
                     {/* Role Badge - Top */}
                     <div className="flex items-center justify-between">
-                      <span className="inline-flex items-center rounded-full bg-emerald-500/20 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-300">
+                      <span className="inline-flex items-center rounded-full bg-primary/20 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
                         {ROLE_LABELS[item.role]}
                       </span>
                     </div>
@@ -262,14 +262,14 @@ export default async function BestCategoryPage({
                         }}
                         size={48}
                       />
-                      <h2 className="text-base font-semibold text-slate-50">
+                      <h2 className="text-base font-semibold text-foreground">
                         {tool.name}
                       </h2>
                     </div>
 
                     {/* Why Selected (Note) */}
                     <div className="flex-1">
-                      <p className="text-sm leading-relaxed text-slate-300/90">
+                      <p className="text-sm leading-relaxed text-muted-foreground/90">
                         {description}
                       </p>
                     </div>
@@ -278,19 +278,19 @@ export default async function BestCategoryPage({
                     <div className="flex flex-wrap gap-2 pt-2">
                       <Link
                         href={`/tools/${tool.slug}`}
-                        className="inline-flex items-center rounded-lg border border-slate-600 bg-slate-800/50 px-4 py-2 text-xs font-medium text-slate-200 transition hover:border-slate-500 hover:bg-slate-800"
+                        className="inline-flex items-center rounded-lg border border-border bg-card px-4 py-2 text-xs font-medium text-foreground transition hover:border-primary hover:bg-muted"
                       >
                         Details
                       </Link>
                       {affiliateUrl && (
-                        <AffiliateLinkButton
-                          href={affiliateUrl}
-                          placement="best3"
-                          toolSlug={tool.slug}
-                          className="inline-flex items-center rounded-lg border border-emerald-500/40 bg-emerald-500/10 px-4 py-2 text-xs font-semibold text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500/15"
-                        >
-                          Visit →
-                        </AffiliateLinkButton>
+                      <AffiliateLinkButton
+                        href={affiliateUrl}
+                        placement="best3"
+                        toolSlug={tool.slug}
+                        className="inline-flex items-center rounded-lg border border-primary/40 bg-primary/10 px-4 py-2 text-xs font-semibold text-primary transition hover:border-primary hover:bg-primary/15"
+                      >
+                        Visit →
+                      </AffiliateLinkButton>
                       )}
                     </div>
                   </article>
@@ -304,7 +304,7 @@ export default async function BestCategoryPage({
         <div className="mt-12 flex justify-center">
           <Link
             href={`/tools?category=${encodedCategory}`}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-emerald-300 transition hover:border-emerald-400 hover:bg-emerald-500/15"
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-6 py-3 text-sm font-semibold uppercase tracking-wide text-primary transition hover:border-primary hover:bg-primary/15"
           >
             Browse all {categoryLabel} tools →
           </Link>

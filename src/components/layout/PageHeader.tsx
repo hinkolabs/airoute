@@ -26,20 +26,20 @@ export default function PageHeader({
   const renderTitle = () => {
     if (!highlight) {
       return (
-        <>
-          {title}
-          {titleSuffix && <span className="text-slate-300">{titleSuffix}</span>}
-        </>
-      );
-    }
+      <>
+        {title}
+        {titleSuffix && <span className="text-muted-foreground">{titleSuffix}</span>}
+      </>
+    );
+  }
 
-    const parts = title.split(highlight);
+  const parts = title.split(highlight);
     return (
       <>
         {parts[0]}
-        <span className="text-emerald-400">{highlight}</span>
+        <span className="text-primary">{highlight}</span>
         {parts[1]}
-        {titleSuffix && <span className="text-slate-300">{titleSuffix}</span>}
+        {titleSuffix && <span className="text-muted-foreground">{titleSuffix}</span>}
       </>
     );
   };
@@ -48,18 +48,19 @@ export default function PageHeader({
     <header className={cn('mb-8 text-center', className)}>
       {eyebrow && (
         <div className="mb-4">
-          <Badge tone="emerald">{eyebrow}</Badge>
+          <Badge tone="primary">{eyebrow}</Badge>
         </div>
       )}
-      <h1 className="text-3xl font-bold tracking-tight text-slate-50 sm:text-4xl lg:text-5xl">
+      <h1 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl">
         {renderTitle()}
       </h1>
       {subtitle && (
-        <p className="mt-4 text-lg text-slate-300 sm:text-xl">{subtitle}</p>
+        <p className="mt-4 text-lg text-muted-foreground sm:text-xl">{subtitle}</p>
       )}
     </header>
   );
 }
+
 
 
 

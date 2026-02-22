@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
-import { requireAdminOrThrow } from "@/lib/admin-auth";
+import { createClient } from "@/lib/supabase/server";
 import { buildFreeGuideEn, computeVariant, type Variant } from "@/lib/guides/free-templates/en";
-// NOTE: KR template is available but disabled for v1.
-// When lang="kr" is requested, we fallback to EN content for now.
-// Future: re-enable buildFreeGuideKr when KR content is approved.
-// import { buildFreeGuideKr } from "@/lib/guides/free-templates/kr";
+import { buildFreeGuideKr } from "@/lib/guides/free-templates/kr";
+import { normalizeGuideCta } from "@/lib/guides/payload-normalizer";
+import { computeGuideQualityScore } from "@/lib/guides/quality-check";
 
 // =====================================================
 // FREE Template-based guide generation (no OpenAI cost)
 // =====================================================
 
 type Recipe = {
-  guide_type: "route_based" | "tool_based" | "safety";
+  guide_type: "route_based" | "tool_based" | "theme";
   primary_intent: string;
   primary_route: string | null;
   cta_type: "route" | "tool" | "mixed" | null;
@@ -140,10 +139,10 @@ const TOOL_RECIPES: Recipe[] = [
   },
 ];
 
-// Trust/Safety 레시피 (10%)
-const SAFETY_RECIPES: Recipe[] = [
+// Theme 레시피 (10%)
+const THEME_RECIPES: Recipe[] = [
   {
-    guide_type: "safety",
+    guide_type: "theme",
     primary_intent: "ai-tool-safety-checklist",
     primary_route: null,
     cta_type: null,
@@ -153,7 +152,7 @@ const SAFETY_RECIPES: Recipe[] = [
     taxonomy: "trust-safety",
   },
   {
-    guide_type: "safety",
+    guide_type: "theme",
     primary_intent: "avoid-ai-scams",
     primary_route: null,
     cta_type: null,
@@ -163,7 +162,7 @@ const SAFETY_RECIPES: Recipe[] = [
     taxonomy: "trust-safety",
   },
   {
-    guide_type: "safety",
+    guide_type: "theme",
     primary_intent: "ai-copyright-basics",
     primary_route: null,
     cta_type: null,
@@ -174,6 +173,160 @@ const SAFETY_RECIPES: Recipe[] = [
   },
 ];
 
+// =====================================================
+// KR Pipeline 전용 레시피 (EN routes 공유, KR 독립 pipeline)
+// =====================================================
+const KR_ROUTE_RECIPES: Recipe[] = [
+  {
+    guide_type: "route_based",
+    primary_intent: "turn-long-videos-into-shorts",
+    primary_route: "long-to-shorts",
+    cta_type: "route",
+    cta_route_slug: "long-to-shorts",
+    cta_tool_slug: null,
+    title_seed: "긴 영상을 유튜브 쇼츠로 변환하는 방법",
+    taxonomy: "video-editing",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "polish-shorts-and-reels",
+    primary_route: "polish-shorts",
+    cta_type: "route",
+    cta_route_slug: "polish-shorts",
+    cta_tool_slug: null,
+    title_seed: "쇼츠와 릴스를 빠르게 다듬는 방법",
+    taxonomy: "video-editing",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "write-blog-posts-faster",
+    primary_route: "blog-writing",
+    cta_type: "route",
+    cta_route_slug: "blog-writing",
+    cta_tool_slug: null,
+    title_seed: "AI로 블로그 글 더 빠르게 작성하기",
+    taxonomy: "content-writing",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "generate-social-media-images",
+    primary_route: "social-images",
+    cta_type: "route",
+    cta_route_slug: "social-images",
+    cta_tool_slug: null,
+    title_seed: "AI로 SNS 이미지 생성하는 방법",
+    taxonomy: "image-generation",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "create-product-descriptions",
+    primary_route: "product-copy",
+    cta_type: "route",
+    cta_route_slug: "product-copy",
+    cta_tool_slug: null,
+    title_seed: "AI로 상품 설명 문구 만들기",
+    taxonomy: "content-writing",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "edit-podcast-audio",
+    primary_route: "podcast-editing",
+    cta_type: "route",
+    cta_route_slug: "podcast-editing",
+    cta_tool_slug: null,
+    title_seed: "AI 도구로 팟캐스트 오디오 편집하기",
+    taxonomy: "audio-editing",
+  },
+  {
+    guide_type: "route_based",
+    primary_intent: "generate-background-music",
+    primary_route: "background-music",
+    cta_type: "route",
+    cta_route_slug: "background-music",
+    cta_tool_slug: null,
+    title_seed: "영상용 배경 음악 자동 생성하기",
+    taxonomy: "audio-generation",
+  },
+];
+
+const KR_TOOL_RECIPES: Recipe[] = [
+  {
+    guide_type: "tool_based",
+    primary_intent: "midjourney-beginner-guide",
+    primary_route: null,
+    cta_type: "tool",
+    cta_route_slug: null,
+    cta_tool_slug: "midjourney",
+    title_seed: "Midjourney 입문 가이드: 처음 시작하기",
+    taxonomy: "image-generation",
+  },
+  {
+    guide_type: "tool_based",
+    primary_intent: "chatgpt-writing-tips",
+    primary_route: null,
+    cta_type: "tool",
+    cta_route_slug: null,
+    cta_tool_slug: "chatgpt",
+    title_seed: "ChatGPT 글쓰기 활용 팁",
+    taxonomy: "content-writing",
+  },
+  {
+    guide_type: "tool_based",
+    primary_intent: "runway-video-editing",
+    primary_route: null,
+    cta_type: "tool",
+    cta_route_slug: null,
+    cta_tool_slug: "runway",
+    title_seed: "Runway 영상 편집 완전 가이드",
+    taxonomy: "video-editing",
+  },
+  {
+    guide_type: "tool_based",
+    primary_intent: "elevenlabs-voice-cloning",
+    primary_route: null,
+    cta_type: "tool",
+    cta_route_slug: null,
+    cta_tool_slug: "elevenlabs",
+    title_seed: "ElevenLabs 목소리 복제 튜토리얼",
+    taxonomy: "audio-generation",
+  },
+];
+
+const KR_THEME_RECIPES: Recipe[] = [
+  {
+    guide_type: "theme",
+    primary_intent: "ai-tool-safety-checklist",
+    primary_route: null,
+    cta_type: null,
+    cta_route_slug: null,
+    cta_tool_slug: null,
+    title_seed: "AI 도구 안전 사용 체크리스트",
+    taxonomy: "trust-safety",
+  },
+  {
+    guide_type: "theme",
+    primary_intent: "avoid-ai-scams",
+    primary_route: null,
+    cta_type: null,
+    cta_route_slug: null,
+    cta_tool_slug: null,
+    title_seed: "AI 사기 피하는 방법",
+    taxonomy: "trust-safety",
+  },
+  {
+    guide_type: "theme",
+    primary_intent: "ai-copyright-basics",
+    primary_route: null,
+    cta_type: null,
+    cta_route_slug: null,
+    cta_tool_slug: null,
+    title_seed: "AI 저작권 기초: 꼭 알아야 할 것들",
+    taxonomy: "trust-safety",
+  },
+];
+
+const KR_ALL_RECIPES = [...KR_ROUTE_RECIPES, ...KR_TOOL_RECIPES, ...KR_THEME_RECIPES];
+
 function selectRandomRecipe(): Recipe {
   const rand = Math.random() * 100;
   if (rand < 70) {
@@ -181,7 +334,18 @@ function selectRandomRecipe(): Recipe {
   } else if (rand < 90) {
     return TOOL_RECIPES[Math.floor(Math.random() * TOOL_RECIPES.length)];
   } else {
-    return SAFETY_RECIPES[Math.floor(Math.random() * SAFETY_RECIPES.length)];
+    return THEME_RECIPES[Math.floor(Math.random() * THEME_RECIPES.length)];
+  }
+}
+
+function selectKrRecipe(): Recipe {
+  const rand = Math.random() * 100;
+  if (rand < 70) {
+    return KR_ROUTE_RECIPES[Math.floor(Math.random() * KR_ROUTE_RECIPES.length)];
+  } else if (rand < 90) {
+    return KR_TOOL_RECIPES[Math.floor(Math.random() * KR_TOOL_RECIPES.length)];
+  } else {
+    return KR_THEME_RECIPES[Math.floor(Math.random() * KR_THEME_RECIPES.length)];
   }
 }
 
@@ -232,14 +396,41 @@ function getKSTDayEnd(): string {
   return new Date(kstDayEnd.getTime() - kstOffset).toISOString();
 }
 
-const ALL_RECIPES = [...ROUTE_RECIPES, ...TOOL_RECIPES, ...SAFETY_RECIPES];
+const ALL_RECIPES = [...ROUTE_RECIPES, ...TOOL_RECIPES, ...THEME_RECIPES];
 
 export async function POST(req: Request) {
+  // Admin auth - check Supabase user + system_admins table (consistent with layout)
   try {
-    await requireAdminOrThrow();
-  } catch {
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized: Not logged in" },
+        { status: 401 }
+      );
+    }
+
+    // Check system_admin status
+    const { data: systemAdminRow } = await supabase
+      .from("system_admins")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (!systemAdminRow) {
+      return NextResponse.json(
+        { ok: false, error: "Unauthorized: Not a system admin" },
+        { status: 403 }
+      );
+    }
+  } catch (err) {
+    console.error("[generate] Auth error:", err);
     return NextResponse.json(
-      { ok: false, error: "Unauthorized: Admin authentication required" },
+      { ok: false, error: "Authentication failed" },
       { status: 401 }
     );
   }
@@ -248,14 +439,9 @@ export async function POST(req: Request) {
     // Read lang from JSON body only
     const body = await req.json().catch(() => ({}));
     const bodyLang = body.lang;
-    
-    // Determine lang: body > default "en"
+
     // Allowed values: "en" | "kr", default to "en" if missing/invalid
     const lang = (bodyLang === "kr" ? "kr" : "en") as "en" | "kr";
-    
-    // IMPORTANT: For now, actual content is always generated in EN.
-    // When KR templates are approved, change this to: const contentLang = lang;
-    const contentLang: "en" = "en";
 
     const supabase = createAdminSupabase();
 
@@ -282,10 +468,12 @@ export async function POST(req: Request) {
     let selectedVariant: Variant = "A";
     const triedKeys = new Set<string>();
 
+    const activeAllRecipes = lang === "kr" ? KR_ALL_RECIPES : ALL_RECIPES;
+
     for (let i = 0; i < MAX_RETRIES; i++) {
-      const recipe = i < 5 
-        ? selectRandomRecipe() 
-        : ALL_RECIPES[i % ALL_RECIPES.length];
+      const recipe = i < 5
+        ? (lang === "kr" ? selectKrRecipe() : selectRandomRecipe())
+        : activeAllRecipes[i % activeAllRecipes.length];
       
       // Compute default variant deterministically
       const defaultVariant = computeVariant(recipe.primary_intent, recipe.guide_type);
@@ -382,47 +570,189 @@ export async function POST(req: Request) {
     const slug = generateSlug(selectedRecipe.primary_intent);
     const now = new Date().toISOString();
 
-    // v1-free-en: Always generate English content regardless of lang parameter.
-    // This ensures 100% English text output for free generation.
-    // When KR support is enabled, add conditional logic here based on contentLang.
-    // buildFreeGuideEn uses deterministic templates - NO OpenAI calls
-    const generatedGuide = buildFreeGuideEn({
-      recipe_key: recipeKey,
+    // =====================================================
+    // EN Pipeline: buildFreeGuideEn (deterministic, NO OpenAI)
+    // KR Pipeline: buildFreeGuideKr (독립 KR 템플릿, NO OpenAI)
+    // =====================================================
+    const generatedGuide = lang === "kr"
+      ? buildFreeGuideKr({
+          recipe_key: recipeKey,
+          // KR template uses "safety" instead of "theme"
+          guide_type: selectedRecipe.guide_type === "theme" ? "safety" : selectedRecipe.guide_type,
+          primary_intent: selectedRecipe.primary_intent,
+          primary_route: selectedRecipe.primary_route,
+          cta_type: selectedRecipe.cta_type,
+          cta_route_slug: selectedRecipe.cta_route_slug,
+          cta_tool_slug: selectedRecipe.cta_tool_slug,
+          variant: selectedVariant,
+        })
+      : buildFreeGuideEn({
+          recipe_key: recipeKey,
+          guide_type: selectedRecipe.guide_type,
+          primary_intent: selectedRecipe.primary_intent,
+          primary_route: selectedRecipe.primary_route,
+          cta_type: selectedRecipe.cta_type,
+          cta_route_slug: selectedRecipe.cta_route_slug,
+          cta_tool_slug: selectedRecipe.cta_tool_slug,
+          variant: selectedVariant,
+        });
+
+    const { title, excerpt, content } = generatedGuide;
+    // v1-free-en = EN free template | v1-free-kr = KR free template
+    const generationVersion = `v1-free-${lang}`;
+
+    // Normalize payload to satisfy guides_guide_type_link_check constraint
+    const VALID_CATEGORIES = ['Image & Design','Writing','Video','Audio','Voice','Coding'];
+    
+    // Map taxonomy to valid category enum (best effort)
+    const categoryMap: Record<string, string> = {
+      'video-editing': 'Video',
+      'content-writing': 'Writing',
+      'image-generation': 'Image & Design',
+      'audio-editing': 'Audio',
+      'audio-generation': 'Audio',
+      'trust-safety': 'Writing', // fallback
+    };
+    
+    let normalizedPayload: Record<string, any> = {
+      slug,
+      title,
+      excerpt,
+      content,
+      status: "review",
+      lang,
+      taxonomy: selectedRecipe.taxonomy,
       guide_type: selectedRecipe.guide_type,
       primary_intent: selectedRecipe.primary_intent,
-      primary_route: selectedRecipe.primary_route,
-      cta_type: selectedRecipe.cta_type,
-      cta_route_slug: selectedRecipe.cta_route_slug,
-      cta_tool_slug: selectedRecipe.cta_tool_slug,
-      variant: selectedVariant,
+      generation_version: generationVersion,
+      created_at: now,
+      updated_at: now,
+    };
+
+    // Resolve fallback slugs (existing DB query logic preserved)
+    if (selectedRecipe.guide_type === 'route_based' && !selectedRecipe.cta_route_slug) {
+      const { data: fallbackRoute } = await supabase
+        .from('routes')
+        .select('slug')
+        .in('status', ['published', 'active'])
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .single();
+
+      if (!fallbackRoute) {
+        return NextResponse.json(
+          { ok: false, error: "route_based guide requires route_slug but no published/active routes found" },
+          { status: 400 }
+        );
+      }
+      selectedRecipe.cta_route_slug = fallbackRoute.slug;
+    }
+
+    if (selectedRecipe.guide_type === 'tool_based' && !selectedRecipe.cta_tool_slug) {
+      const { data: fallbackTool } = await supabase
+        .from('tools')
+        .select('id')
+        .order('updated_at', { ascending: false, nullsFirst: false })
+        .limit(1)
+        .single();
+
+      if (!fallbackTool) {
+        return NextResponse.json(
+          { ok: false, error: "tool_based guide requires tool_slug but no tools found" },
+          { status: 400 }
+        );
+      }
+      selectedRecipe.cta_tool_slug = fallbackTool.id;
+    }
+
+    // Enforce CTA integrity
+    const cta = normalizeGuideCta({
+      guide_type: selectedRecipe.guide_type,
+      route_slug: selectedRecipe.cta_route_slug,
+      tool_slug: selectedRecipe.cta_tool_slug,
     });
-    
-    const { title, excerpt, content } = generatedGuide;
-    // generation_version tracks which template was used
-    // v1-free-en = English-only free template (current) - NO OpenAI
-    // v1-free-kr = Korean free template (future, when enabled)
-    const generationVersion = `v1-free-${contentLang}`;
+
+    if (selectedRecipe.guide_type === 'route_based') {
+      normalizedPayload.primary_route = selectedRecipe.primary_route;
+      const mappedCat = categoryMap[selectedRecipe.taxonomy];
+      normalizedPayload.category = (mappedCat && VALID_CATEGORIES.includes(mappedCat)) ? mappedCat : null;
+    } else if (selectedRecipe.guide_type === 'tool_based') {
+      normalizedPayload.primary_route = null;
+      const mappedCat = categoryMap[selectedRecipe.taxonomy];
+      normalizedPayload.category = (mappedCat && VALID_CATEGORIES.includes(mappedCat)) ? mappedCat : null;
+    } else {
+      // theme
+      normalizedPayload.primary_route = null;
+      const mappedCat = categoryMap[selectedRecipe.taxonomy] || 'Writing';
+      normalizedPayload.category = VALID_CATEGORIES.includes(mappedCat) ? mappedCat : 'Writing';
+    }
+
+    normalizedPayload.cta_type = cta.cta_type;
+    normalizedPayload.cta_route_slug = cta.cta_route_slug;
+    normalizedPayload.cta_tool_slug = cta.cta_tool_slug;
+
+    // =====================================================
+    // Soft Dedup Check (semantic intent duplication prevention)
+    // Rule: same lang + guide_type + primary_intent + status != 'rejected'
+    // Fires BEFORE Hard Dedup, single indexed query
+    // =====================================================
+    {
+      const { data: softDedupMatch } = await supabase
+        .from("guides")
+        .select("id")
+        .eq("lang", lang)
+        .eq("guide_type", selectedRecipe.guide_type)
+        .eq("primary_intent", selectedRecipe.primary_intent)
+        .neq("status", "rejected")
+        .limit(1);
+
+      if (softDedupMatch && softDedupMatch.length > 0) {
+        return NextResponse.json({
+          ok: true,
+          id: softDedupMatch[0].id,
+          soft_dedup: true,
+          generation_version: "soft-dedup-skip",
+        });
+      }
+    }
+
+    // =====================================================
+    // Hard Dedup Check (SEO cannibalization prevention)
+    // Rule: same lang + guide_type + (primary_route OR cta_tool_slug) + status != 'rejected'
+    // Fires AFTER CTA/fallback resolution, BEFORE insert
+    // =====================================================
+    {
+      const orParts: string[] = [];
+      if (selectedRecipe.primary_route) {
+        orParts.push(`primary_route.eq.${selectedRecipe.primary_route}`);
+      }
+      if (selectedRecipe.cta_tool_slug) {
+        orParts.push(`cta_tool_slug.eq.${selectedRecipe.cta_tool_slug}`);
+      }
+      if (orParts.length > 0) {
+        const { data: dedupMatch } = await supabase
+          .from("guides")
+          .select("id")
+          .eq("lang", lang)
+          .eq("guide_type", selectedRecipe.guide_type)
+          .neq("status", "rejected")
+          .or(orParts.join(","))
+          .limit(1);
+
+        if (dedupMatch && dedupMatch.length > 0) {
+          return NextResponse.json({
+            ok: true,
+            id: dedupMatch[0].id,
+            dedup: true,
+            generation_version: "dedup-skip",
+          });
+        }
+      }
+    }
 
     const { data: guide, error: insertError } = await supabase
       .from("guides")
-      .insert({
-        slug,
-        title,
-        excerpt,
-        content,
-        status: "review",
-        lang,
-        taxonomy: selectedRecipe.taxonomy,
-        guide_type: selectedRecipe.guide_type,
-        primary_intent: selectedRecipe.primary_intent,
-        primary_route: selectedRecipe.primary_route,
-        cta_type: selectedRecipe.cta_type,
-        cta_route_slug: selectedRecipe.cta_route_slug,
-        cta_tool_slug: selectedRecipe.cta_tool_slug,
-        generation_version: generationVersion,
-        created_at: now,
-        updated_at: now,
-      })
+      .insert(normalizedPayload)
       .select("id, slug")
       .single();
 
@@ -432,6 +762,24 @@ export async function POST(req: Request) {
         { status: 500 }
       );
     }
+
+    // Quality gate: compute score and update guide
+    const qualityResult = computeGuideQualityScore({
+      content,
+      cta_type: normalizedPayload.cta_type ?? null,
+      cta_route_slug: normalizedPayload.cta_route_slug ?? null,
+      cta_tool_slug: normalizedPayload.cta_tool_slug ?? null,
+      primary_intent: selectedRecipe.primary_intent,
+      primary_route: selectedRecipe.primary_route ?? null,
+    });
+
+    await supabase
+      .from("guides")
+      .update({
+        quality_score: qualityResult.score,
+        auto_publish_eligible: qualityResult.auto_publish_eligible,
+      })
+      .eq("id", guide.id);
 
     // Validate required fields before insert
     const mode = "auto";
@@ -491,6 +839,8 @@ export async function POST(req: Request) {
       slug: string;
       remainingToday: number;
       lang: string;
+      quality_score: number;
+      auto_publish_eligible: boolean;
       debug?: {
         kstStartIso: string;
         kstEndIso: string;
@@ -504,6 +854,8 @@ export async function POST(req: Request) {
       slug: guide.slug,
       remainingToday,
       lang,
+      quality_score: qualityResult.score,
+      auto_publish_eligible: qualityResult.auto_publish_eligible,
     };
 
     if (process.env.NODE_ENV !== "production") {

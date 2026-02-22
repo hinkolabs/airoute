@@ -44,12 +44,12 @@ export default async function GuidePage({ params }: Props) {
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8 md:py-16">
       {/* Header Section */}
-      <header className="mb-12 border-b border-slate-700/50 pb-8">
-        <h1 className="mb-5 text-3xl font-bold leading-tight text-white md:text-4xl md:leading-tight">
+      <header className="mb-12 border-b border-border pb-8">
+        <h1 className="mb-5 text-3xl font-bold leading-tight text-foreground md:text-4xl md:leading-tight">
           {guide.title}
         </h1>
         {guide.excerpt && (
-          <p className="text-base leading-relaxed text-slate-300 md:text-lg md:leading-relaxed">
+          <p className="text-base leading-relaxed text-muted-foreground md:text-lg md:leading-relaxed">
             {guide.excerpt}
           </p>
         )}
@@ -57,7 +57,7 @@ export default async function GuidePage({ params }: Props) {
 
       {/* Content Section */}
       {guide.content && (
-        <article className="guide-content mb-16 text-slate-200">
+        <article className="guide-content mb-16 text-foreground">
           <ReactMarkdown 
             remarkPlugins={[remarkGfm]}
             components={{
@@ -69,12 +69,12 @@ export default async function GuidePage({ params }: Props) {
               ul: ({node, ...props}) => <ul className="guide-ul" {...props} />,
               ol: ({node, ...props}) => <ol className="guide-ol" {...props} />,
               li: ({node, ...props}) => <li className="guide-li" {...props} />,
-              strong: ({node, ...props}) => <strong className="font-bold text-white" {...props} />,
-              em: ({node, ...props}) => <em className="text-emerald-300" {...props} />,
-              a: ({node, ...props}) => <a className="font-medium text-emerald-400 no-underline hover:underline" {...props} />,
+              strong: ({node, ...props}) => <strong className="font-bold text-foreground" {...props} />,
+              em: ({node, ...props}) => <em className="text-primary" {...props} />,
+              a: ({node, ...props}) => <a className="font-medium text-primary no-underline hover:underline" {...props} />,
               code: ({node, inline, ...props}: any) => 
                 inline ? (
-                  <code className="rounded bg-slate-800/70 px-2 py-0.5 font-mono text-sm text-emerald-300" {...props} />
+                  <code className="rounded bg-muted px-2 py-0.5 font-mono text-sm text-primary" {...props} />
                 ) : (
                   <code className="guide-code-block" {...props} />
                 ),
@@ -89,7 +89,7 @@ export default async function GuidePage({ params }: Props) {
       )}
       
       {/* CTA Section */}
-      <div className="mt-16 border-t-2 border-slate-700/50 pt-10">
+      <div className="mt-16 border-t-2 border-border pt-10">
         <GuideCTA
           ctaType={guide.cta_type}
           ctaRouteSlug={guide.cta_route_slug}

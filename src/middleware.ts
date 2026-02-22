@@ -1,30 +1,78 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { createServerClient } from '@supabase/ssr';
 
-export function middleware(req: NextRequest) {
+const LOCALE_COOKIE = "airoute-locale";
+
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  
-  // Only protect /admin routes (except /admin/login)
-  if (!pathname.startsWith("/admin") || pathname === "/admin/login") {
-    return NextResponse.next();
+
+  // --- Geo-based locale redirect (root "/" only) ---
+  if (pathname === "/") {
+    const localeOverride = req.cookies.get(LOCALE_COOKIE)?.value;
+
+    if (localeOverride === "en") {
+      // User explicitly chose global – skip redirect
+    } else if (localeOverride === "kr") {
+      const url = req.nextUrl.clone();
+      url.pathname = "/kr";
+      return NextResponse.redirect(url);
+    } else {
+      // No cookie → detect country via Vercel header
+      const country = req.headers.get("x-vercel-ip-country") ?? "";
+      if (country === "KR") {
+        const url = req.nextUrl.clone();
+        url.pathname = "/kr";
+        return NextResponse.redirect(url);
+      }
+    }
   }
 
-  const adminKey = process.env.ADMIN_KEY;
-  // dev 편의: 미설정 시 통과 (원하면 막아도 됨)
-  if (!adminKey) return NextResponse.next();
+  // Create response object
+  let response = NextResponse.next({
+    request: {
+      headers: req.headers,
+    },
+  });
 
-  const cookieKey = req.cookies.get("airoute_admin")?.value;
-  if (cookieKey === adminKey) return NextResponse.next();
+  // Initialize Supabase client for session management
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll().map(({ name, value }) => ({ name, value }));
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            req.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
 
-  // Redirect to login page
-  const url = req.nextUrl.clone();
-  url.pathname = "/admin/login";
-  return NextResponse.redirect(url);
+  // Refresh session if it exists (critical for OAuth)
+  const { data: { session } } = await supabase.auth.getSession();
+  
+  if (process.env.NODE_ENV !== 'production' && pathname.startsWith('/workspace')) {
+    console.log('[Middleware] /workspace access:', { 
+      hasSession: !!session, 
+      userId: session?.user?.id ?? null 
+    });
+  }
+  
+  response.headers.set("x-pathname", pathname);
+
+  return response;
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 };
+
 
 
 

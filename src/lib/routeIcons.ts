@@ -38,3 +38,4 @@ export function getRouteIconBg(slug: string): string {
   return "bg-emerald-500/10";
 }
 
+

@@ -8,10 +8,12 @@ const ALLOWED_EVENT_TYPES = [
   'route_click',
   'guide_view',
   'save_action',
+  'auth_sign_in',
+  'auth_sign_out',
 ] as const;
 
 // Allowed target types
-const ALLOWED_TARGET_TYPES = ['route', 'tool', 'guide'] as const;
+const ALLOWED_TARGET_TYPES = ['route', 'tool', 'guide', 'auth'] as const;
 
 type EventType = typeof ALLOWED_EVENT_TYPES[number];
 type TargetType = typeof ALLOWED_TARGET_TYPES[number];
@@ -22,6 +24,7 @@ interface EventLogPayload {
   target_slug: string;
   source: string;
   anonymous_id: string;
+  user_id?: string; // Optional: client may send it for logging purposes (ignored in DB insert)
   metadata?: Record<string, any>;
 }
 
@@ -40,47 +43,66 @@ function isValidUUID(str: string): boolean {
  */
 export async function POST(request: NextRequest) {
   try {
-    const body: EventLogPayload = await request.json();
+    const body = (await request.json().catch(() => ({}))) as Partial<EventLogPayload>;
+
+    // Incognito / storage-restricted environments can omit anonymous_id.
+    // Fall back to user_id when available (Supabase UUID) and keep logging best-effort.
+    const effectiveAnonymousId =
+      (typeof body?.anonymous_id === 'string' && body.anonymous_id.trim()
+        ? body.anonymous_id.trim()
+        : null) ||
+      (typeof body?.user_id === 'string' && body.user_id.trim() ? body.user_id.trim() : null);
+
+    if (!effectiveAnonymousId) {
+      // Unable to identify caller; silently skip logging.
+      return new NextResponse(null, { status: 204 });
+    }
+
+    // Ensure downstream logic always has anonymous_id (DB requires NOT NULL)
+    if (!body.anonymous_id) {
+      body.anonymous_id = effectiveAnonymousId;
+    }
+
+    // Log incoming request
+    console.log('[api/events] incoming', {
+      event_type: body.event_type,
+      source: body.source,
+      user_id: body.user_id,
+      anonymous_id: body.anonymous_id,
+    });
+
+    // Collect missing fields for detailed error response
+    const missingFields: string[] = [];
 
     // Input validation
     if (!body.event_type || !ALLOWED_EVENT_TYPES.includes(body.event_type)) {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid event_type' },
-        { status: 400 }
-      );
+      missingFields.push('event_type');
     }
 
     if (!body.target_type || !ALLOWED_TARGET_TYPES.includes(body.target_type)) {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid target_type' },
-        { status: 400 }
-      );
+      missingFields.push('target_type');
     }
 
     if (!body.target_slug || typeof body.target_slug !== 'string') {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid target_slug' },
-        { status: 400 }
-      );
+      missingFields.push('target_slug');
     }
 
     if (!body.source || typeof body.source !== 'string') {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid source' },
-        { status: 400 }
-      );
+      missingFields.push('source');
     }
 
     if (!body.anonymous_id || !isValidUUID(body.anonymous_id)) {
-      return NextResponse.json(
-        { ok: false, error: 'Invalid or missing anonymous_id (must be UUID)' },
-        { status: 400 }
-      );
+      missingFields.push('anonymous_id');
     }
 
-    if (body.metadata && typeof body.metadata !== 'object') {
+    if (body.metadata !== undefined && typeof body.metadata !== 'object') {
+      missingFields.push('metadata (must be object)');
+    }
+
+    // Return 400 if any required fields are missing
+    if (missingFields.length > 0) {
       return NextResponse.json(
-        { ok: false, error: 'metadata must be an object' },
+        { error: 'missing_fields', fields: missingFields },
         { status: 400 }
       );
     }
@@ -116,9 +138,18 @@ export async function POST(request: NextRequest) {
       });
 
     if (insertError) {
-      console.error('Event log insert error:', insertError);
+      console.error('[api/events] insert error', {
+        message: insertError?.message,
+        code: insertError?.code,
+        details: insertError?.details,
+        hint: insertError?.hint,
+      });
       return NextResponse.json(
-        { ok: false, error: 'Failed to log event' },
+        {
+          error: 'insert_failed',
+          message: insertError?.message,
+          code: insertError?.code,
+        },
         { status: 500 }
       );
     }

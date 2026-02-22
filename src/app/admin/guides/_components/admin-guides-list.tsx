@@ -34,10 +34,10 @@ const TABS: { key: TabStatus; label: string }[] = [
 ];
 
 const STATUS_COLORS: Record<string, string> = {
-  draft: "bg-gray-500/20 text-gray-300",
-  review: "bg-yellow-500/20 text-yellow-300",
-  approved: "bg-emerald-500/20 text-emerald-300",
-  rejected: "bg-red-500/20 text-red-300",
+  draft: "bg-muted text-muted-foreground",
+  review: "bg-yellow-500/20 text-yellow-600 dark:text-yellow-300",
+  approved: "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300",
+  rejected: "bg-red-500/20 text-red-600 dark:text-red-300",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -58,6 +58,7 @@ export default function AdminGuidesListClient() {
   const [generating, setGenerating] = useState(false);
   const [generatingOpenAI, setGeneratingOpenAI] = useState(false);
   const [quota, setQuota] = useState<Quota | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const fetchGuides = useCallback(async () => {
     setLoading(true);
@@ -139,7 +140,7 @@ export default function AdminGuidesListClient() {
       // 에러 처리 - 실패 시 quota 갱신하지 않음
       if (res.status === 401) {
         alert("Authentication required. Redirecting to login.");
-        location.href = "/admin/login";
+        location.href = "/kr/login";
         return;
       }
       
@@ -195,7 +196,7 @@ export default function AdminGuidesListClient() {
 
       if (res.status === 401) {
         alert("Authentication required. Redirecting to login.");
-        location.href = "/admin/login";
+        location.href = "/kr/login";
         return;
       }
 
@@ -241,8 +242,8 @@ export default function AdminGuidesListClient() {
               onClick={() => setTab(t.key)}
               className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition ${
                 tab === t.key
-                  ? "bg-emerald-500/20 text-emerald-300"
-                  : "bg-white/5 text-white/60 hover:bg-white/10 hover:text-white"
+                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-300"
+                  : "bg-muted text-muted-foreground hover:bg-muted/80"
               }`}
             >
               {t.label}
@@ -253,13 +254,13 @@ export default function AdminGuidesListClient() {
         {/* Row 2: Actions */}
         <div className="flex flex-wrap items-center gap-2">
           {/* Lang Toggle */}
-          <div className="flex rounded-lg border border-white/10 bg-white/5 p-0.5">
+          <div className="flex rounded-lg border border-border bg-muted p-0.5">
             <button
               onClick={() => setLang("en")}
               className={`rounded-md px-2.5 py-1 text-[10px] font-medium transition ${
                 lang === "en"
-                  ? "bg-emerald-500/30 text-emerald-300"
-                  : "text-white/50 hover:text-white/80"
+                  ? "bg-emerald-500/30 text-emerald-600 dark:text-emerald-300"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               EN
@@ -268,8 +269,8 @@ export default function AdminGuidesListClient() {
               onClick={() => setLang("kr")}
               className={`rounded-md px-2.5 py-1 text-[10px] font-medium transition ${
                 lang === "kr"
-                  ? "bg-emerald-500/30 text-emerald-300"
-                  : "text-white/50 hover:text-white/80"
+                  ? "bg-emerald-500/30 text-emerald-600 dark:text-emerald-300"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               KR
@@ -278,10 +279,10 @@ export default function AdminGuidesListClient() {
 
           {/* Quota Widget */}
           {quota && (
-            <div className="flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 py-1">
-              <span className="text-[10px] text-white/40">오늘(KST)</span>
+            <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted px-2.5 py-1">
+              <span className="text-[10px] text-muted-foreground">오늘(KST)</span>
               <span className={`text-[10px] font-semibold ${
-                quota.remainingToday > 0 ? "text-emerald-400" : "text-red-400"
+                quota.remainingToday > 0 ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
               }`}>
                 {quota.usedToday}/{quota.limit}
               </span>
@@ -291,7 +292,7 @@ export default function AdminGuidesListClient() {
           <button
             onClick={handleGenerate}
             disabled={generating || creating || generatingOpenAI || (quota?.remainingToday === 0)}
-            className="rounded-lg border border-purple-500/50 bg-purple-500/20 px-3 py-1.5 text-xs font-semibold text-purple-300 transition hover:bg-purple-500/30 disabled:opacity-50"
+            className="rounded-lg border border-purple-500/50 bg-purple-500/20 px-3 py-1.5 text-xs font-semibold text-purple-600 dark:text-purple-300 transition hover:bg-purple-500/30 disabled:opacity-50"
           >
             {generating ? "..." : "🤖 AI"}
           </button>
@@ -299,7 +300,7 @@ export default function AdminGuidesListClient() {
           <button
             onClick={handleGenerateOpenAI}
             disabled={generating || creating || generatingOpenAI}
-            className="rounded-lg border border-orange-500/50 bg-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-300 transition hover:bg-orange-500/30 disabled:opacity-50"
+            className="rounded-lg border border-orange-500/50 bg-orange-500/20 px-3 py-1.5 text-xs font-semibold text-orange-600 dark:text-orange-300 transition hover:bg-orange-500/30 disabled:opacity-50"
           >
             {generatingOpenAI ? "..." : "💸 OpenAI"}
           </button>
@@ -317,69 +318,95 @@ export default function AdminGuidesListClient() {
       {/* List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="text-white/60">로딩 중...</div>
+          <div className="text-muted-foreground">로딩 중...</div>
         </div>
       ) : items.length === 0 ? (
-        <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
-          <p className="text-white/60">가이드가 없습니다.</p>
+        <div className="rounded-2xl border border-border bg-card p-8 text-center">
+          <p className="text-muted-foreground">가이드가 없습니다.</p>
         </div>
       ) : (
         <div className="space-y-3">
           {items.map((item) => (
-            <Link
+            <div
               key={item.id}
-              href={`/admin/guides/${item.id}`}
-              className="block rounded-xl border border-white/10 bg-white/5 p-4 transition hover:border-emerald-500/30 hover:bg-white/10"
+              className="flex items-start gap-3 rounded-xl border border-border bg-card p-4 transition hover:border-emerald-500/50 hover:bg-accent"
             >
-              {/* TOP ROW: Status (left) + Language (right) */}
-              <div className="flex items-center justify-between gap-2 mb-2">
-                <span
-                  className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
-                    STATUS_COLORS[item.status] || STATUS_COLORS.draft
-                  }`}
-                >
-                  {STATUS_LABELS[item.status] || item.status}
-                </span>
-                {item.lang && (
-                  <span className="shrink-0 rounded bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/60">
-                    {item.lang.toUpperCase()}
+              <Link
+                href={`/admin/guides/${item.id}`}
+                className="flex-1 min-w-0 block"
+              >
+                {/* TOP ROW: Status (left) + Language (right) */}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span
+                    className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide ${
+                      STATUS_COLORS[item.status] || STATUS_COLORS.draft
+                    }`}
+                  >
+                    {STATUS_LABELS[item.status] || item.status}
                   </span>
+                  {item.lang && (
+                    <span className="shrink-0 rounded bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                      {item.lang.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+
+                {/* SECOND ROW: Title */}
+                <h3 className="text-sm font-semibold text-foreground truncate leading-snug">
+                  {item.title || "(제목 없음)"}
+                </h3>
+
+                {/* THIRD ROW: Excerpt (max 2 lines) */}
+                {item.excerpt && (
+                  <p className="mt-1.5 text-xs text-muted-foreground line-clamp-2 leading-relaxed">
+                    {item.excerpt}
+                  </p>
                 )}
-              </div>
 
-              {/* SECOND ROW: Title */}
-              <h3 className="text-sm font-semibold text-white truncate leading-snug">
-                {item.title || "(제목 없음)"}
-              </h3>
-
-              {/* THIRD ROW: Excerpt (max 2 lines) */}
-              {item.excerpt && (
-                <p className="mt-1.5 text-xs text-white/50 line-clamp-2 leading-relaxed">
-                  {item.excerpt}
-                </p>
-              )}
-
-              {/* FOOTER ROW: Type + Intent + Date */}
-              <div className="mt-3 flex items-center gap-2 text-[10px] overflow-hidden">
-                {item.guide_type && (
-                  <span className="shrink-0 rounded bg-white/5 px-1.5 py-0.5 font-medium text-white/40">
-                    {item.guide_type.replace("_", " ")}
+                {/* FOOTER ROW: Type + Intent + Date */}
+                <div className="mt-3 flex items-center gap-2 text-[10px] overflow-hidden">
+                  {item.guide_type && (
+                    <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground">
+                      {item.guide_type.replace("_", " ")}
+                    </span>
+                  )}
+                  {item.primary_intent && (
+                    <span className="truncate rounded bg-muted px-1.5 py-0.5 font-medium text-muted-foreground max-w-[140px]">
+                      {item.primary_intent}
+                    </span>
+                  )}
+                  <span className="ml-auto shrink-0 text-muted-foreground">
+                    {new Date(item.created_at).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    }).replace(/\. /g, ".").replace(/\.$/, "")}
                   </span>
-                )}
-                {item.primary_intent && (
-                  <span className="truncate rounded bg-white/5 px-1.5 py-0.5 font-medium text-white/40 max-w-[140px]">
-                    {item.primary_intent}
-                  </span>
-                )}
-                <span className="ml-auto shrink-0 text-white/30">
-                  {new Date(item.created_at).toLocaleDateString("ko-KR", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  }).replace(/\. /g, ".").replace(/\.$/, "")}
-                </span>
-              </div>
-            </Link>
+                </div>
+              </Link>
+              <button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!confirm(`"${item.title || "제목 없음"}" 가이드를 삭제하시겠습니까?`)) return;
+                  setDeletingId(item.id);
+                  try {
+                    const res = await fetch(`/api/admin/guides/${item.id}`, { method: "DELETE" });
+                    const json = await res.json();
+                    if (!res.ok || !json.ok) throw new Error(json.error || "삭제 실패");
+                    fetchGuides();
+                  } catch (err: unknown) {
+                    alert(err instanceof Error ? err.message : "삭제 실패");
+                  } finally {
+                    setDeletingId(null);
+                  }
+                }}
+                disabled={deletingId === item.id}
+                className="shrink-0 mt-1 px-3 py-1.5 text-xs font-medium rounded-md border border-red-500/30 bg-red-500/5 text-red-600 hover:bg-red-500/10 transition disabled:opacity-50"
+              >
+                {deletingId === item.id ? "..." : "삭제"}
+              </button>
+            </div>
           ))}
         </div>
       )}

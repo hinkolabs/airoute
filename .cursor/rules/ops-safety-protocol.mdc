@@ -1,0 +1,162 @@
+---
+name: ops-safety-protocol
+description: This is a new rule
+---
+
+# Overview
+
+[ops safety protocol — production operation guard]
+
+This rule applies when:
+- operating live SaaS systems
+- handling customer data
+- monitoring payments and billing
+- handling incidents, failures, or anomalies
+- optimizing infrastructure cost
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. incident-first mindset (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+When an issue is detected:
+- prioritize system stability over feature delivery
+- stop feature rollout immediately
+- identify blast radius first
+- isolate the fault domain before fixing
+
+Never:
+- patch blindly
+- deploy speculative fixes
+- stack multiple fixes in one release
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. failure containment strategy
+━━━━━━━━━━━━━━━━━━━━━━
+All failures must:
+- degrade gracefully
+- never cascade across:
+  - billing
+  - auth
+  - workspace resolution
+  - webhook processing
+
+If a subsystem fails:
+- fail closed (deny sensitive operations)
+- provide safe UI fallback
+- log structured error
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. billing & revenue anomaly detection (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Always monitor:
+- payment success vs failure rate
+- webhook delivery failure
+- duplicated events
+- entitlement mismatches
+- sudden drops in conversion
+
+When anomaly detected:
+- freeze billing rollout
+- confirm webhook + DB state
+- verify reconciliation logic
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. data integrity & auditability
+━━━━━━━━━━━━━━━━━━━━━━
+All critical operations must:
+- write audit logs:
+  - billing
+  - credit usage
+  - entitlement change
+  - workspace role change
+
+Never:
+- silently mutate billing or entitlement state
+- modify credits without traceable logs
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. rollback-first deployment strategy
+━━━━━━━━━━━━━━━━━━━━━━
+Every operational change must:
+- be rollbackable
+- avoid irreversible DB mutations
+- preserve data consistency during rollback
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. hotfix discipline
+━━━━━━━━━━━━━━━━━━━━━━
+Hotfix rules:
+- minimal diff only
+- no refactoring
+- no style changes
+- no feature additions
+- only bug isolation + fix
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. monitoring & alert signals
+━━━━━━━━━━━━━━━━━━━━━━
+Critical alert signals:
+- webhook failure rate > 1%
+- payment success drop > 5%
+- build error spike
+- workspace resolution failure
+- auth callback failure
+
+All alerts must:
+- trigger investigation
+- block new deployments
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. cost control & burn protection
+━━━━━━━━━━━━━━━━━━━━━━
+Continuously monitor:
+- OpenAI API token usage
+- DB row growth rate
+- event log accumulation
+- webhook retry loops
+
+If cost anomaly detected:
+- throttle
+- cap
+- degrade non-essential features
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. customer support workflow guard
+━━━━━━━━━━━━━━━━━━━━━━
+When user reports an issue:
+- never mutate production data blindly
+- reproduce in staging or via logs
+- confirm before correction
+- log intervention
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. production debugging discipline
+━━━━━━━━━━━━━━━━━━━━━━
+Never:
+- enable verbose logging in prod
+- expose raw errors to users
+- print stack traces publicly
+
+Use:
+- controlled error reporting
+- masked logs
+- trace IDs
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. security escalation protocol
+━━━━━━━━━━━━━━━━━━━━━━
+If security anomaly suspected:
+- freeze billing
+- revoke suspicious tokens
+- rotate secrets
+- isolate affected subsystems
+
+━━━━━━━━━━━━━━━━━━━━━━
+12. operational success criteria
+━━━━━━━━━━━━━━━━━━━━━━
+Operations are healthy only if:
+- payment flow stable
+- webhook delivery reliable
+- entitlement gating consistent
+- cost within thresholds
+- no silent failures
+

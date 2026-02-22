@@ -105,10 +105,10 @@ const CATEGORIES = [
 function SectionHeader({ title, moreHref }: { title: string; moreHref: string }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h2 className="text-base font-semibold leading-6 text-slate-50">{title}</h2>
+      <h2 className="text-base font-semibold leading-6 text-foreground">{title}</h2>
       <Link
         href={moreHref}
-        className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-emerald-300"
+        className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
       >
         <span>More</span>
         <span>→</span>
@@ -125,21 +125,21 @@ function SectionHeader({ title, moreHref }: { title: string; moreHref: string })
 function HeroSection() {
   return (
     <section className="px-4 pt-4 pb-3 sm:px-6 lg:px-8 lg:pb-6">
-      <div className="mx-auto max-w-[1200px] rounded-2xl border border-slate-800/70 bg-gradient-to-br from-emerald-500/10 via-slate-900 to-cyan-500/5 px-4 py-4 shadow-sm sm:px-5 sm:py-6 lg:px-12 lg:py-10">
+      <div className="mx-auto max-w-[1200px] rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-card to-accent/5 px-4 py-4 shadow-sm sm:px-5 sm:py-6 lg:px-12 lg:py-10">
         {/* Badge */}
-        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-black/40 px-3 py-1 text-xs font-medium text-emerald-300 ring-1 ring-emerald-400/30 lg:mb-3">
+        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-primary/30 lg:mb-3">
           <span>✦</span>
           <span>AI tool navigation, not another directory</span>
         </div>
 
         {/* Headline */}
-        <h1 className="mb-2 text-3xl font-semibold leading-tight text-slate-50 sm:text-4xl sm:leading-tight lg:mb-3 lg:max-w-[900px] lg:text-5xl lg:leading-tight">
+        <h1 className="mb-2 text-3xl font-semibold leading-tight text-foreground sm:text-4xl sm:leading-tight lg:mb-3 lg:max-w-[900px] lg:text-5xl lg:leading-tight">
           <span className="block">Too many AI tools?</span>
           <span className="block">We find the best route for you.</span>
         </h1>
 
         {/* Subtext */}
-        <p className="max-w-prose text-base leading-relaxed text-slate-300 sm:text-lg lg:max-w-none lg:whitespace-nowrap lg:overflow-hidden lg:text-ellipsis">
+        <p className="max-w-prose text-base leading-relaxed text-muted-foreground sm:text-lg lg:max-w-none lg:whitespace-nowrap lg:overflow-hidden lg:text-ellipsis">
           No more endless searching. Choose your goal, and we'll show you the top 3 AI tools.
         </p>
       </div>
@@ -162,23 +162,23 @@ function CategorySection() {
             <Link
               key={category.id}
               href={`/tools/best/${category.id}`}
-              className="group flex min-h-[145px] flex-col justify-between rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+              className="group flex min-h-[145px] flex-col justify-between rounded-2xl border border-border bg-card p-4 shadow-sm transition hover:border-primary/30 hover:shadow-md"
             >
               {/* Icon + Title */}
               <div className="flex-1">
-                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-500/10">
-                  <Icon className="h-6 w-6 text-slate-400 transition-colors group-hover:text-emerald-400" />
+                <div className="mb-2 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                  <Icon className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
                 </div>
-                <h3 className="mb-1.5 text-sm font-semibold leading-5 text-slate-50 lg:text-lg">
+                <h3 className="mb-1.5 text-sm font-semibold leading-5 text-card-foreground lg:text-lg">
                   {category.title}
                 </h3>
-                <p className="line-clamp-2 text-sm leading-5 text-slate-400 lg:text-base lg:text-slate-300">
+                <p className="line-clamp-2 text-sm leading-5 text-muted-foreground lg:text-base">
                   {category.description}
                 </p>
               </div>
 
               {/* Bottom CTA (single line) */}
-              <div className="mt-3 flex min-h-[44px] items-center justify-between px-1 text-sm font-medium text-emerald-400/80 lg:text-emerald-300">
+              <div className="mt-3 flex min-h-[44px] items-center justify-between px-1 text-sm font-medium text-primary">
                 <span>View best 3 tools</span>
                 <span className="transition group-hover:translate-x-0.5">→</span>
               </div>
@@ -203,14 +203,14 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
         {/* Section Header */}
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-base font-semibold leading-6 text-slate-50">Start here</h2>
-            <p className="mt-0.5 text-sm leading-5 text-slate-400">
+            <h2 className="text-base font-semibold leading-6 text-foreground">Start here</h2>
+            <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
               Step-by-step guides to help you choose AI tools
             </p>
           </div>
           <Link
             href="/guides"
-            className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-slate-400 transition-colors hover:text-emerald-300"
+            className="inline-flex min-h-[44px] items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             <span>More</span>
             <span>→</span>
@@ -224,34 +224,34 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
               <Link
                 key={guide.slug}
                 href={`/guides/${guide.slug}`}
-                className="group block rounded-2xl border border-slate-800/70 bg-slate-900/70 p-3 shadow-sm transition-all hover:border-emerald-400/30 hover:bg-slate-900 active:scale-[0.98] lg:py-3.5 lg:px-5"
+                className="group block rounded-2xl border border-border bg-card p-3 shadow-sm transition-all hover:border-primary/30 hover:shadow-md active:scale-[0.98] lg:py-3.5 lg:px-5"
               >
                 {/* Row 1: Meta row - guide_type pill (left) + date (right) */}
                 <div className="mb-2 flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
                     {guide.guide_type && (
-                      <span className="inline-flex items-center rounded-md bg-emerald-500/15 px-2 py-0.5 text-xs font-medium tracking-wide text-emerald-300 ring-1 ring-emerald-500/20">
+                      <span className="inline-flex items-center rounded-md bg-primary/15 px-2 py-0.5 text-xs font-medium tracking-wide text-primary ring-1 ring-primary/20">
                         {GUIDE_TYPE_LABEL[guide.guide_type] ?? guide.guide_type}
                       </span>
                     )}
                   </div>
-                  <div className="shrink-0 text-xs leading-4 text-slate-500">
+                  <div className="shrink-0 text-xs leading-4 text-muted">
                     {formatDate(guide.created_at)}
                   </div>
                 </div>
 
                 {/* Row 2: Title - Readable & Clean */}
-                <h3 className="text-sm font-semibold leading-5 text-slate-50 line-clamp-2 transition-colors group-hover:text-emerald-300 lg:text-lg lg:font-bold lg:leading-6">
+                <h3 className="text-sm font-semibold leading-5 text-card-foreground line-clamp-2 transition-colors group-hover:text-primary lg:text-lg lg:font-bold lg:leading-6">
                   {guide.title}
                 </h3>
 
                 {/* Row 3: Category (mobile only, minimal) */}
                 {(guide.taxonomy || guide.primary_intent) && (
                   <div className="mt-1.5 lg:mt-2">
-                    <span className="inline-block truncate text-xs leading-4 text-slate-500 lg:hidden">
+                    <span className="inline-block truncate text-xs leading-4 text-muted lg:hidden">
                       {prettyLabel(guide.taxonomy || guide.primary_intent)}
                     </span>
-                    <div className="hidden lg:flex items-center gap-3 text-sm text-slate-400">
+                    <div className="hidden lg:flex items-center gap-3 text-sm text-muted-foreground">
                       <span>{prettyLabel(guide.taxonomy || guide.primary_intent)}</span>
                     </div>
                   </div>
@@ -261,8 +261,8 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
           </div>
         ) : (
           /* Fallback - Simple and lightweight */
-          <div className="flex items-center justify-center rounded-2xl border border-slate-800/70 bg-slate-900/50 px-6 py-8 text-center">
-            <p className="text-xs text-slate-500">
+          <div className="flex items-center justify-center rounded-2xl border border-border bg-card/50 px-6 py-8 text-center">
+            <p className="text-xs text-muted-foreground">
               Guides are loading...
             </p>
           </div>
@@ -278,25 +278,25 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
 function StudioTeaser() {
   return (
     <section className="px-4 py-10 sm:px-6 sm:py-8 lg:px-8">
-      <div className="mx-auto max-w-[1200px] rounded-2xl border border-slate-800/70 bg-slate-900/70 px-5 py-7 text-center shadow-sm lg:px-8 lg:py-10">
+      <div className="mx-auto max-w-[1200px] rounded-2xl border border-border bg-card px-5 py-7 text-center shadow-sm lg:px-8 lg:py-10">
         {/* Badge */}
-        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-emerald-400/20 bg-black/40 px-3 py-1 text-xs font-medium text-emerald-300">
+        <div className="mb-3 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
           <span>✨</span>
           <span>Coming soon</span>
         </div>
 
         {/* Title */}
-        <h2 className="mb-2 text-lg font-bold text-slate-50 lg:text-xl">
-          Airoute <span className="text-emerald-300">Studio</span>
+        <h2 className="mb-2 text-lg font-bold text-card-foreground lg:text-xl">
+          Airoute <span className="text-primary">Studio</span>
         </h2>
 
         {/* Subtitle */}
-        <p className="mb-5 text-sm leading-relaxed text-slate-400 lg:text-base">
+        <p className="mb-5 text-sm leading-relaxed text-muted-foreground lg:text-base">
           One-screen workflow automation for scripts, images, and videos.
         </p>
 
         {/* Pill */}
-        <div className="inline-flex cursor-not-allowed rounded-full border border-slate-700 bg-slate-800/50 px-5 py-1.5 text-xs font-medium text-slate-500">
+        <div className="inline-flex cursor-not-allowed rounded-full border border-border bg-muted/50 px-5 py-1.5 text-xs font-medium text-muted-foreground">
           Launching Feb 2026
         </div>
       </div>
@@ -312,25 +312,25 @@ function PageFooter() {
     <footer className="px-4 py-8 text-center lg:px-8">
       <div className="mx-auto max-w-[1200px]">
         <div className="mb-4 flex justify-center gap-6 text-xs">
-        <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
+        <a href="mailto:contact@hinkolabs.com?subject=[Contact] Airoute" className="text-muted-foreground transition-colors hover:text-primary">
           Contact Us
         </a>
-        <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
+        <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="text-muted-foreground transition-colors hover:text-primary">
           Partner with us
         </a>
-        <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="text-slate-500 transition-colors hover:text-emerald-400">
+        <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="text-muted-foreground transition-colors hover:text-primary">
           Help Center
         </a>
       </div>
       <div className="mb-2">
-        <p className="text-xs text-slate-500">© 2025 HinkoLabs</p>
+        <p className="text-xs text-muted-foreground">© 2025 HinkoLabs</p>
       </div>
-        <div className="flex items-center justify-center gap-3 text-xs text-slate-600">
-          <Link href="/privacy" className="transition-colors hover:text-slate-400">
+        <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
+          <Link href="/privacy" className="transition-colors hover:text-muted-foreground">
             Privacy Policy
           </Link>
           <span>·</span>
-          <Link href="/terms" className="transition-colors hover:text-slate-400">
+          <Link href="/terms" className="transition-colors hover:text-muted-foreground">
             Terms of Service
           </Link>
         </div>
@@ -346,7 +346,7 @@ function PageFooter() {
 // ===========================
 export default function NormalModePage({ tools, featuredRoutes, featuredRouteSteps, latestGuides }: NormalModePageProps) {
   return (
-    <div className="flex min-h-screen flex-col bg-slate-950 text-slate-50">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <main className="pb-20">
         <HeroSection />
         <BestRoutesSection routes={featuredRoutes} steps={featuredRouteSteps} />

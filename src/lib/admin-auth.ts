@@ -6,13 +6,10 @@ import { cookies } from "next/headers";
  */
 export async function requireAdminOrThrow(): Promise<void> {
   const adminKey = process.env.ADMIN_KEY;
-  
-  // Dev 환경에서 ADMIN_KEY 미설정 시 통과 (선택적)
   if (!adminKey) {
-    console.warn("[Admin Auth] ADMIN_KEY not set, allowing access in dev mode");
-    return;
+    throw new Error("ADMIN_KEY is required");
   }
-  
+
   const cookieStore = await cookies();
   const cookieKey = cookieStore.get("airoute_admin")?.value;
   
@@ -32,6 +29,7 @@ export async function isAdminAuthenticated(): Promise<boolean> {
     return false;
   }
 }
+
 
 
 

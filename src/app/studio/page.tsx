@@ -1,10 +1,10 @@
 export default function StudioPage() {
   return (
-    <div className="min-h-[calc(100vh-80px)] bg-slate-950 px-4 pt-10 pb-24 text-slate-50">
+    <div className="min-h-[calc(100vh-80px)] bg-background px-4 pt-10 pb-24 text-slate-50">
       <div className="mx-auto max-w-3xl">
         {/* Coming Soon Badge */}
         <div className="mb-6 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-300">
+          <div className="inline-flex items-center gap-2 rounded-full bg-primary/15 px-4 py-2 text-sm font-semibold text-primary">
             <span className="text-base">✨</span>
             <span>Coming soon</span>
           </div>
@@ -32,19 +32,19 @@ export default function StudioPage() {
           <h2 className="mb-4 text-lg font-semibold text-slate-50">What's coming</h2>
           <ul className="space-y-3 text-sm text-slate-300">
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
                 ✓
               </span>
               <span>One-click workflows for common tasks (background removal, upscaling, etc.)</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
                 ✓
               </span>
               <span>Batch processing for multiple files</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-xs font-bold text-emerald-400">
+              <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary">
                 ✓
               </span>
               <span>No subscription needed - pay only for what you use</span>
@@ -58,7 +58,7 @@ export default function StudioPage() {
             Want early access?{" "}
             <a
               href="mailto:hello@airoute.app"
-              className="font-medium text-emerald-400 transition hover:text-emerald-300 hover:underline"
+              className="font-medium text-primary transition hover:text-primary-hover hover:underline"
             >
               Contact us
             </a>

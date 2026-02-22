@@ -3,7 +3,7 @@
 import { ButtonHTMLAttributes, ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'default' | 'outline';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -16,11 +16,15 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    'bg-emerald-500 text-white hover:bg-emerald-600 active:bg-emerald-700',
+    'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
+  default:
+    'bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-hover',
   secondary:
     'bg-slate-700 text-slate-100 hover:bg-slate-600 active:bg-slate-500',
   ghost:
     'bg-transparent text-slate-300 hover:bg-slate-800 hover:text-slate-100',
+  outline:
+    'border border-border bg-background text-foreground hover:bg-muted',
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -31,9 +35,9 @@ const sizeStyles: Record<ButtonSize, string> = {
 
 /**
  * Button - Reusable button component with variants and sizes.
- * Uses rounded-full style with emerald-500 as primary color.
+ * Uses rounded-full style with primary color token (emerald in dark mode, blue in light mode).
  */
-export default function Button({
+export function Button({
   children,
   variant = 'primary',
   size = 'md',
@@ -44,7 +48,7 @@ export default function Button({
   const baseStyles = cn(
     'inline-flex items-center justify-center font-medium rounded-full',
     'transition-colors duration-200',
-    'focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950',
+    'focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
     'disabled:opacity-50 disabled:cursor-not-allowed',
     variantStyles[variant],
     sizeStyles[size],
@@ -71,15 +75,4 @@ export default function Button({
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+export default Button;

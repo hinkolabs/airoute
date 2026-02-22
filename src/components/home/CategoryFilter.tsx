@@ -49,8 +49,8 @@ function CategoryChip({
       onClick={onClick}
       className={`h-9 shrink-0 cursor-pointer rounded-full border px-3 text-xs transition md:text-sm ${
         isActive
-          ? 'border-emerald-400 bg-emerald-500/15 text-emerald-200'
-          : 'border-slate-700 bg-slate-900/60 text-slate-300 hover:border-emerald-400/60 hover:text-white'
+          ? 'border-primary bg-primary/15 text-primary'
+          : 'border-border bg-secondary/60 text-muted-foreground hover:border-primary/60 hover:text-foreground'
       }`}
     >
       {category}

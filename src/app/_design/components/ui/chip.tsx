@@ -29,7 +29,7 @@ export function Chip({
         "inline-flex items-center gap-1.5 whitespace-nowrap",
         "rounded-full border px-3 py-1.5 text-sm font-medium",
         "transition-colors duration-150",
-        "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2",
         theme === "day"
           ? "focus-visible:ring-offset-slate-50"
           : "focus-visible:ring-offset-slate-950",
@@ -39,9 +39,7 @@ export function Chip({
           : "border-slate-700 bg-slate-900/40 text-slate-300 hover:border-slate-500 hover:bg-slate-800/50",
         // Active state (theme-aware)
         active &&
-          (theme === "day"
-            ? "border-emerald-500 bg-emerald-500/10 text-emerald-700 hover:border-emerald-500 hover:bg-emerald-500/15"
-            : "border-emerald-400 bg-emerald-500/10 text-emerald-300 hover:border-emerald-400 hover:bg-emerald-500/15"),
+          "border-primary bg-primary/10 text-primary hover:border-primary hover:bg-primary/15",
         className
       )}
     >

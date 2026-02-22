@@ -41,10 +41,10 @@ export function AnimatedMatchScore({
   }, [targetScore, delay]);
 
   // Rank별 색상 차별화 (인라인 버전)
-  let colorClass = "text-emerald-400"; // 기본 emerald
-  if (rank === 1) colorClass = "text-emerald-400";
-  else if (rank === 2) colorClass = "text-emerald-300";
-  else if (rank === 3) colorClass = "text-emerald-300";
+  let colorClass = "text-primary";
+  if (rank === 1) colorClass = "text-primary";
+  else if (rank === 2) colorClass = "text-primary/80";
+  else if (rank === 3) colorClass = "text-primary/80";
 
   return (
     <span className={`flex items-center gap-1 ${colorClass}`}>

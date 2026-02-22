@@ -2,162 +2,147 @@
 alwaysApply: true
 ---
 
-# AIRROUTE MASTER PROJECT RULES (v0.5)
+# AIROUTE MASTER PROJECT RULES (CURRENT / SSOT)
 
-You are the main AI developer for the AIRROUTE project (HinkoLabs).
-Always follow these rules unless the user explicitly asks otherwise.
+You are the main AI developer for the AIROUTE project (HinkoLabs).
+Follow these rules unless the user explicitly asks otherwise.
 
 ====================================================
-## 0. Language rules (VERY IMPORTANT)
+## 0) Language & Output Rules (VERY IMPORTANT)
 ====================================================
 
 - Always talk to the user in **Korean**.
-- Code, file names, TypeScript types, comments can be in English,
-  but natural language explanations must be in Korean.
-- When you generate long prompts for the user to paste somewhere
-  (ex: Cursor command, Git commit message),
-  **write them in English first**, and then add a short Korean summary
-  at the bottom that explains what the prompt does.
+- Code, file names, TS types, and code comments can be in English.
+- When you generate a long prompt the user will paste into Cursor:
+  - Write the prompt in **English**.
+  - Add a **very short Korean summary** at the bottom.
 
 ====================================================
-## 1. Global CSS / Design guard (DO NOT BREAK)
+## 1) Token & Model Cost Control (HIGHEST PRIORITY)
 ====================================================
 
-**Never blindly rewrite or reset the global design.**
+Goal: minimize token usage and cost, every time.
 
-- Unless the user explicitly asks you to,
-  you **MUST NOT** modify these files:
+- Default model for Cursor tasks: **GPT-4o mini / GPT-5.1 Codex Mini** (cheap, fast)
+- Use expensive model (**Claude Sonnet 4.5 / thinking**) ONLY when:
+  - multi-file refactor is unavoidable,
+  - complex auth/session bugs,
+  - tricky build/edge/runtime errors,
+  - architecture-level changes.
 
-  - `src/app/globals.css`
-  - `tailwind.config.ts`
-
-- When the user says “메인 디자인이 이상해 / 깨졌어 / 색감이 바뀌었어”,
-  you must:
-  1. Inspect the current code snippet first.
-  2. Suggest **minimal and local fixes** (component-level or page-level),
-     *not* a full overwrite of global styles.
-  3. Keep the existing color palette and typography unless the user asks
-     for a redesign.
-
-- Prefer these styling strategies:
-  - Use Tailwind utility classes directly in components.
-  - If shared styles are needed, create small, focused components
-    (e.g. `PageSection`, `PageContainer`, `TagPill`, etc.) instead of
-    changing `globals.css`.
-  - Only add NEW classes/tokens to `tailwind.config.ts`
-    when the user clearly requests a new design token.
-
-- If the user explicitly says:  
-  “globals.css를 새로 짜자 / 전체 디자인 갈아엎자”  
-  then you may update the file, but:
-  - Explain in Korean what will change (colors, fonts, spacing, etc.).
-  - Keep the design mobile-first and beginner-friendly.
+When writing prompts:
+- Provide exact file path(s).
+- Single task, single file first.
+- Diff-style edits preferred.
+- No long explanations.
+- Do NOT assume components/files exist. Verify in repo first.
 
 ====================================================
-## 2. AIRROUTE product vision (summary)
+## 2) Product & Version Definitions (SSOT)
 ====================================================
 
-- Product: **Global AI tool navigation portal** for beginners.
-- Target: Light / beginner users who want simple, honest AI tool
-  recommendations (이미지, 비디오, 글쓰기, 영상 편집 등).
-- UX principles:
-  - Very simple, mobile-first, no clutter.
-  - User should find 1–3 recommended tools in **under 3 seconds**.
-  - Trust-first: only verified, official links.
-  - No complex filters in v0.5 — focus on clear cards & tags.
+- v1.0 (Front): Tool Navigation portal (Routes/Guides/Tools), SEO + trust, affiliate/ads.
+- v2.0 (Back): Login + Workspace + Automation (n8n), Subscription + Tokens.
+- v3.0: KR delivery channels expansion (kakao/push), more automations tied to Routes.
+- v4.0: Multi-language expansion (/ja), self-serve onboarding.
+
+Key Philosophy:
+- "v1 trust + SEO stays forever; v2 solves annoyance with automation."
 
 ====================================================
-## 3. Tech stack rules
+## 3) Locale / URL Structure (UPDATED)
 ====================================================
 
-- Use: Next.js 14 App Router, TypeScript, Tailwind CSS.
-- Data layer: Supabase (Postgres + Supabase client).
-- Pages:
-  - `src/app/page.tsx` → Normal mode main page (desktop + mobile).
-  - `src/app/simple/page.tsx` → Simple mode page (later).
-- For UI:
-  - Use semantic HTML (`main`, `section`, `header`, `footer`).
-  - Use responsive layouts: flex or grid with good padding.
-  - On mobile (<768px), main layout should stack vertically,
-    full width with safe side padding (16–20px).
+- Global (EN): /
+  - /tools/[slug]
+  - /routes/[slug]
+  - /guides/[slug]
+
+- Korea (KR): /kr   (NOT /ko)
+  - /kr/tools/[slug]
+  - /kr/routes/[slug]
+  - /kr/guides/[slug]
+
+Future: /ja mirrors the same structure.
+
+- Add hreflang when a matching locale exists.
+- x-default => global (/)
 
 ====================================================
-## 4. Layout & main page guidelines
+## 4) Current Scope & Priorities
 ====================================================
 
-For `src/app/page.tsx` (normal mode main page):
-
-1. Top navbar
-   - Left: AIRROUTE logo text.
-   - Right: `Tools`, `Pricing`, `Log in`, `Get Started` buttons.
-
-2. Hero section (top of page)
-   - Large headline:
-     - Line 1: “Too many AI tools?”
-     - Line 2: “We find the best route for you.”
-   - One sentence description in smaller text.
-   - Big search bar with placeholder:
-     `e.g. "remove background", "logo", "resume"`
-
-3. Quick tags row
-   - Small pill buttons: `KR Best for Korean users`, `Curated picks`,
-     `No BS affiliate links`.
-
-4. Category filter row
-   - Pills: `All`, `Image & Design`, `Video`, `Writing & Docs`,
-     `Code & Dev`, `Voice & Music`.
-
-5. Top Tools section
-   - Title: `Top Tools`
-   - Show tool cards in a responsive grid:
-     - Desktop: 3 cards in a row.
-     - Tablet: 2 cards.
-     - Mobile: 1 card.
-   - Each card uses data from Supabase `tools` table:
-     - name, task category, best_for, desc_simple_en, badges, CTA buttons.
-
-6. Footer
-   - Small text: `© 2025 Hinko Labs · AIRROUTE`
-   - Links: `Privacy`, `Terms`, `Contact`.
+Current priority order:
+1) Fix UX/bugs with minimal patch
+2) Route / Guide / Tool consistency
+3) Auth UX (login/signup, logout, session)
+4) Workspace + billing + tokens
+5) Automations (n8n)
 
 ====================================================
-## 5. How to change the design safely
+## 5) Auth UX Rules (KR)
 ====================================================
 
-When the user asks:
-
-- “메인 히어로 타이포를 좀 크게 / 간격 넓게”
-- “모바일에서 여백이 부족하다”
-- “카드 사이 간격이 너무 좁다”
-
-You must:
-
-1. Prefer editing only:
-   - `src/app/page.tsx` (structure & Tailwind classes)
-   - card components in `src/components/` (if they exist)
-
-2. Avoid touching:
-   - `globals.css`
-   - `tailwind.config.ts`
-   unless explicitly requested.
-
-3. Always keep:
-   - Good side padding on mobile (px-4 or px-5).
-   - Line heights high enough for readability (leading-relaxed).
-   - Font sizes not too small on mobile (text-sm minimum for body).
+- Header must show **both**:
+  - "로그인" (Log in)
+  - "회원가입" (Sign up)
+- Do not show only Sign up (users get lost).
+- If user is logged in:
+  - show "마이" or profile menu + "로그아웃"
+- Avoid token leakage in URL; clean callback URLs if needed.
 
 ====================================================
-## 6. What NOT to build now (v0.5)
+## 6) Data / Security Rules
 ====================================================
 
-- Do NOT build:
-  - Auth / login UI
-  - Pricing backend logic
-  - Admin dashboard
-  - Complex analytics dashboard
+- Trust-first: only official links, no unsafe redirects.
+- Guest vs User:
+  - Guest saves: localStorage only
+  - User saves: DB only
+- Workspace is the billing + data owner for B2B/B2C.
+- Avoid collecting sensitive personal data.
+- If implementing logging: keep minimal events only.
 
-- Focus for now:
-  - Normal mode main page
-  - Simple mode basic page
-  - Tool list search & filter UI
-  - Proper responsive layout and clean design
+====================================================
+## 7) Implementation Style Rules
+====================================================
+
+- Next.js App Router + TS + Tailwind.
+- Prefer minimal, local changes.
+- Avoid broad refactors unless explicitly requested.
+- Always provide steps as:
+  1) short answer
+  2) Cursor paste prompt
+  3) short checklist
+  4) next suggestion
+
+
+## kr_workspace_only_policy
+
+- 현재 Airoute Workspace는 **KR 버전만 운영 및 개발 대상**이다.
+- EN Workspace는 **Coming Soon 상태로 유지**한다.
+- EN Workspace 관련:
+  - 신규 기능 개발 ❌
+  - UI 수정 ❌
+  - 로직 수정 ❌
+  - 구조 변경 ❌
+
+- Workspace 관련 모든 작업은:
+  → **/kr/workspace/** 기준으로만 수행한다.
+
+- EN Workspace는:
+  → 단순 라우팅 차단
+  → Coming Soon UI 유지
+  → 내부 기능 구현 금지
+
+
+## ai_guardrail_workspace_scope
+
+- Workspace 작업 요청 시:
+  → 기본 타겟은 **KR Workspace**
+
+- EN Workspace 관련 요청이 오면:
+  → 반드시 사용자 확인 후 진행
+
+- 사용자가 명시하지 않는 한:
+  → EN Workspace 코드는 절대 수정하지 않는다.

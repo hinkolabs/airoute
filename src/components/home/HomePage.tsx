@@ -62,24 +62,24 @@ export function HomePage({ initialTools }: HomePageProps) {
       {/* 모바일: 컴팩트, 데스크탑: 넓은 여백 */}
       <section className="space-y-4 md:space-y-6">
         {/* Early Access 배지 */}
-        <div className="text-xs inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-400/30 bg-emerald-500/5 text-emerald-300 w-fit">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <div className="text-xs inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/30 bg-primary/5 text-primary w-fit">
+          <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse" />
           Early Access · v0.5
         </div>
 
         {/* 텍스트 영역 - max-w-3xl로 제한 */}
         <div className="max-w-3xl space-y-3 md:space-y-4">
           {/* 메인 타이틀 - 반응형 폰트 크기 */}
-          <h1 className="font-bold tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight">
+          <h1 className="font-bold tracking-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl leading-tight text-foreground">
             <span>Too many AI tools?</span>
             <br />
-            <span>We find the <span className="text-emerald-400">best route</span></span>
+            <span>We find the <span className="text-primary">best route</span></span>
             <br />
             <span>for you.</span>
           </h1>
 
           {/* 서브 텍스트 */}
-          <p className="text-slate-300 text-sm md:text-base lg:text-lg max-w-xl leading-relaxed">
+          <p className="text-muted-foreground text-sm md:text-base lg:text-lg max-w-xl leading-relaxed">
             Stop wasting time testing everything. AIROUTE curates honest,
             beginner-friendly recommendations for every task.
           </p>
@@ -100,13 +100,13 @@ export function HomePage({ initialTools }: HomePageProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder='e.g. "remove background", "logo"'
-              className="w-full h-11 md:h-14 rounded-full bg-slate-900/90 border border-slate-700/80 pl-11 pr-4 text-sm md:text-base placeholder:text-slate-500 transition-all duration-200 ease-in-out hover:shadow-xl hover:shadow-emerald-500/5 hover:border-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/40 focus:border-emerald-500/60 focus:shadow-xl focus:shadow-emerald-500/10"
+              className="w-full h-11 md:h-14 rounded-full bg-card border border-input pl-11 pr-4 text-sm md:text-base text-foreground placeholder:text-muted-foreground transition-all duration-200 ease-in-out hover:border-border focus:outline-none focus:ring-2 focus:ring-ring/40 focus:border-ring"
             />
           </div>
           {/* 검색 버튼 */}
           <button
             type="submit"
-            className="sm:w-28 md:w-32 h-11 md:h-14 rounded-full bg-emerald-500 hover:bg-emerald-400 hover:shadow-xl hover:shadow-emerald-500/25 text-slate-900 text-sm md:text-base font-semibold transition-all duration-200 ease-in-out active:scale-[0.98]"
+            className="sm:w-28 md:w-32 h-11 md:h-14 rounded-full bg-primary hover:opacity-90 text-primary-foreground text-sm md:text-base font-semibold transition-all duration-200 ease-in-out active:scale-[0.98]"
           >
             Search
           </button>
@@ -124,15 +124,15 @@ export function HomePage({ initialTools }: HomePageProps) {
 
         {/* 하단: 카테고리 필터 - 모바일: 스크롤 가능 */}
         <div className="flex flex-wrap items-center gap-2 md:gap-2.5 text-xs md:text-sm">
-          <span className="text-slate-500 mr-1 font-medium">Filter:</span>
+          <span className="text-muted-foreground mr-1 font-medium">Filter:</span>
           {TASK_CATEGORIES.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
               className={`px-3 md:px-4 py-1.5 md:py-2 rounded-full border transition-all duration-200 ${
                 selectedCategory === category
-                  ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-sm shadow-emerald-500/10'
-                  : 'border-slate-700/80 text-slate-400 hover:border-slate-500 hover:text-slate-300 hover:bg-slate-800/30'
+                  ? 'bg-primary/20 border-primary text-primary'
+                  : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground hover:bg-muted'
               }`}
             >
               {category}
@@ -144,8 +144,8 @@ export function HomePage({ initialTools }: HomePageProps) {
       {/* 4) Top Tools 섹션 */}
       <section className="mt-8 md:mt-12 space-y-4">
         <div className="flex items-baseline justify-between">
-          <h2 className="text-xl md:text-2xl font-semibold">Top Tools</h2>
-          <p className="text-xs text-slate-400">
+          <h2 className="text-xl md:text-2xl font-semibold text-foreground">Top Tools</h2>
+          <p className="text-xs text-muted-foreground">
             {filteredTools.length} tool{filteredTools.length !== 1 ? 's' : ''} found
           </p>
         </div>
@@ -163,12 +163,12 @@ export function HomePage({ initialTools }: HomePageProps) {
       </section>
 
       {/* 5) 푸터 */}
-      <footer className="pt-8 md:pt-10 mt-10 md:mt-16 border-t border-slate-800 text-xs text-slate-500 flex flex-wrap justify-between gap-2">
+      <footer className="pt-8 md:pt-10 mt-10 md:mt-16 border-t border-border text-xs text-muted-foreground flex flex-wrap justify-between gap-2">
         <span>© 2025 Hinko Labs · AIROUTE</span>
         <div className="flex gap-4">
-          <Link href="#" className="hover:text-slate-300 transition">Privacy</Link>
-          <Link href="#" className="hover:text-slate-300 transition">Terms</Link>
-          <Link href="#" className="hover:text-slate-300 transition">Contact</Link>
+          <Link href="/privacy" className="hover:text-primary transition">Privacy</Link>
+          <Link href="/terms" className="hover:text-primary transition">Terms</Link>
+          <Link href="mailto:contact@hinkolabs.com" className="hover:text-primary transition">Contact</Link>
         </div>
       </footer>
     </div>
@@ -178,7 +178,7 @@ export function HomePage({ initialTools }: HomePageProps) {
 // 🔹 태그 칩 컴포넌트 - 모바일 최적화
 function TagChip({ emoji, label }: { emoji: string; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full border border-slate-700/80 bg-slate-900/60 text-slate-300 text-xs md:text-sm hover:border-emerald-400/50 hover:bg-slate-800/50 transition-all duration-200 cursor-pointer">
+    <span className="inline-flex items-center gap-1.5 md:gap-2 px-2.5 md:px-4 py-1.5 md:py-2 rounded-full border border-border bg-card text-muted-foreground text-xs md:text-sm hover:border-primary/50 hover:bg-muted hover:text-primary transition-all duration-200 cursor-pointer">
       <span className="text-sm md:text-base">{emoji}</span>
       <span>{label}</span>
     </span>
@@ -191,51 +191,51 @@ function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }
   const visitUrl = (tool as any).affiliate_url ?? (tool as any).website_url ?? (tool as any).url;
 
   return (
-    <article className="w-full flex flex-col rounded-2xl border border-slate-700/80 bg-slate-900/60 p-4 md:p-5 transition-all duration-150 ease-out hover:border-emerald-400/50 hover:bg-slate-900/90 hover:shadow-xl hover:shadow-slate-900/50 md:hover:-translate-y-1">
+    <article className="w-full flex flex-col rounded-2xl border border-border bg-card p-4 md:p-5 transition-all duration-150 ease-out hover:border-primary/50 hover:shadow-md md:hover:-translate-y-1">
       {/* 상단: 이름 + 카테고리 */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <div className="flex items-center gap-2.5">
           <span className="text-xl">✨</span>
-          <h3 className="font-semibold text-white text-base">{tool.name}</h3>
+          <h3 className="font-semibold text-foreground text-base">{tool.name}</h3>
         </div>
-        <span className="shrink-0 rounded-full bg-slate-800/80 px-2.5 py-1 text-[10px] uppercase tracking-wider text-slate-400 font-medium">
+        <span className="shrink-0 rounded-full bg-muted px-2.5 py-1 text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
           {tool.task_category}
         </span>
       </div>
 
       {/* Best Choice 라벨 */}
       {isBestChoice && (
-        <span className="inline-flex items-center gap-1.5 text-emerald-400 text-xs font-medium mb-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+        <span className="inline-flex items-center gap-1.5 text-primary text-xs font-medium mb-2">
+          <span className="w-1.5 h-1.5 rounded-full bg-primary" />
           Best Choice
         </span>
       )}
 
       {/* 설명 */}
-      <p className="text-sm text-slate-400 line-clamp-2 mb-4 flex-grow leading-relaxed">
+      <p className="text-sm text-muted-foreground line-clamp-2 mb-4 flex-grow leading-relaxed">
         {description}
       </p>
 
       {/* Best for 배지 */}
       {tool.best_for && (
-        <p className="text-xs text-emerald-300/90 mb-4 font-medium">
+        <p className="text-xs text-primary mb-4 font-medium">
           Best for: {tool.best_for}
         </p>
       )}
 
       {/* 버튼 영역 */}
-      <div className="flex gap-2.5 mt-auto pt-4 border-t border-slate-800/80">
+      <div className="flex gap-2.5 mt-auto pt-4 border-t border-border">
         <AffiliateLinkButton
           href={visitUrl}
           placement="tool_card"
           toolSlug={tool.id}
-          className="flex-1 h-10 flex items-center justify-center rounded-full bg-emerald-500 text-slate-900 text-sm font-semibold transition-all duration-200 hover:bg-emerald-400 hover:shadow-lg hover:shadow-emerald-500/20"
+          className="flex-1 h-10 flex items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold transition-all duration-200 hover:opacity-90"
         >
           Visit
         </AffiliateLinkButton>
         <Link
           href={`/tools/${tool.id}`}
-          className="flex-1 h-10 flex items-center justify-center rounded-full border border-slate-600 text-slate-300 text-sm font-medium transition-all duration-200 hover:border-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5"
+          className="flex-1 h-10 flex items-center justify-center rounded-full border border-border text-foreground text-sm font-medium transition-all duration-200 hover:border-primary hover:text-primary hover:bg-primary/5"
         >
           Details
         </Link>
@@ -247,10 +247,10 @@ function ToolCard({ tool, isBestChoice }: { tool: Tool; isBestChoice?: boolean }
 // 🔹 빈 상태 컴포넌트
 function EmptyState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-800 bg-slate-900/30 py-16 text-center">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-border bg-card py-16 text-center">
       <div className="text-4xl mb-4">📦</div>
-      <h3 className="text-lg font-semibold text-white mb-2">No tools found</h3>
-      <p className="text-sm text-slate-400 max-w-sm">
+      <h3 className="text-lg font-semibold text-foreground mb-2">No tools found</h3>
+      <p className="text-sm text-muted-foreground max-w-sm">
         No tools match your search. Try adjusting your filters or search query.
       </p>
     </div>

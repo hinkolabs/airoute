@@ -20,7 +20,7 @@ export default function SimpleModeCtaSection() {
           {/* CTA Button */}
           <Link
             href="/simple"
-            className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400 px-8 py-4 text-base font-bold text-slate-900 shadow-lg transition-all hover:from-amber-500 hover:to-yellow-500 hover:shadow-xl active:scale-[0.98] sm:px-10 sm:py-5 sm:text-lg"
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-4 text-base font-bold text-primary-foreground shadow-lg transition-all hover:bg-primary-hover hover:shadow-xl active:scale-[0.98] sm:px-10 sm:py-5 sm:text-lg"
           >
             Simple Mode 시작하기
             <span className="text-xl">✨</span>
@@ -30,6 +30,7 @@ export default function SimpleModeCtaSection() {
     </section>
   );
 }
+
 
 
 

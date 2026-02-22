@@ -1,0 +1,149 @@
+---
+name: release-safety-protocol
+description: This is a new rule
+---
+
+# Overview
+
+[release safety protocol — production deployment guard]
+
+This rule applies when:
+- deploying to production (vercel prod)
+- applying database migrations
+- enabling payment or webhook endpoints
+- switching billing logic or entitlements
+- enabling new workspace features
+
+━━━━━━━━━━━━━━━━━━━━━━
+1. production deployment gating (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Before any production deployment:
+- run build
+- fix all build errors
+- confirm no temporary debug code exists
+- confirm no console logs leaking internal state
+
+Never deploy:
+- with TypeScript errors
+- with ESLint critical warnings
+- with failing build output
+
+━━━━━━━━━━━━━━━━━━━━━━
+2. database migration safety (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Before any DB schema change:
+- always issue SELECT or information_schema query first
+- confirm:
+  - column existence
+  - constraints
+  - indexes
+- never issue destructive ALTER or DROP blindly
+- never modify production data without explicit confirmation
+
+Migrations must:
+- be idempotent when possible
+- be reversible or safely compensatable
+
+━━━━━━━━━━━━━━━━━━━━━━
+3. payment & webhook release gate (critical)
+━━━━━━━━━━━━━━━━━━━━━━
+Before enabling payment or webhook logic in production:
+- verify:
+  - webhook signature validation
+  - idempotency mechanism
+  - event persistence
+- confirm:
+  - retry-safe logic
+  - duplicate event handling
+- never enable new payment flows without staging validation
+
+━━━━━━━━━━━━━━━━━━━━━━
+4. environment configuration guard
+━━━━━━━━━━━━━━━━━━━━━━
+- verify:
+  - correct environment variables
+  - prod vs preview env separation
+- ensure:
+  - no secrets in client bundle
+  - no NEXT_PUBLIC leakage
+
+━━━━━━━━━━━━━━━━━━━━━━
+5. workspace & entitlement verification
+━━━━━━━━━━━━━━━━━━━━━━
+Before deploying entitlement-related changes:
+- verify:
+  - workspace resolution
+  - role-based access gating
+  - degraded UI behavior on entitlement failure
+- never allow silent fallback to "allow"
+
+━━━━━━━━━━━━━━━━━━━━━━
+6. kr/en parity enforcement
+━━━━━━━━━━━━━━━━━━━━━━
+If KR and EN pages/components exist:
+- both must be deployed together
+- never deploy asymmetric logic changes
+
+━━━━━━━━━━━━━━━━━━━━━━
+7. rollback readiness
+━━━━━━━━━━━━━━━━━━━━━━
+Every release must:
+- allow immediate rollback
+- avoid irreversible migrations unless strictly required
+- ensure DB state remains consistent under rollback
+
+━━━━━━━━━━━━━━━━━━━━━━
+8. logging & observability
+━━━━━━━━━━━━━━━━━━━━━━
+- remove verbose debug logs before release
+- keep only:
+  - error logs
+  - critical lifecycle logs
+- never log:
+  - tokens
+  - secrets
+  - payment payloads
+  - webhook raw bodies
+
+━━━━━━━━━━━━━━━━━━━━━━
+9. deployment execution order (mandatory)
+━━━━━━━━━━━━━━━━━━━━━━
+Always follow:
+1) local build
+2) fix errors
+3) commit
+4) deploy
+5) verify live endpoints
+6) verify webhook delivery (if changed)
+
+━━━━━━━━━━━━━━━━━━━━━━
+10. hard stop conditions
+━━━━━━━━━━━━━━━━━━━━━━
+STOP and ask before deployment if:
+- schema change is destructive
+- payment flow changed
+- webhook logic modified
+- entitlement logic modified
+- production data will be mutated
+
+━━━━━━━━━━━━━━━━━━━━━━
+11. success criteria
+━━━━━━━━━━━━━━━━━━━━━━
+Release is considered complete only if:
+- build passes
+- no runtime errors
+- payment flow verified
+- entitlement gating verified
+- kr/en parity confirmed
+
+## release_scope_policy
+
+- 배포 기준:
+  → KR Workspace 기준 기능 정상 작동
+
+- EN Workspace:
+  → Coming Soon 유지 상태 확인만 수행
+  → 기능 검증, QA, 테스트 범위에서 제외
+
+- 빌드 성공 기준:
+  → KR Workspace + Core 서비스 정상 작동

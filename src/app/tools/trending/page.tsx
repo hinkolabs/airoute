@@ -44,16 +44,16 @@ export default async function TrendingPage() {
             <Link
               key={tool.slug}
               href={`/tools/${tool.slug}`}
-              className="group flex items-center gap-4 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-emerald-400/30 hover:bg-slate-900"
+              className="group flex items-center gap-4 rounded-2xl border border-slate-800/70 bg-slate-900/70 p-4 shadow-sm transition hover:border-primary/30 hover:bg-slate-900"
             >
               {/* Icon/Logo */}
-              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-xl">
+              <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl">
                 🔥
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
-                <h3 className="mb-1 text-base font-semibold text-slate-50 group-hover:text-emerald-300">
+                <h3 className="mb-1 text-base font-semibold text-slate-50 group-hover:text-primary">
                   {tool.name}
                 </h3>
                 <p className="line-clamp-2 text-sm text-slate-400">
@@ -62,7 +62,7 @@ export default async function TrendingPage() {
               </div>
 
               {/* Arrow */}
-              <div className="flex-shrink-0 text-slate-500 transition group-hover:translate-x-1 group-hover:text-emerald-400">
+              <div className="flex-shrink-0 text-slate-500 transition group-hover:translate-x-1 group-hover:text-primary">
                 →
               </div>
             </Link>

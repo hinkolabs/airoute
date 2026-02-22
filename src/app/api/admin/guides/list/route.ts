@@ -9,7 +9,7 @@ export async function GET(req: Request) {
 
     let query = supabase
       .from("guides")
-      .select("id, slug, title, excerpt, status, guide_type, primary_intent, lang, taxonomy, created_at, published_at")
+      .select("id, slug, title, excerpt, status, guide_type, primary_intent, lang, taxonomy, content_focus, difficulty, estimated_time_minutes, created_at, published_at")
       .order("created_at", { ascending: false });
 
     if (status && ["draft", "review", "approved", "rejected"].includes(status)) {

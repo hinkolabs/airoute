@@ -1,19 +1,21 @@
-import { ReactNode } from 'react';
+import { ReactNode, HTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-type BadgeTone = 'emerald' | 'slate';
+type BadgeTone = 'primary' | 'muted' | 'success';
 
-interface BadgeProps {
+interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   children: ReactNode;
   tone?: BadgeTone;
   className?: string;
 }
 
 const toneStyles: Record<BadgeTone, string> = {
-  emerald:
-    'border-emerald-500/30 bg-emerald-500/10 text-emerald-400',
-  slate:
-    'border-slate-600 bg-slate-800/50 text-slate-300',
+  primary:
+    'border-primary/30 bg-primary/10 text-primary',
+  muted:
+    'border-border bg-muted text-muted-foreground',
+  success:
+    'border-green-500/30 bg-green-500/10 text-green-600',
 };
 
 /**
@@ -21,8 +23,9 @@ const toneStyles: Record<BadgeTone, string> = {
  */
 export default function Badge({
   children,
-  tone = 'emerald',
+  tone = 'primary',
   className,
+  ...props
 }: BadgeProps) {
   return (
     <span
@@ -31,11 +34,13 @@ export default function Badge({
         toneStyles[tone],
         className
       )}
+      {...props}
     >
       {children}
     </span>
   );
 }
+
 
 
 
