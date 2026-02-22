@@ -47,9 +47,15 @@ export async function PUT(
       "status"
     ];
     
+    const nullableFields = new Set([
+      "cta_type", "cta_route_slug", "cta_tool_slug", "cta_partner",
+      "guide_type", "primary_intent", "primary_route", "generation_version",
+      "taxonomy",
+    ]);
+
     for (const field of allowedFields) {
       if (body[field] !== undefined) {
-        updateData[field] = body[field];
+        updateData[field] = nullableFields.has(field) && body[field] === "" ? null : body[field];
       }
     }
 
