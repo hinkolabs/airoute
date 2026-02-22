@@ -114,6 +114,28 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
           const guestTools = (guestFavorites.tools || []).slice(0, toolsMax);
           if (!active) return;
           setSavedToolSlugs(guestTools);
+
+          if (guestTools.length > 0) {
+            const supabase = getBrowserSupabaseClient();
+            const metaResult = await withTimeout(
+              (async () => {
+                return await supabase
+                  .from("tools")
+                  .select("id, slug, name, website_url, affiliate_url")
+                  .in("slug", guestTools)
+                  .limit(toolsMax);
+              })(),
+              8000
+            );
+            if (active && metaResult.ok) {
+              const meta = metaResult.value as any;
+              if (!meta.error && meta.data) {
+                setToolsData(meta.data as ToolData[]);
+                return;
+              }
+            }
+          }
+
           setToolsData([]);
           return;
         }
@@ -479,12 +501,15 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
       ? "Failed to load saved tools."
       : "Failed to load saved routes.";
   const showErrorState = !loading && Boolean(toolsError || routesError);
-  const showEmptyState = !loading && !showErrorState && visibleToolSlugs.length === 0 && visibleRoutes.length === 0;
+  const showEmptyState = !loading && !showErrorState && visibleToolSlugs.length === 0 && visibleRoutes.length === 0 && isAuthed;
   const handleRetry = () => setReloadKey((prev) => prev + 1);
 
   const canExpandTools = isAuthed;
 
-  if (!user) {
+  const hasGuestData = savedToolSlugs.length > 0 || routesData.length > 0;
+  const showGuestLoginCta = !user && !demoMode && !hasGuestData && !loading;
+
+  if (showGuestLoginCta) {
     return (
       <section className="px-4 py-5 sm:px-6 sm:py-4 lg:px-8">
         <div className="mx-auto max-w-[1200px]">
@@ -505,15 +530,13 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
             <p className="mb-5 max-w-md text-sm leading-relaxed text-muted-foreground">
               Log in to save tools and build your workflow
             </p>
-            {!demoMode && (
-              <Link
-                href="/login?next=/workspace"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
-              >
-                <span>Log in to get started</span>
-                <span>→</span>
-              </Link>
-            )}
+            <Link
+              href="/login?next=/workspace"
+              className="inline-flex h-11 items-center justify-center gap-2 rounded-lg bg-primary px-6 py-2 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90"
+            >
+              <span>Log in to get started</span>
+              <span>→</span>
+            </Link>
           </div>
         </div>
       </section>
@@ -704,8 +727,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
               </div>
             </div>
             
-            {/* Guest message */}
-            {!user && savedToolSlugs.length > 0 && (
+            {!demoMode && !user && savedToolSlugs.length > 0 && (
               <p className="mt-3 text-center text-sm leading-5 text-muted-foreground">
                 Sign in to save more
               </p>
@@ -749,8 +771,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
                   </Link>
                 ))}
                 
-                {/* Guest message */}
-                {!user && visibleRoutes.length > 0 && (
+                {!demoMode && !user && visibleRoutes.length > 0 && (
                   <p className="mt-3 text-center text-sm leading-5 text-muted-foreground">
                     Sign in to save up to {ROUTES_LIMIT_AUTHED} routes
                   </p>
