@@ -138,12 +138,14 @@ export async function ENHomeV2Content() {
             <div className="mt-6 grid gap-3 sm:grid-cols-2">
               {latestGuides.map((g) => (
                 <Link key={g.slug} href={`/guides/${g.slug}`} className="group flex items-start gap-3 overflow-hidden rounded-2xl border border-border bg-card px-4 py-3 transition hover:border-primary/30 hover:shadow-md sm:gap-4 sm:p-5">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 sm:h-10 sm:w-10 sm:rounded-xl">
-                    <BookOpen className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <BookOpen className="h-4 w-4 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex h-4 items-center">
+                      {g.guide_type && <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium leading-none text-primary">{GUIDE_TYPE_LABEL[g.guide_type] ?? g.guide_type}</span>}
+                    </div>
                     <h3 className="truncate text-sm font-semibold leading-snug text-foreground transition group-hover:text-primary sm:text-base">{g.title}</h3>
-                    {g.guide_type && <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">{GUIDE_TYPE_LABEL[g.guide_type] ?? g.guide_type}</span>}
                   </div>
                   <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
                 </Link>
@@ -181,8 +183,8 @@ export async function ENHomeV2Content() {
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.12),transparent_60%)]" />
           <div className="relative">
             <Zap className="mx-auto mb-4 h-8 w-8" />
-            <h2 className="text-2xl font-bold sm:text-3xl">Start building your AI workflow today</h2>
-            <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">Discover the best tool combinations from 200+ AI tools and follow step-by-step guides to get started instantly.</p>
+            <h2 className="text-2xl font-bold sm:text-3xl">Start following right now</h2>
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">Find the best combinations from over {String(stats.toolsCount).replace("+", "")} AI tools and get started instantly with step-by-step guides.</p>
             <Link href="/routes" className="mt-8 inline-flex h-12 items-center gap-2 rounded-xl bg-white px-8 text-sm font-semibold !text-gray-900 shadow-lg transition hover:bg-white/90">
               Explore Routes <ArrowRight className="h-4 w-4" />
             </Link>

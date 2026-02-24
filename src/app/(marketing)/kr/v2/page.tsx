@@ -87,7 +87,7 @@ function HeroV2() {
         </h1>
 
         <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          목표를 선택하세요. 검증된 AI 도구 조합과 단계별 워크플로우를
+          하고싶은 일만 선택하세요. 검증된 AI 도구 조합과 단계별 워크플로우를
           안내합니다. 더 이상 혼자 고민하지 마세요.
         </p>
 
@@ -198,18 +198,20 @@ function GuidesSection() {
               href={`/kr/guides/${g.slug}`}
               className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition hover:border-primary/30 hover:shadow-md"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <BookOpen className="h-5 w-5 text-primary" />
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <BookOpen className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-sm font-semibold leading-snug text-foreground group-hover:text-primary transition sm:text-base">
+                <div className="mb-1 flex h-4 items-center">
+                  {g.badge && (
+                    <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium leading-none text-primary">
+                      {g.badge}
+                    </span>
+                  )}
+                </div>
+                <h3 className="truncate text-sm font-semibold text-foreground group-hover:text-primary transition sm:text-base">
                   {g.title}
                 </h3>
-                {g.badge && (
-                  <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                    {g.badge}
-                  </span>
-                )}
               </div>
               <ArrowRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
             </Link>
@@ -268,11 +270,9 @@ function CTABanner() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.12),transparent_60%)]" />
         <div className="relative">
           <Zap className="mx-auto mb-4 h-8 w-8" />
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            지금 바로 나만의 루트를 만들어보세요
-          </h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">지금 바로 따라해보세요</h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">
-            200개 이상의 AI 도구 중 최적의 조합을 찾고, 단계별 가이드를 따라
+            {String(STATS[0].value).replace("+", "")}개가 넘는 AI 도구 중 최적의 조합을 찾고, 단계별 가이드를 따라
             즉시 시작하세요.
           </p>
             <Link

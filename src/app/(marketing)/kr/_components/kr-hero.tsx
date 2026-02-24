@@ -13,7 +13,7 @@ export function KRHero() {
 
         {/* Headline */}
         <h1 className="mb-2 text-3xl font-bold tracking-tight leading-[1.1] text-foreground md:text-5xl">
-          <span className="block">AI 도구가 너무 많아서 헷갈리시나요?</span>
+          <span className="block">AI 작업이 너무 많아서 헷갈리시나요?</span>
           <span className="block">
             우리가 가장 좋은{" "}
             <span className="text-primary">루트</span>를 찾아드립니다.

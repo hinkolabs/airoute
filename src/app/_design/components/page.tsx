@@ -112,31 +112,30 @@ export type ToolCardProps = {
   variant?: "default" | "compact";
   isFavorited?: boolean; // for favorite toggle
   onFavoriteToggle?: () => void; // favorite toggle handler
+  locale?: "en" | "kr";
   // For logo rendering
   image?: string | null;
   website_url?: string | null;
 };
 
 // Helper: Generate "Key use" text from category/tags
-function getKeyUseText(category: string, tags?: string[]): string {
-  // If category is meaningful, use it
+function getKeyUseText(category: string, tags?: string[], locale?: "en" | "kr"): string {
+  const prefix = locale === "kr" ? "추천 용도:" : "Best for:";
+  const fallback = locale === "kr" ? `${prefix} AI 워크플로우` : `${prefix} AI workflows`;
+
   if (category && category !== "Other") {
-    return `Best for: ${category}`;
+    return `${prefix} ${category}`;
   }
   
-  // If tags exist, use top 2
   if (tags && tags.length > 0) {
     const readableTags = tags.slice(0, 2).map(tag => {
-      // Convert hashtag-style to readable (remove # if present)
       const cleaned = tag.replace(/^#/, '');
-      // Capitalize first letter
       return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
     });
-    return `Best for: ${readableTags.join(', ')}`;
+    return `${prefix} ${readableTags.join(', ')}`;
   }
   
-  // Fallback
-  return "Best for: AI workflows";
+  return fallback;
 }
 
 export function ToolCard({
@@ -152,16 +151,19 @@ export function ToolCard({
   variant = "default",
   isFavorited = false,
   onFavoriteToggle,
+  locale,
   image,
   website_url,
 }: ToolCardProps) {
   const { theme } = useTheme();
   const isCompact = variant === "compact";
-  const keyUse = getKeyUseText(category, tags);
+  const keyUse = getKeyUseText(category, tags, locale);
+  const visitLabel = locale === "kr" ? "방문" : "Visit";
+  const detailsLabel = locale === "kr" ? "상세 보기" : "Details";
   
   // Improve empty description text
-  const displayDescription = description === "No description available." 
-    ? "Short summary coming soon."
+  const displayDescription = (description === "No description available." || description === "설명 준비 중")
+    ? (locale === "kr" ? "설명 준비 중입니다." : "Short summary coming soon.")
     : description;
 
   return (
@@ -289,7 +291,7 @@ export function ToolCard({
               isCompact ? "h-8 text-xs" : "h-9 text-sm"
             )}
           >
-            Visit
+            {visitLabel}
           </AffiliateLinkButton>
         ) : (
           <Button
@@ -300,7 +302,7 @@ export function ToolCard({
               isCompact ? "h-8 text-xs" : "h-9 text-sm"
             )}
           >
-            Visit
+            {visitLabel}
           </Button>
         )}
 
@@ -314,7 +316,7 @@ export function ToolCard({
                 isCompact ? "h-8 text-xs" : "h-9 text-sm"
               )}
             >
-              Details
+              {detailsLabel}
             </Button>
           </Link>
         )}

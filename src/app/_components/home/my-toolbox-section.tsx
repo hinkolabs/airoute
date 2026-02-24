@@ -96,6 +96,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const [toolsExpanded, setToolsExpanded] = useState(false);
 
+  const isKr = basePath === "/kr";
   const isAuthed = authStatus === "authed" && Boolean(user?.id);
   const toolsMax = isAuthed ? TOOLBOX_EXPANDED_SLOTS : TOOLBOX_BASE_SLOTS;
   const toolsVisible = isAuthed ? (toolsExpanded ? TOOLBOX_EXPANDED_SLOTS : TOOLBOX_BASE_SLOTS) : TOOLBOX_BASE_SLOTS;
@@ -552,7 +553,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
   const showEmptyState = !loading && !showErrorState && visibleToolSlugs.length === 0 && visibleRoutes.length === 0 && isAuthed;
   const handleRetry = () => setReloadKey((prev) => prev + 1);
 
-  const canExpandTools = isAuthed;
+  const canExpandTools = isAuthed && !demoMode;
 
   const hasGuestData = savedToolSlugs.length > 0 || routesData.length > 0;
   const showGuestLoginCta = !user && !demoMode && !hasGuestData && !loading;
@@ -599,12 +600,16 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
         <div className="mb-4 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold leading-6 text-foreground">
-              {demoMode ? "My Toolbox" : "My Workspace"}
+              {demoMode
+                ? (isKr ? "즐겨찾기" : "My Toolbox")
+                : (isKr ? "즐겨찾기" : "My Workspace")}
             </h2>
             <p className="mt-1 text-sm leading-5 text-muted-foreground">
               {isAuthed
-                ? "Your saved tools & routes"
-                : `${Math.min(savedToolSlugs.length, toolsMax)}/${toolsMax} tools · ${savedRoutesCount}/${routesLimit} route`}
+                ? (isKr ? "자주 사용하는 툴과 루트를 추가하세요" : "Your saved tools & routes")
+                : (isKr
+                    ? `${Math.min(savedToolSlugs.length, toolsMax)}/${toolsMax} 툴 · ${savedRoutesCount}/${routesLimit} 루트`
+                    : `${Math.min(savedToolSlugs.length, toolsMax)}/${toolsMax} tools · ${savedRoutesCount}/${routesLimit} route`)}
             </p>
           </div>
           {!demoMode && (
@@ -657,7 +662,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
           <div className="md:col-span-2">
             {/* Toolbox Header */}
             <div className="mb-3 flex items-center justify-between">
-              <h3 className="text-sm font-semibold leading-5 text-muted-foreground">My Toolbox</h3>
+              <h3 className="text-sm font-semibold leading-5 text-muted-foreground">{isKr ? "툴 즐겨찾기" : "My Toolbox"}</h3>
               {canExpandTools && (
                 <button
                   type="button"
@@ -787,7 +792,7 @@ export function MyToolboxSection({ basePath }: { basePath?: string }) {
             {/* Routes Header */}
             <div className="mb-3 flex items-center justify-between">
               <h3 className="text-sm font-semibold leading-5 text-muted-foreground">
-                My Routes {savedRoutesCount > 0 && `(${savedRoutesCount}/${routesLimit})`}
+                {isKr ? "루트 즐겨찾기" : "My Routes"} {savedRoutesCount > 0 && `(${savedRoutesCount}/${routesLimit})`}
               </h3>
             </div>
             

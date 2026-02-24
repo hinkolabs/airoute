@@ -254,18 +254,20 @@ function GuidesSection({ guides }: { guides: GuideRecord[] }) {
               href={`/guides/${g.slug}`}
               className="group flex items-start gap-4 rounded-2xl border border-border bg-card p-5 transition hover:border-primary/30 hover:shadow-md"
             >
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                <BookOpen className="h-5 w-5 text-primary" />
+              <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                <BookOpen className="h-4 w-4 text-primary" />
               </div>
               <div className="min-w-0 flex-1">
+                <div className="mb-1 flex h-4 items-center">
+                  {g.guide_type && (
+                    <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium leading-none text-primary">
+                      {GUIDE_TYPE_LABEL[g.guide_type] ?? g.guide_type}
+                    </span>
+                  )}
+                </div>
                 <h3 className="text-sm font-semibold leading-snug text-foreground transition group-hover:text-primary sm:text-base">
                   {g.title}
                 </h3>
-                {g.guide_type && (
-                  <span className="mt-2 inline-block rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                    {GUIDE_TYPE_LABEL[g.guide_type] ?? g.guide_type}
-                  </span>
-                )}
               </div>
               <ChevronRight className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:text-primary" />
             </Link>
@@ -324,12 +326,9 @@ function CTABanner() {
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(255,255,255,0.12),transparent_60%)]" />
         <div className="relative">
           <Zap className="mx-auto mb-4 h-8 w-8" />
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            Start building your AI workflow today
-          </h2>
+          <h2 className="text-2xl font-bold sm:text-3xl">Start following right now</h2>
           <p className="mx-auto mt-3 max-w-lg text-sm leading-relaxed text-white/80 sm:text-base">
-            Discover the best tool combinations from 200+ AI tools and follow
-            step-by-step guides to get started instantly.
+            Find the best combinations from over {String(STATS[0].value).replace("+", "")} AI tools and get started instantly with step-by-step guides.
           </p>
             <Link
               href="/routes"

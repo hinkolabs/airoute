@@ -6,12 +6,12 @@ import { FALLBACK_TOOLS } from "@/lib/tool-fallback-data";
 import type { ToolRecord } from "@/lib/tools";
 
 export const metadata: Metadata = {
-  title: "All Tools – Airoute",
-  description: "Browse all AI tools listed on Airoute.",
+  title: "AI 도구 모음 – Airoute",
+  description: "Airoute에서 엄선한 AI 도구를 모두 확인하세요.",
 };
 
 export default async function ToolsPage() {
-  const dbTools = await getActiveTools();
+  const dbTools = await getActiveTools("kr");
   
   // Add fallback tools that are not in DB
   const fallbackToolsList = Object.values(FALLBACK_TOOLS).filter(
@@ -21,8 +21,8 @@ export default async function ToolsPage() {
   const tools = [...dbTools, ...fallbackToolsList];
 
   return (
-    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
-      <ToolsListClient tools={tools} basePath="/kr" />
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">로딩 중...</div>}>
+      <ToolsListClient tools={tools} basePath="/kr" locale="kr" />
     </Suspense>
   );
 }

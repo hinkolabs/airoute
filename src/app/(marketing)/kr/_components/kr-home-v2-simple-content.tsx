@@ -63,7 +63,7 @@ export function KRHomeV2SimpleContent() {
               <span className="mb-2 block min-h-[20px]">
                 {g.badge ? <span className="inline-block rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{g.badge}</span> : null}
               </span>
-              <h3 className="text-sm font-medium leading-snug text-foreground transition group-hover:text-primary">{g.title}</h3>
+              <h3 className="truncate text-sm font-medium text-foreground transition group-hover:text-primary">{g.title}</h3>
             </Link>
           ))}
         </div>
