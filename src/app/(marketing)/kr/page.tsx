@@ -21,6 +21,20 @@ export const metadata: Metadata = {
     description: "AI 도구가 너무 많아서 헷갈리시나요? 한국 사용자를 위한 최고의 AI 도구 추천과 가이드를 제공합니다.",
     url: "https://www.airoute.ai/kr",
     locale: "ko_KR",
+    images: [
+      {
+        url: "https://www.airoute.ai/kr/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Airoute KR - AI 도구 네비게이션",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Airoute KR - AI 도구 네비게이션",
+    description: "AI 도구가 너무 많아서 헷갈리시나요? 한국 사용자를 위한 최고의 AI 도구 추천과 가이드를 제공합니다.",
+    images: ["https://www.airoute.ai/kr/opengraph-image"],
   },
 };
 
