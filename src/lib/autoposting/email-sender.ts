@@ -1,6 +1,8 @@
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? "placeholder");
+}
 
 export interface AutopostingEmailPayload {
   to: string;
@@ -101,7 +103,7 @@ export async function sendAutopostingEmail(
     payload.from ?? `${payload.brand_name} via AIRoute <noreply@airoute.co.kr>`;
 
   try {
-    const { data, error } = await resend.emails.send({
+    const { data, error } = await getResend().emails.send({
       from: fromAddress,
       to: payload.to,
       subject: `[${payload.brand_name}] ${payload.topic}`,

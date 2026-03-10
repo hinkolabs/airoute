@@ -295,7 +295,7 @@ export default function BillingPageClient({ workspace, isSystemAdmin = false, su
         {/* Cards */}
         <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {PLANS.map((plan) => {
-            const isPremium = plan.id === "premium";
+            const isPremium = plan.id === "pro";
             const price =
               billingCycle === "monthly" ? plan.monthly : plan.yearly.perMonth;
             const isCurrent = isActiveSub && currentPlanKey === plan.id;
