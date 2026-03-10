@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Check, X, AlertTriangle } from "lucide-react";
+import { Check, X, AlertTriangle, Loader2 } from "lucide-react";
 import CreditHistory from "./_components/credit-history";
 import CreditTopupModal from "../_components/credit-topup-modal";
 
 type BillingCycle = "monthly" | "yearly";
-type PlanId = "standard" | "premium";
+type PlanId = "starter" | "pro";
 
 interface PlanData {
   id: PlanId;
@@ -22,7 +22,7 @@ interface PlanData {
 
 const PERSONAL_PLANS: PlanData[] = [
   {
-    id: "standard",
+    id: "starter",
     name: "스타터",
     monthly: 49000,
     yearly: {
@@ -38,7 +38,7 @@ const PERSONAL_PLANS: PlanData[] = [
     ],
   },
   {
-    id: "premium",
+    id: "pro",
     name: "프로",
     badge: "추천",
     monthly: 99000,
@@ -58,7 +58,7 @@ const PERSONAL_PLANS: PlanData[] = [
 
 const TEAM_PLANS: PlanData[] = [
   {
-    id: "standard",
+    id: "starter",
     name: "Standard",
     monthly: 149000,
     yearly: {
@@ -74,7 +74,7 @@ const TEAM_PLANS: PlanData[] = [
     ],
   },
   {
-    id: "premium",
+    id: "pro",
     name: "Premium",
     badge: "추천",
     monthly: 299000,
@@ -118,6 +118,8 @@ export default function BillingPageClient({ workspace, isSystemAdmin = false, su
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelError, setCancelError] = useState<string | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const isCompanyWorkspace = workspace.workspaceType === "company";
   const PLANS = isCompanyWorkspace ? TEAM_PLANS : PERSONAL_PLANS;
@@ -136,10 +138,35 @@ export default function BillingPageClient({ workspace, isSystemAdmin = false, su
     setSelectedPlan(null);
   };
 
-  const handleCheckout = () => {
-    // TODO: 실제 결제 로직은 여기에 구현
-    console.log("결제 진행:", selectedPlan?.id, billingCycle);
-    handleCloseModal();
+  const handleCheckout = async () => {
+    if (!selectedPlan) return;
+
+    setIsCheckingOut(true);
+    setCheckoutError(null);
+
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspace_id: workspace.id,
+          plan_key: selectedPlan.id,
+          billing_cycle: billingCycle,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.url) {
+        throw new Error(data.error || "결제 세션 생성에 실패했습니다");
+      }
+
+      window.location.href = data.url;
+    } catch (err) {
+      console.error("[Billing] Checkout error:", err);
+      setCheckoutError(err instanceof Error ? err.message : "결제 중 오류가 발생했습니다");
+      setIsCheckingOut(false);
+    }
   };
 
   const handleToppedUp = (newBalance: number) => {
@@ -443,27 +470,42 @@ export default function BillingPageClient({ workspace, isSystemAdmin = false, su
               {/* Notice */}
               <div className="rounded-lg bg-muted/50 px-4 py-3 space-y-1">
                 <p className="text-sm text-foreground">
-                  토스 페이먼츠로 안전하게 결제됩니다.
+                  Stripe로 안전하게 결제됩니다.
                 </p>
                 <p className="text-sm text-foreground">
                   언제든지 해지 예약이 가능합니다.
                 </p>
               </div>
+
+              {checkoutError && (
+                <div className="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-2 text-sm text-destructive">
+                  {checkoutError}
+                </div>
+              )}
             </div>
 
             {/* Footer */}
             <div className="flex items-center gap-3 border-t border-border px-6 py-4">
               <button
                 onClick={handleCloseModal}
-                className="flex-1 rounded-lg border-2 border-border bg-card px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted transition"
+                disabled={isCheckingOut}
+                className="flex-1 rounded-lg border-2 border-border bg-card px-4 py-3 text-sm font-semibold text-foreground hover:bg-muted transition disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 닫기
               </button>
               <button
                 onClick={handleCheckout}
-                className="flex-1 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition"
+                disabled={isCheckingOut}
+                className="flex-1 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                결제 계속하기
+                {isCheckingOut ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    처리 중...
+                  </>
+                ) : (
+                  "결제 계속하기"
+                )}
               </button>
             </div>
           </div>

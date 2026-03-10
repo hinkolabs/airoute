@@ -60,20 +60,18 @@ export async function POST(request: NextRequest) {
     // Use admin client for DB writes
     const adminSupabase = createAdminSupabase();
 
-    // Ensure workspace_credits row exists
-    let { data: creditsRow } = await adminSupabase
+    // Ensure workspace_credits row exists (RPC requires the row to be present)
+    const { data: creditsRow } = await adminSupabase
       .from("workspace_credits")
-      .select("workspace_id, balance")
+      .select("workspace_id")
       .eq("workspace_id", workspace_id)
       .limit(1)
       .maybeSingle();
 
     if (!creditsRow) {
-      const { data: newRow, error: insertError } = await adminSupabase
+      const { error: insertError } = await adminSupabase
         .from("workspace_credits")
-        .insert({ workspace_id, balance: 0 })
-        .select("workspace_id, balance")
-        .single();
+        .insert({ workspace_id, balance: 0 });
 
       if (insertError) {
         console.error("[API] Failed to create workspace_credits row:", insertError);
@@ -82,66 +80,49 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
-
-      creditsRow = newRow;
     }
 
-    // Check if balance is sufficient
-    if (creditsRow.balance < amount) {
-      return NextResponse.json(
-        {
-          error: "insufficient_credits",
-          code: "INSUFFICIENT_CREDITS",
-          balance: creditsRow.balance,
-          required: amount,
-        },
-        { status: 402 }
-      );
-    }
+    // Atomically consume credits via RPC (balance update + ledger insert in one transaction)
+    const { data: rpcResult, error: rpcError } = await adminSupabase.rpc("consume_credits", {
+      p_workspace_id: workspace_id,
+      p_user_id: user.id,
+      p_feature_key: feature_key,
+      p_amount: amount,
+      p_description: description || null,
+    });
 
-    // Atomically update balance
-    const newBalance = creditsRow.balance - amount;
-    const { data: updatedRow, error: updateError } = await adminSupabase
-      .from("workspace_credits")
-      .update({ balance: newBalance })
-      .eq("workspace_id", workspace_id)
-      .eq("balance", creditsRow.balance) // optimistic lock
-      .select("balance")
-      .maybeSingle();
-
-    if (updateError || !updatedRow) {
-      console.error("[API] Failed to update workspace_credits balance:", updateError);
+    if (rpcError) {
+      console.error("[API] consume_credits RPC error:", rpcError);
       return NextResponse.json(
-        { error: "failed_to_update_balance" },
+        { error: "failed_to_consume_credits" },
         { status: 500 }
       );
     }
 
-    // Insert ledger entry
-    const { error: ledgerError } = await adminSupabase
-      .from("credit_ledger")
-      .insert({
-        workspace_id,
-        user_id: user.id,
-        action_type: "consume",
-        feature_key,
-        delta: -amount,
-        description: description || null,
-        metadata: {
-          feature_key,
-          amount,
-        },
-      });
+    const result = rpcResult as { ok: boolean; code?: string; balance?: number; new_balance?: number };
 
-    if (ledgerError) {
-      console.error("[API] Failed to insert credit_ledger entry:", ledgerError);
-      // Note: Balance was already updated. In production, consider using DB transaction or RPC.
+    if (!result.ok) {
+      if (result.code === "INSUFFICIENT_CREDITS") {
+        return NextResponse.json(
+          {
+            error: "insufficient_credits",
+            code: "INSUFFICIENT_CREDITS",
+            balance: result.balance,
+            required: amount,
+          },
+          { status: 402 }
+        );
+      }
+      return NextResponse.json(
+        { error: result.code ?? "consume_failed" },
+        { status: 500 }
+      );
     }
 
     return NextResponse.json({
       ok: true,
       workspace_id,
-      new_balance: updatedRow.balance,
+      new_balance: result.new_balance,
     });
   } catch (error: any) {
     console.error("[API] POST /api/credits/consume error:", {

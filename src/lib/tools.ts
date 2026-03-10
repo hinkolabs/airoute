@@ -31,14 +31,14 @@ const I18N_EXTENDED = "name, description, task_category, best_for, why_pick, det
 const I18N_BASIC = "name, description";
 
 function buildToolsSelect(base: string, i18nCols: string) {
-  return `${base}, tools_i18n!inner(${i18nCols})`;
+  return `${base}, tools_i18n(${i18nCols})`;
 }
 
 function mergeI18n(tool: any): ToolRecord {
   const i18n = tool.tools_i18n?.[0];
   return {
     ...tool,
-    name: i18n?.name ?? "Unknown Tool",
+    name: i18n?.name ?? tool.name ?? "",
     description: i18n?.description ?? tool.desc_en ?? "",
     task_category: i18n?.task_category ?? tool.task_category,
     best_for: i18n?.best_for ?? tool.best_for,

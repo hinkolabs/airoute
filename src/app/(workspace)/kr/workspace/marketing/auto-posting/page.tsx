@@ -113,6 +113,7 @@ export default function KrWorkspaceMarketingAutoPostingPage() {
 
   // Preview content state
   const [previewContent, setPreviewContent] = useState<string>("");
+  const [previewError, setPreviewError] = useState<string | null>(null);
   const [generatingPreview, setGeneratingPreview] = useState(false);
 
   // Load manager settings from DB
@@ -290,30 +291,49 @@ export default function KrWorkspaceMarketingAutoPostingPage() {
   // Handler to generate preview
   const handleGeneratePreview = async () => {
     if (!activeWorkspace) return;
-    
+
     try {
       setGeneratingPreview(true);
-      
-      // Mock preview generation
-      setTimeout(() => {
-        const mockContent = `[${CONTENT_PURPOSES.find(p => p.value === contentPurpose)?.label} 목적]
+      setPreviewError(null);
 
-${brandIntro}
+      const res = await fetch("/api/autoposting/generate-preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspace_id: activeWorkspace.workspace.id,
+          settings: {
+            brand_name: managerSettings?.brand_name,
+            company_profile: managerSettings?.company_profile,
+            content_purpose: contentPurpose,
+            brand_intro: brandIntro,
+            brand_strengths: brandStrengths,
+            target_age: targetAge,
+            target_persona: targetPersonas,
+            channels,
+            tone_profile_json: toneProfile ? JSON.stringify(toneProfile) : null,
+          },
+        }),
+      });
 
-주요 강점: ${brandStrengths.map(s => BRAND_STRENGTHS.find(b => b.value === s)?.label).join(", ")}
+      const data = await res.json();
 
-타겟: ${TARGET_AGES.find(a => a.value === targetAge)?.label}, ${targetPersonas.map(p => TARGET_PERSONAS.find(tp => tp.value === p)?.label).join("/")} 성향
+      if (!res.ok || !data.ok) {
+        if (data.code === "SUBSCRIPTION_REQUIRED") {
+          setPreviewError("유료 플랜이 필요합니다. 설정 저장 후 구독을 시작해주세요.");
+        } else {
+          setPreviewError(data.error || "콘텐츠 생성에 실패했습니다.");
+        }
+        return;
+      }
 
-발송 채널: ${channels.map(c => CHANNELS.find(ch => ch.value === c)?.label).join(", ")}
-
-이 설정을 바탕으로 자동 생성된 콘텐츠가 여기에 표시됩니다.
-${toneProfile ? "\n✓ 내 말투가 적용되었습니다." : ""}`;
-        
-        setPreviewContent(mockContent);
-        setGeneratingPreview(false);
-      }, 1000);
+      const { preview } = data;
+      setPreviewContent(
+        `📌 주제: ${preview.topic}\n\n📝 블로그/이메일용\n${"─".repeat(40)}\n${preview.blog_content}\n\n📱 SNS용\n${"─".repeat(40)}\n${preview.sns_content}`
+      );
     } catch (err) {
       console.error("Failed to generate preview:", err);
+      setPreviewError("콘텐츠 생성 중 오류가 발생했습니다.");
+    } finally {
       setGeneratingPreview(false);
     }
   };
@@ -713,12 +733,18 @@ ${toneProfile ? "\n✓ 내 말투가 적용되었습니다." : ""}`;
             disabled={generatingPreview || !brandIntro}
             className="w-full sm:w-auto mb-4"
           >
-            {generatingPreview ? "생성 중..." : "미리보기 생성"}
+            {generatingPreview ? "AI 생성 중..." : "미리보기 생성 (AI)"}
           </Button>
+
+          {previewError && (
+            <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
+              {previewError}
+            </div>
+          )}
 
           {previewContent && (
             <div className="rounded-md border border-border bg-muted/30 p-4">
-              <div className="whitespace-pre-wrap text-sm text-foreground leading-relaxed">
+              <div className="whitespace-pre-wrap text-sm text-foreground leading-relaxed font-mono">
                 {previewContent}
               </div>
             </div>

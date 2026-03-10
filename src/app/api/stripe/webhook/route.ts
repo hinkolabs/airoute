@@ -85,7 +85,12 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-        await handleCheckoutCompleted(session);
+
+        if (session.metadata?.type === "credit_topup") {
+          await handleCreditTopup(session);
+        } else {
+          await handleCheckoutCompleted(session);
+        }
         break;
       }
 
@@ -313,6 +318,84 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
 
   console.log(
     `[Stripe Webhook] Deleted (canceled) subscription ${subscriptionId}`
+  );
+}
+
+/**
+ * Handle credit_topup checkout.session.completed event.
+ * Adds credits to the workspace balance and records in ledger.
+ */
+async function handleCreditTopup(session: Stripe.Checkout.Session) {
+  const metadata = session.metadata;
+
+  if (!metadata?.workspace_id || !metadata?.credit_amount || !metadata?.user_id) {
+    console.error(
+      `[Stripe Webhook] credit_topup missing required metadata (session: ${session.id})`,
+      metadata
+    );
+    return;
+  }
+
+  const workspaceId = metadata.workspace_id;
+  const userId = metadata.user_id;
+  const packageKey = metadata.package_key ?? "unknown";
+  const creditAmount = parseInt(metadata.credit_amount, 10);
+
+  if (isNaN(creditAmount) || creditAmount <= 0) {
+    console.error(
+      `[Stripe Webhook] credit_topup invalid credit_amount: ${metadata.credit_amount}`
+    );
+    return;
+  }
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !serviceKey) {
+    throw new Error("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set for webhook");
+  }
+
+  // Ensure workspace_credits row exists
+  const checkRes = await supabaseAdminFetch(
+    `/workspace_credits?workspace_id=eq.${workspaceId}&select=balance`,
+    { method: "GET", headers: { Prefer: "return=representation" } }
+  );
+
+  if (checkRes.ok) {
+    const rows = await checkRes.json();
+    if (!rows || rows.length === 0) {
+      await supabaseAdminFetch("/workspace_credits", {
+        method: "POST",
+        body: JSON.stringify({ workspace_id: workspaceId, balance: 0 }),
+      });
+    }
+  }
+
+  // Call consume_credits RPC in "topup" mode using raw Supabase REST RPC endpoint
+  const rpcRes = await fetch(`${supabaseUrl}/rest/v1/rpc/add_credits`, {
+    method: "POST",
+    headers: {
+      apikey: serviceKey,
+      Authorization: `Bearer ${serviceKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      p_workspace_id: workspaceId,
+      p_user_id: userId,
+      p_amount: creditAmount,
+      p_package_key: packageKey,
+      p_stripe_payment_intent: (session.payment_intent as string) ?? null,
+    }),
+  });
+
+  if (!rpcRes.ok) {
+    const errText = await rpcRes.text();
+    console.error(`[Stripe Webhook] add_credits RPC failed for workspace ${workspaceId}:`, errText);
+    throw new Error(`add_credits RPC failed: ${errText}`);
+  }
+
+  console.log(
+    `[Stripe Webhook] Added ${creditAmount} credits to workspace ${workspaceId} (package: ${packageKey})`
   );
 }
 

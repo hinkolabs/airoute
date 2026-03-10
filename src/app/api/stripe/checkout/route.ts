@@ -82,7 +82,6 @@ export async function POST(request: NextRequest) {
       .from("plans")
       .select("stripe_price_id_monthly, stripe_price_id_yearly")
       .eq("plan_key", plan_key)
-      .eq("scope", "personal")
       .single();
 
     if (planError || !plan) {

@@ -38,7 +38,7 @@ export default function AdminRoutesPage() {
   const [routes, setRoutes] = useState<AdminRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("active");
 
   // Quick create
   const [showCreate, setShowCreate] = useState(false);
@@ -111,7 +111,7 @@ export default function AdminRoutesPage() {
         method: "DELETE",
       });
       const json = await res.json();
-      if (!res.ok || !json.ok) throw new Error(json.error || "삭제 실패");
+      if (!res.ok || !json.ok) throw new Error(json.message || json.error || "삭제 실패");
       fetchRoutes();
     } catch (e: unknown) {
       alert(e instanceof Error ? e.message : "삭제 실패");

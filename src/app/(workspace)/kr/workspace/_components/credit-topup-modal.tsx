@@ -11,33 +11,33 @@ interface CreditTopupModalProps {
   onToppedUp: (newBalance: number) => void;
 }
 
-// Topup packages (test mode - no real payment)
+// Topup packages — prices match /api/credits/topup CREDIT_PACKAGES
 const TOPUP_PACKAGES = [
   {
-    key: "package_200",
-    amount: 200,
-    price_krw: 9900,
+    key: "credit_200",
+    credits: 200,
+    price_krw: 2000,
     label: "+200P",
     badge: undefined,
   },
   {
-    key: "package_500",
-    amount: 500,
-    price_krw: 19900,
+    key: "credit_500",
+    credits: 500,
+    price_krw: 4500,
     label: "+500P",
     badge: "인기",
   },
   {
-    key: "package_1000",
-    amount: 1000,
-    price_krw: 39000,
+    key: "credit_1000",
+    credits: 1000,
+    price_krw: 8500,
     label: "+1,000P",
     badge: undefined,
   },
   {
-    key: "package_5000",
-    amount: 5000,
-    price_krw: 99000,
+    key: "credit_5000",
+    credits: 5000,
+    price_krw: 38000,
     label: "+5,000P",
     badge: "가성비",
   },
@@ -71,40 +71,32 @@ export default function CreditTopupModal({
     setSuccessMessage(null);
 
     try {
-      // Call topup API
+      // Get Stripe Checkout URL from topup API
       const topupRes = await fetch("/api/credits/topup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           workspace_id: workspaceId,
-          amount: pkg.amount,
           package_key: pkg.key,
         }),
       });
 
       if (!topupRes.ok) {
         const data = await topupRes.json().catch(() => ({}));
-        throw new Error(data.error || "충전에 실패했습니다");
+        throw new Error(data.error || "충전 세션 생성에 실패했습니다");
       }
 
       const topupData = await topupRes.json();
 
-      // Refresh balance from API
-      const balanceRes = await fetch(`/api/credits/balance?workspace_id=${workspaceId}`);
-      if (balanceRes.ok) {
-        const balanceData = await balanceRes.json();
-        onToppedUp(balanceData.balance);
-      } else {
-        // Fallback to topup response balance
-        onToppedUp(topupData.new_balance);
+      if (!topupData.url) {
+        throw new Error("결제 URL을 받지 못했습니다");
       }
 
-      // Close modal after success
-      onClose();
+      // Redirect to Stripe Checkout
+      window.location.href = topupData.url;
     } catch (err) {
       console.error("[CreditTopupModal] Error:", err);
       setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -169,7 +161,7 @@ export default function CreditTopupModal({
     }
   };
 
-  const selectedPkg = TOPUP_PACKAGES.find((p) => p.key === selectedPackage);
+  const selectedPkg = TOPUP_PACKAGES.find((p) => p.key === selectedPackage) as (typeof TOPUP_PACKAGES)[number] | undefined;
 
   return (
     <div
@@ -241,18 +233,6 @@ export default function CreditTopupModal({
           {/* Tab Content: Topup */}
           {activeTab === "topup" && (
             <>
-              {/* Test Mode Badge */}
-              <div className="mb-5 rounded-lg bg-blue-500/10 border border-blue-500/20 px-4 py-3">
-                <div className="flex items-center gap-2">
-                  <div className="rounded bg-blue-500 px-2 py-0.5 text-xs font-semibold text-white">
-                    테스트 모드
-                  </div>
-                  <p className="text-sm text-blue-700 dark:text-blue-400">
-                    실제 결제 없이 즉시 크레딧이 충전됩니다
-                  </p>
-                </div>
-              </div>
-
               {/* Package Grid */}
               <div className="mb-5 grid grid-cols-2 gap-3">
                 {TOPUP_PACKAGES.map((pkg) => {

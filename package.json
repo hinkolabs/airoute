@@ -26,12 +26,11 @@
     "react-dom": "19.2.0",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.9.3",
     "stripe": "^20.1.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
-    "node-fetch": "^3.3.2",
-    "tsx": "^4.19.2",
     "@tailwindcss/postcss": "^4",
     "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
@@ -39,7 +38,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "node-fetch": "^3.3.2",
     "tailwindcss": "^4",
+    "tsx": "^4.19.2",
     "typescript": "^5"
   }
 }

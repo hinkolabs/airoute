@@ -72,6 +72,11 @@ export default function KrWorkspaceMarketingCsSupportPage() {
   
   const [instantQuery, setInstantQuery] = useState("");
   const [instantContext, setInstantContext] = useState("");
+  const [instantType, setInstantType] = useState<"review_reply" | "inquiry_reply" | "claim_response">("inquiry_reply");
+  const [instantGenerating, setInstantGenerating] = useState(false);
+  const [instantResult, setInstantResult] = useState<string | null>(null);
+  const [instantError, setInstantError] = useState<string | null>(null);
+  const [instantCopied, setInstantCopied] = useState(false);
   const [settingsTab, setSettingsTab] = useState<"personal" | "global">("personal");
   
   // Personal settings form state
@@ -361,21 +366,99 @@ export default function KrWorkspaceMarketingCsSupportPage() {
     );
   }
 
+  async function handleInstantGenerate() {
+    if (!activeWorkspace || !instantQuery.trim()) return;
+
+    setInstantGenerating(true);
+    setInstantResult(null);
+    setInstantError(null);
+
+    const inputText = instantContext.trim()
+      ? `${instantQuery.trim()}\n\n[추가 정보]\n${instantContext.trim()}`
+      : instantQuery.trim();
+
+    try {
+      const res = await fetch("/api/workspace/cs-support/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspace_id: activeWorkspace.workspace.id,
+          type: instantType,
+          input_text: inputText,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (data.code === "INSUFFICIENT_CREDITS") {
+          setInstantError(`크레딧이 부족합니다. 현재 잔액: ${data.balance ?? 0}P (필요: 10P)`);
+        } else {
+          setInstantError(data.error ?? "생성 중 오류가 발생했습니다.");
+        }
+        return;
+      }
+
+      setInstantResult(data.generated_text ?? "");
+    } catch {
+      setInstantError("네트워크 오류가 발생했습니다.");
+    } finally {
+      setInstantGenerating(false);
+    }
+  }
+
+  async function handleCopyResult() {
+    if (!instantResult) return;
+    try {
+      await navigator.clipboard.writeText(instantResult);
+      setInstantCopied(true);
+      setTimeout(() => setInstantCopied(false), 2000);
+    } catch {}
+  }
+
   function renderInstantTab() {
+    const TYPE_OPTIONS = [
+      { value: "inquiry_reply", label: "고객 문의 답변" },
+      { value: "review_reply", label: "리뷰 답변" },
+      { value: "claim_response", label: "컴플레인 대응" },
+    ] as const;
+
     return (
       <div className="space-y-6">
         <div className="rounded-lg border border-primary/20 bg-primary/5 p-5">
           <h2 className="text-xl font-bold text-foreground mb-3">즉시 답변 생성</h2>
           <p className="text-sm text-foreground leading-relaxed">
-            고객 문의를 입력하면 AI가 즉시 답변을 작성해드립니다. (토큰 1개 소모)
+            고객 문의를 입력하면 AI가 즉시 답변을 작성해드립니다. (10 크레딧 소모)
           </p>
         </div>
 
         {/* CS Response Generator */}
         <div className="rounded-lg border border-border bg-card p-6">
           <h3 className="text-lg font-bold text-foreground mb-4">답변 생성</h3>
-          
+
           <div className="space-y-4">
+            {/* Type Selector */}
+            <div>
+              <label className="block text-sm font-semibold text-foreground mb-2">
+                유형 선택
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {TYPE_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setInstantType(opt.value)}
+                    className={`rounded-lg border px-4 py-2 text-sm font-medium transition ${
+                      instantType === opt.value
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border bg-background text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* Input: Customer Query */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">
@@ -392,7 +475,7 @@ export default function KrWorkspaceMarketingCsSupportPage() {
             {/* Input: Additional Context */}
             <div>
               <label className="block text-sm font-semibold text-foreground mb-2">
-                추가 컨텍스트 (선택)
+                추가 정보 (선택)
               </label>
               <textarea
                 value={instantContext}
@@ -402,104 +485,69 @@ export default function KrWorkspaceMarketingCsSupportPage() {
               />
             </div>
 
+            {instantError && (
+              <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {instantError}
+              </div>
+            )}
+
             {/* CTA Button */}
-            <Button variant="primary" size="lg" className="w-full sm:w-auto">
-              답변 생성하기 (토큰 1개)
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full sm:w-auto"
+              onClick={handleInstantGenerate}
+              disabled={instantGenerating || !instantQuery.trim()}
+            >
+              {instantGenerating ? "생성 중..." : "즉시 생성 (10 크레딧)"}
             </Button>
           </div>
         </div>
+
+        {/* Result */}
+        {(instantGenerating || instantResult) && (
+          <div className="rounded-lg border border-border bg-card p-6">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-foreground">생성된 답변</h3>
+              {instantResult && (
+                <button
+                  onClick={handleCopyResult}
+                  className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
+                >
+                  {instantCopied ? "복사됨!" : "복사"}
+                </button>
+              )}
+            </div>
+            {instantGenerating ? (
+              <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-primary" />
+                답변을 생성하고 있습니다...
+              </div>
+            ) : (
+              <div className="rounded-lg bg-muted/40 p-4 text-sm text-foreground leading-relaxed whitespace-pre-wrap">
+                {instantResult}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     );
   }
 
   function HistoryTab() {
-    const [filter, setFilter] = useState<"all" | "email" | "chat" | "board">("all");
-
-    const historyItems = [
-      { date: "2026-01-26", time: "14:23", query: "배송이 언제 되나요?", type: "email" },
-      { date: "2026-01-25", time: "11:45", query: "환불 가능한가요?", type: "chat" },
-      { date: "2026-01-24", time: "16:30", query: "제품 사용법 문의", type: "email" },
-      { date: "2026-01-23", time: "09:15", query: "계정 삭제 요청", type: "board" },
-      { date: "2026-01-22", time: "13:50", query: "결제 오류 문의", type: "email" },
-    ];
-
-    const filteredItems = historyItems.filter((item) => {
-      if (filter === "all") return true;
-      return item.type === filter;
-    });
-
     return (
       <div className="space-y-6">
         <div className="rounded-lg border border-border bg-card p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-foreground">답변 기록</h2>
-            <Badge tone="muted" className="text-xs">{filteredItems.length}개</Badge>
           </div>
-
-          {/* Filter Buttons */}
-          <div className="flex gap-2 mb-6">
-            <button
-              onClick={() => setFilter("all")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === "all"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              전체
-            </button>
-            <button
-              onClick={() => setFilter("email")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === "email"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              이메일
-            </button>
-            <button
-              onClick={() => setFilter("chat")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === "chat"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              채팅
-            </button>
-            <button
-              onClick={() => setFilter("board")}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                filter === "board"
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              게시판
-            </button>
-          </div>
-
-          {/* History List */}
-          <div className="space-y-2">
-            {filteredItems.map((item, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between py-3 px-3 rounded-md hover:bg-muted/30 transition-colors cursor-pointer"
-              >
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium text-foreground truncate">{item.query}</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <span>{item.date} {item.time}</span>
-                  </div>
-                </div>
-                <Badge tone="muted" className="text-xs ml-2">
-                  {item.type === "email" ? "이메일" : item.type === "chat" ? "채팅" : "게시판"}
-                </Badge>
-              </div>
-            ))}
+          <div className="rounded-xl border border-dashed border-border bg-muted/20 p-10 text-center">
+            <p className="text-sm text-muted-foreground">
+              아직 생성된 CS 답변 기록이 없습니다.
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              즉시 생성 탭에서 답변을 만들어보세요.
+            </p>
           </div>
         </div>
       </div>

@@ -64,7 +64,7 @@ export default async function ToolDetailPage({ params }: ToolDetailPageProps) {
   return (
     <>
       <ToolDetailContent tool={tool} locale="kr" />
-      <RelatedGuides toolSlug={slug} />
+      <RelatedGuides toolSlug={slug} locale="kr" />
     </>
   );
 }

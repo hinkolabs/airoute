@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminSupabase } from "@/lib/supabase/admin";
 import { getDemoMode } from "@/lib/flags";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+  apiVersion: "2025-12-15.clover",
+});
 
 export const dynamic = "force-dynamic";
 
@@ -92,28 +97,70 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 7) Update current_period_end to now() (immediate cancellation)
-    const now = new Date().toISOString();
-    const { error: updateError } = await adminSupabase
-      .from("workspace_subscriptions")
-      .update({ current_period_end: now })
-      .eq("workspace_id", workspace_id);
+    // 7) Cancel via Stripe API if stripe_subscription_id exists, otherwise DB-only
+    const stripeSubId = subRow.stripe_subscription_id as string | null;
 
-    if (updateError) {
-      console.error("[Subscription Cancel] Failed to update subscription:", updateError);
-      return NextResponse.json(
-        { ok: false, code: "UPDATE_FAILED", message: "구독 취소에 실패했습니다" },
-        { status: 500 }
-      );
+    let cancelledAt: string;
+
+    if (stripeSubId) {
+      // Stripe 구독 취소: 현재 결제 기간 만료 시 자동 해지 (즉시 차단 아님)
+      let stripeUpdated: Stripe.Subscription;
+      try {
+        stripeUpdated = await stripe.subscriptions.update(stripeSubId, {
+          cancel_at_period_end: true,
+        });
+      } catch (stripeErr: any) {
+        console.error("[Subscription Cancel] Stripe API error:", stripeErr?.message);
+        return NextResponse.json(
+          { ok: false, code: "STRIPE_ERROR", message: "Stripe 취소 요청에 실패했습니다" },
+          { status: 500 }
+        );
+      }
+
+      // current_period_end = 사용자가 실제로 사용 가능한 만료일
+      const periodEnd = (stripeUpdated as any).current_period_end as number;
+      cancelledAt = new Date(periodEnd * 1000).toISOString();
+
+      const { error: updateError } = await adminSupabase
+        .from("workspace_subscriptions")
+        .update({
+          status: "cancelled",
+          current_period_end: cancelledAt,
+        })
+        .eq("workspace_id", workspace_id);
+
+      if (updateError) {
+        console.error("[Subscription Cancel] Failed to update DB after Stripe cancel:", updateError);
+        return NextResponse.json(
+          { ok: false, code: "UPDATE_FAILED", message: "구독 상태 업데이트에 실패했습니다" },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Stripe 구독 ID 없는 경우 (쿠폰 구독 등) — DB만 즉시 취소
+      cancelledAt = new Date().toISOString();
+
+      const { error: updateError } = await adminSupabase
+        .from("workspace_subscriptions")
+        .update({
+          status: "cancelled",
+          current_period_end: cancelledAt,
+        })
+        .eq("workspace_id", workspace_id);
+
+      if (updateError) {
+        console.error("[Subscription Cancel] Failed to update subscription:", updateError);
+        return NextResponse.json(
+          { ok: false, code: "UPDATE_FAILED", message: "구독 취소에 실패했습니다" },
+          { status: 500 }
+        );
+      }
     }
-
-    // Note: In the future, if stripe_subscription_id exists, call Stripe API to cancel
-    // For now, we only update the DB
 
     return NextResponse.json({
       ok: true,
       message: "구독이 취소되었습니다",
-      cancelled_at: now,
+      cancelled_at: cancelledAt,
     });
   } catch (error: any) {
     console.error("[API] POST /api/subscription/cancel error:", {

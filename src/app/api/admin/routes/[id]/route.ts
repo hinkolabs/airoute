@@ -193,22 +193,8 @@ export async function DELETE(
     if (!hard) {
       const { error: softErr } = await supabase
         .from("routes")
-        .update({ status: "hidden", updated_at: new Date().toISOString() })
+        .update({ status: "inactive", updated_at: new Date().toISOString() })
         .eq("id", id);
-
-      if (softErr?.message?.includes("invalid input")) {
-        const { error: fallbackErr } = await supabase
-          .from("routes")
-          .update({ status: "inactive", updated_at: new Date().toISOString() })
-          .eq("id", id);
-        if (fallbackErr) {
-          return NextResponse.json(
-            { ok: false, code: "SOFT_FAIL", message: fallbackErr.message },
-            { status: 500 }
-          );
-        }
-        return NextResponse.json({ ok: true, mode: "soft", slug, newStatus: "inactive" });
-      }
 
       if (softErr) {
         return NextResponse.json(
@@ -217,7 +203,7 @@ export async function DELETE(
         );
       }
 
-      return NextResponse.json({ ok: true, mode: "soft", slug, newStatus: "hidden" });
+      return NextResponse.json({ ok: true, mode: "soft", slug, newStatus: "inactive" });
     }
 
     // ── Hard Delete (hard=true) ──

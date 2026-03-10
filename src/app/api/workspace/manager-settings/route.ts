@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { workspace_id, brand_name, logo_url, company_profile, attachments } = body;
+    const { workspace_id, brand_name, logo_url, company_profile, company_role, attachments } = body;
 
     if (!workspace_id) {
       return NextResponse.json({ error: "workspace_id is required" }, { status: 400 });
@@ -101,6 +101,7 @@ export async function POST(req: NextRequest) {
         brand_name: brand_name || null,
         logo_url: logo_url || null,
         company_profile: company_profile || null,
+        company_role: company_role || null,
         attachments: attachments || [],
         updated_by: user.id,
         updated_at: new Date().toISOString(),

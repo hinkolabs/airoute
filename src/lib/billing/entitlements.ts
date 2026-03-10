@@ -27,11 +27,18 @@ export function getEntitlements(params: {
   workspaceRole?: 'owner' | 'admin' | 'member' | 'system_admin' | null;
 }) {
   const status = params.subscription?.status ?? null;
-  const isActive = status === 'active' || status === 'trialing';
+  const currentPeriodEnd = params.subscription?.current_period_end ?? null;
+
+  // cancelled 상태여도 current_period_end가 미래면 접근 허용 (해지 예약 중)
+  const isCancelledWithAccess =
+    status === 'cancelled' &&
+    currentPeriodEnd != null &&
+    new Date(currentPeriodEnd) > new Date();
+
+  const isActive = status === 'active' || status === 'trialing' || isCancelledWithAccess;
   const planKey = params.subscription?.plan_key ?? null;
   const billingCycle = params.subscription?.billing_cycle ?? null;
   const seatCount = params.subscription?.seat_count ?? 0;
-  const currentPeriodEnd = params.subscription?.current_period_end ?? null;
   const workspaceType = params.workspaceType ?? 'personal';
   const workspaceRole = params.workspaceRole ?? 'member';
 

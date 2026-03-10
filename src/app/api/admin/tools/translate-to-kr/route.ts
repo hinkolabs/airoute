@@ -148,7 +148,7 @@ export async function POST(req: Request) {
     let toolsQuery = supabase
       .from("tools")
       .select(
-        "id, name, description, is_active, task_category, best_for, why_pick, detail_content"
+        "id, name, description, desc_en, is_active, task_category, best_for, why_pick, detail_content"
       );
 
     if (toolId) {
@@ -233,7 +233,7 @@ export async function POST(req: Request) {
       try {
         const translated = await translateToolToKorean({
           name: tool.name,
-          description: tool.description,
+          description: (tool as any).description || (tool as any).desc_en || null,
           task_category: tool.task_category,
           best_for: tool.best_for,
           why_pick: tool.why_pick,

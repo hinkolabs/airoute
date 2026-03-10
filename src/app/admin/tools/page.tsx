@@ -62,6 +62,23 @@ type TranslateResponse = {
   results: TranslateResultItem[];
 };
 
+type SeedContentResultItem = {
+  toolId: string;
+  name: string;
+  status: string;
+  error?: string;
+};
+
+type SeedContentResponse = {
+  ok: boolean;
+  message: string;
+  processed: number;
+  total: number;
+  remaining: number;
+  hasMore: boolean;
+  results: SeedContentResultItem[];
+};
+
 export default function AdminToolsPage() {
   const router = useRouter();
   const [tools, setTools] = useState<Tool[]>([]);
@@ -78,6 +95,10 @@ export default function AdminToolsPage() {
   >("checking");
   const [sqlCopied, setSqlCopied] = useState(false);
   const [translateResult, setTranslateResult] = useState<TranslateResponse | null>(null);
+  const [seedingContent, setSeedingContent] = useState(false);
+  const [seedContentBatchSize, setSeedContentBatchSize] = useState(5);
+  const [forceRegenerate, setForceRegenerate] = useState(false);
+  const [seedContentResult, setSeedContentResult] = useState<SeedContentResponse | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
 
   // Quick create form
@@ -112,6 +133,39 @@ export default function AdminToolsPage() {
       console.error("Failed to fetch tools:", e);
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleSeedContent() {
+    if (seedingContent) return;
+    setSeedingContent(true);
+    setSeedContentResult(null);
+    try {
+      const res = await fetch("/api/admin/tools/seed-detail-content", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          forceRegenerate,
+          batchSize: seedContentBatchSize,
+          delayMs: 2000,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok || !json.ok) throw new Error(json.error || "Content generation failed");
+      setSeedContentResult(json as SeedContentResponse);
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "생성 실패";
+      setSeedContentResult({
+        ok: false,
+        message: message,
+        processed: 0,
+        total: 0,
+        remaining: 0,
+        hasMore: false,
+        results: [{ toolId: "", name: "오류", status: "error", error: message }],
+      });
+    } finally {
+      setSeedingContent(false);
     }
   }
 
@@ -283,10 +337,89 @@ export default function AdminToolsPage() {
           )}
         </div>
 
-        {/* ── Step 2: Translation ── */}
+        {/* ── Step 2: English Guide Content Generation ── */}
+        <div className="rounded-lg border border-border bg-card p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-1 text-card-foreground">
+            Step 2. 영문 가이드 생성 (detail_content)
+          </h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            OpenAI로 각 툴의 intro, features, bestFor, whyPicked, tips 영문 콘텐츠를 자동 생성합니다.
+            <br />
+            <span className="text-yellow-600 dark:text-yellow-400">이미 detail_content가 있는 툴은 자동으로 건너뜁니다.</span>
+          </p>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="force-regenerate"
+                checked={forceRegenerate}
+                onChange={(e) => setForceRegenerate(e.target.checked)}
+                className="rounded border-input"
+              />
+              <label htmlFor="force-regenerate" className="text-sm text-card-foreground">
+                기존 콘텐츠 덮어쓰기 (Force Regenerate)
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-card-foreground mb-1">
+                배치 처리 개수
+              </label>
+              <select
+                value={seedContentBatchSize}
+                onChange={(e) => setSeedContentBatchSize(Number(e.target.value))}
+                disabled={seedingContent}
+                className="w-full px-4 py-2 border border-input rounded-lg bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value={3}>3개씩</option>
+                <option value={5}>5개씩 (권장)</option>
+                <option value={10}>10개씩</option>
+              </select>
+            </div>
+
+            <button
+              onClick={handleSeedContent}
+              disabled={seedingContent}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+            >
+              {seedingContent ? "생성 중... (OpenAI 호출)" : "영문 가이드 생성 시작"}
+            </button>
+
+            {seedContentResult && (
+              <div className="mt-3 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  {seedContentResult.message}
+                  {seedContentResult.hasMore && (
+                    <span className="ml-2 text-yellow-600">남은 툴: {seedContentResult.remaining}개 (다시 실행 필요)</span>
+                  )}
+                </p>
+                <div className="space-y-1.5">
+                  {seedContentResult.results.map((item, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex items-center justify-between rounded-lg border px-3 py-2 text-sm ${
+                        item.status === "success"
+                          ? "border-green-500/20 bg-green-500/5 text-green-700 dark:text-green-400"
+                          : "border-red-500/20 bg-red-500/5 text-red-600 dark:text-red-400"
+                      }`}
+                    >
+                      <span>{item.name}</span>
+                      <span className="text-xs">
+                        {item.status === "success" ? "✓ 생성완료" : `✗ ${item.error?.slice(0, 60)}`}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Step 3: Translation ── */}
         <div className="rounded-lg border border-border bg-card p-6 mb-6">
           <h2 className="text-xl font-semibold mb-4 text-card-foreground">
-            Step 2. 툴 한글 번역
+            Step 3. 툴 한글 번역 (KR i18n)
           </h2>
 
           {migrationStatus === "needed" && (

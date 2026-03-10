@@ -32,13 +32,20 @@
 ### v2.0에서 해결할 것
 
 > **v2.0 = "결제한 사람이 실제로 쓸 수 있는 기능을 만든다"**
+> **컨셉: "나만의 홍보팀 + CS팀" — 소상공인/영업팀에게 월 5만원짜리 가상 팀 제공**
 
 ```
 v1.0: 사람들이 와서 → 구경하고 → 가입하고 → 결제한다
-v2.0: 결제한 사람이 → 설정하고 → 아이템이 생성되고 → 이메일이 발송된다
+v2.0: 결제한 사람이 → 설정하고 → 콘텐츠가 자동 생성되고 → 마이페이지에서 바로 복사 사용
                      ↑                              ↑
                지금 여기까지 됨              여기부터 만들어야 함
 ```
+
+**v2.0 핵심 방향 전환 (2026-03-10 결정):**
+1. **이메일 발송 → 마이페이지 대시보드 중심**: 콘텐츠를 이메일로 보내는 게 아니라 마이페이지에서 보고 복사. 이메일은 "알림 보조" 역할만.
+2. **CS 기능 MVP 포함 (레벨 1)**: 회사 정보/상품 목록을 텍스트로 등록하면 리뷰 답변·고객 문의 답변 자동 생성.
+3. **n8n → Cron 우선**: 자동화는 Vercel Cron으로 구현. n8n은 카카오/외부 채널 연동 필요 시점(v3.0)에 레이어 추가.
+4. **파일 업로드 레벨 1**: 텍스트 기반 회사 롤/상품 목록 입력. RAG/벡터 임베딩은 팀 플랜 고도화 시점에 구현.
 
 ---
 
@@ -48,8 +55,8 @@ v2.0: 결제한 사람이 → 설정하고 → 아이템이 생성되고 → 이
 
 ```
 Phase 1 (Week 1-2): 기반 — DB + 설정 UI + 결제 완성
-Phase 2 (Week 3-4): 핵심 — 아이템 생성 + 발송 파이프라인
-Phase 3 (Week 5-6): 자동화 — n8n 연동 + 스케줄 실행
+Phase 2 (Week 3-4): 핵심 — 아이템 생성 + 대시보드 + CS 기능
+Phase 3 (Week 5-6): 자동화 — Vercel Cron 스케줄 실행 (n8n은 v3.0에서 레이어 추가)
 Phase 4 (Week 7-8): 안정화 — 리포트 + 모니터링 + 런칭
 ```
 
@@ -185,20 +192,27 @@ CREATE INDEX idx_posting_runs_slot ON posting_runs(slot_id);
 | `/kr/workspace/settings/company/page.tsx` | 신규: 전체 설정 (owner만) |
 | `/kr/workspace/settings/personal/page.tsx` | 신규: 개인 설정 (모든 유저) |
 
-**전체 설정 UI:**
+**전체 설정 UI (파일 업로드 레벨 1 — 텍스트 입력 기반):**
 ```
 ┌─────────────────────────────────┐
 │ 회사 정보 (owner만 수정)         │
 │ ┌─────────────────────────────┐ │
 │ │ 브랜드명: [___________]     │ │
 │ │ 로고: [업로드]              │ │
-│ │ 회사 프로필: [textarea]     │ │
+│ │ 회사 소개: [textarea]       │ │
+│ │ 회사 롤 / 상품 목록:        │ │
+│ │   [textarea, 5000자]        │ │  ← CS 답변 컨텍스트로 사용
 │ │ 금지어: [태그 입력]         │ │
 │ │ 기본 톤: [드롭다운]         │ │
 │ └─────────────────────────────┘ │
 │ [저장]                          │
 └─────────────────────────────────┘
 ```
+
+> **파일 업로드 정책 (레벨 1):**
+> - MVP: 텍스트 입력만 (company_role 컬럼)
+> - RAG/벡터 임베딩은 팀 플랜 고도화 시점(v3.0+)에 구현
+> - 이유: 소상공인 상품 수가 적어 텍스트로도 충분, 복잡도 대비 가치 낮음
 
 **개인 설정 UI:**
 ```
@@ -209,7 +223,7 @@ CREATE INDEX idx_posting_runs_slot ON posting_runs(slot_id);
 │ │ 톤 예시: [textarea]         │ │
 │ │ 개인 키워드: [태그 입력]    │ │
 │ │ 제외 키워드: [태그 입력]    │ │
-│ │ 이미지 서명 문구: [input]   │ │  ← 신규 컬럼 필요
+│ │ 이미지 서명 문구: [input]   │ │
 │ └─────────────────────────────┘ │
 │ [저장]                          │
 └─────────────────────────────────┘
@@ -217,10 +231,11 @@ CREATE INDEX idx_posting_runs_slot ON posting_runs(slot_id);
 
 **DB 추가:**
 ```sql
--- workspace_manager_settings에 기본 톤 추가
+-- workspace_manager_settings에 회사 롤 + 기본 톤 추가
+ALTER TABLE workspace_manager_settings ADD COLUMN IF NOT EXISTS company_role TEXT;
 ALTER TABLE workspace_manager_settings ADD COLUMN IF NOT EXISTS default_tone TEXT;
 
--- user_marketing_settings에 이미지 서명 추가  
+-- user_marketing_settings에 이미지 서명 추가
 ALTER TABLE user_marketing_settings ADD COLUMN IF NOT EXISTS image_signature TEXT;
 ```
 
@@ -451,47 +466,52 @@ export function validateSnsContent(content: string): ValidationResult {
 - 워터마크: `sharp` 라이브러리 (Node.js 이미지 처리)
 - 저장: Supabase Storage bucket (`autoposting-images`)
 
-### 3.4 이메일 발송
+### 3.4 마이페이지 대시보드 (콘텐츠 뷰)
 
 **우선순위:** P0 | **예상:** 2일
 
-**이메일 서비스 선택:**
+> **방향 전환:** 이메일 발송 중심 → 마이페이지 대시보드 중심
+> 이메일은 "콘텐츠가 준비됐어요" 알림 보조 역할만 담당.
+> 소상공인은 업무 이메일을 잘 안 보기 때문에 마이페이지가 주 접점이어야 함.
 
-| 서비스 | 무료 티어 | 가격 | 추천 |
-|--------|----------|------|------|
-| Resend | 3,000/월 | $20/10K | ✅ (Next.js 궁합) |
-| SendGrid | 100/일 | $15/40K | |
-| AWS SES | - | $0.10/1K | (설정 복잡) |
-
-**이메일 템플릿 구조:**
-```html
-┌──────────────────────────────────┐
-│ [로고]  AIRoute Auto Posting      │
-├──────────────────────────────────┤
-│                                   │
-│  📝 이번 회차 블로그 콘텐츠       │
-│  ─────────────────────────        │
-│  {blog_content}                   │
-│                                   │
-│  📱 SNS용 콘텐츠                  │
-│  ─────────────────────────        │
-│  {sns_content}                    │
-│                                   │
-│  🖼 이미지                        │
-│  [이미지1] [이미지2]              │
-│                                   │
-│  ─────────────────────────        │
-│  {workspace_brand} | {user_sig}   │
-│  AIRoute로 자동 생성됨            │
-└──────────────────────────────────┘
+**대시보드 콘텐츠 섹션 구조:**
 ```
+/kr/workspace (메인 대시보드)
+
+┌─────────────────────────────────────────────┐
+│ 이번 달 홍보 준비 완료 (15개)                │
+│                                              │
+│ #1  AI 마케팅 트렌드 2026                   │
+│     블로그 글 · SNS 글 · 이미지 2장         │
+│     [블로그 복사] [SNS 복사] [이미지 저장]  │
+│                                              │
+│ #2  SEO 자동화 가이드                       │
+│     [블로그 복사] [SNS 복사] [이미지 저장]  │
+│                                              │
+│ ...                          [전체 보기 →]  │
+└─────────────────────────────────────────────┘
+```
+
+**콘텐츠 히스토리 페이지:**
+```
+/kr/workspace/inbox
+
+- 전체 생성 콘텐츠 목록 (월별 그룹)
+- 각 아이템 클릭 → 블로그/SNS 전문 + 이미지
+- [복사] [재생성 (크레딧 소모)] 버튼
+```
+
+**이메일 알림 (보조):**
+- 월초 콘텐츠 생성 완료 시 1회 발송: "이번 달 홍보 콘텐츠가 준비되었습니다 →"
+- Resend 사용 (기존 구현 유지)
 
 **API:**
 
 | Endpoint | Method | 역할 |
 |----------|--------|------|
-| `/api/autoposting/send` | POST | 이메일 발송 (slot 실행) |
-| `/api/autoposting/preview` | POST | 발송 미리보기 |
+| `/api/autoposting/items` | GET | 콘텐츠 목록 조회 |
+| `/api/autoposting/generate-pool` | POST | 월간 풀 생성 (Cron/Admin) |
+| `/api/autoposting/send-notification` | POST | 준비 완료 알림 이메일 (보조) |
 
 ### 3.5 Auto Posting UI 완성
 
@@ -504,55 +524,175 @@ export function validateSnsContent(content: string): ValidationResult {
 │ 자동 포스팅                    [이번 달 현황] │
 │                                              │
 │ ┌─ 탭 ─────────────────────────────────────┐ │
-│ │ 아이템 | 발송 일정 | 히스토리 | 설정      │ │
+│ │ 아이템 | 일정 | 히스토리 | 설정           │ │
 │ └──────────────────────────────────────────┘ │
 │                                              │
 │ [아이템 탭]                                  │
 │ ┌──────────────────────────────────────────┐ │
 │ │ 2026년 3월 아이템풀 (15/15)    [Ready]   │ │
 │ │                                          │ │
-│ │ #1  AI 마케팅 트렌드 2026   [Ready] ▸    │ │
-│ │ #2  SEO 자동화 가이드        [Ready] ▸    │ │
-│ │ #3  이메일 마케팅 전략       [Pending] ▸  │ │
+│ │ #1  AI 마케팅 트렌드 2026   [Ready]      │ │
+│ │     [블로그 복사] [SNS 복사] [이미지]    │ │
+│ │ #2  SEO 자동화 가이드        [Ready]     │ │
+│ │     [블로그 복사] [SNS 복사] [이미지]    │ │
 │ │ ...                                      │ │
-│ │ #15 연말 프로모션 준비       [Pending] ▸  │ │
-│ └──────────────────────────────────────────┘ │
-│                                              │
-│ [발송 일정 탭]                               │
-│ ┌──────────────────────────────────────────┐ │
-│ │  3/1(토)  #1 AI 마케팅 트렌드   ✅ Sent  │ │
-│ │  3/3(월)  #2 SEO 자동화         🔵 예정  │ │
-│ │  3/5(수)  #3 이메일 마케팅      🔵 예정  │ │
-│ │  ...                                     │ │
 │ └──────────────────────────────────────────┘ │
 └─────────────────────────────────────────────┘
 ```
 
-### 3.6 Phase 2 산출물
+---
+
+### 3.6 CS 기능 (레벨 1 — 텍스트 컨텍스트 기반)
+
+**우선순위:** P1 | **예상:** 2일
+
+> **컨셉:** 회사 롤/상품 목록을 컨텍스트로 주입해서 리뷰 답변·고객 문의 자동 생성
+> RAG/벡터 임베딩 없이 텍스트 프롬프트 주입만으로 MVP 구현
+
+**CS 기능 구성:**
+
+| 기능 | 설명 |
+|------|------|
+| 리뷰 답변 생성 | 네이버/구글 리뷰 붙여넣기 → 브랜드 톤 맞는 답변 생성 |
+| 고객 문의 답변 | 문의 내용 입력 → 상품 정보 참고 답변 생성 |
+| 클레임 대응 | 불만 고객 텍스트 → 적절한 대응 문구 생성 |
+
+**생성 컨텍스트 (프롬프트에 주입):**
+```
+- brand_name (workspace_manager_settings)
+- company_profile (회사 소개)
+- company_role (상품 목록 / 회사 롤 — 신규 컬럼)
+- tone_profile_json (말투 설정)
+```
+
+**CS 생성 API:**
+```
+POST /api/workspace/cs-support/generate
+{
+  workspace_id: string,
+  type: "review_reply" | "inquiry_reply" | "claim_response",
+  input_text: string   // 리뷰/문의/클레임 원문
+}
+→ { generated_text: string }
+```
+
+**크레딧 소모:** CS 생성 1회 = 10 Credit
+
+**현재 상태:**
+- `cs-support/page.tsx` — UI 껍데기 760줄 이미 존재 (탭 구조, 목업 데이터)
+- 생성 API 없음 → 이번에 구현
+- DB 기록 저장 없음 → MVP에서는 히스토리 로컬 상태만 (나중에 DB 저장)
+
+### 3.7 Phase 2 산출물
 
 | 산출물 | 파일 |
 |--------|------|
 | 아이템 생성 엔진 | `src/lib/autoposting/generate-items.ts` |
 | 콘텐츠 생성 | `src/lib/autoposting/generate-content.ts` |
 | 텍스트 규칙 엔진 | `src/lib/autoposting/text-rules.ts` |
-| 이미지 처리 | `src/lib/autoposting/image-processor.ts` |
-| 이메일 발송 | `src/lib/autoposting/email-sender.ts` |
-| 이메일 템플릿 | `src/lib/autoposting/email-template.ts` |
-| 아이템풀 API | `/api/autoposting/generate-pool/route.ts` |
-| 아이템 조회 API | `/api/autoposting/pool/route.ts` |
-| 발송 API | `/api/autoposting/send/route.ts` |
-| 미리보기 API | `/api/autoposting/preview/route.ts` |
+| 이미지 처리 (Unsplash) | `src/lib/autoposting/image-processor.ts` |
+| 알림 이메일 발송 | `src/lib/autoposting/email-sender.ts` (보조 알림용으로 유지) |
+| 아이템풀 생성 API | `/api/autoposting/generate-pool/route.ts` |
+| 아이템 조회 API | `/api/autoposting/items/route.ts` |
+| 알림 발송 API | `/api/autoposting/send-notification/route.ts` |
+| 미리보기 API | `/api/autoposting/generate-preview/route.ts` (DB 저장 추가) |
+| CS 생성 API | `/api/workspace/cs-support/generate/route.ts` (신규) |
 | Auto Posting UI | `/kr/workspace/marketing/auto-posting/` (재작성) |
+| CS Support UI | `/kr/workspace/marketing/cs-support/page.tsx` (API 연결) |
+| 대시보드 콘텐츠 섹션 | `/kr/workspace/page.tsx` (콘텐츠 카드 + 복사 버튼 추가) |
+| 인박스 페이지 | `/kr/workspace/inbox/page.tsx` (신규) |
 
 ---
 
-## 4. Phase 3: 자동화 — n8n 연동 (Week 5-6)
+## 4. Phase 3: 자동화 — Vercel Cron (Week 5-6)
 
 > **목표:** 사람 개입 없이 월초→일간→월말 자동 실행
+> **결정 (2026-03-10):** n8n 대신 Vercel Cron으로 구현. 트리거와 로직을 분리해 두면 추후 n8n으로 트리거만 교체 가능 (API 코드 변경 없음).
+> n8n은 v3.0 카카오 알림톡/외부 채널 연동 시점에 레이어로 추가.
 
-### 4.1 n8n 워크플로우 설계
+### 4.1 Cron 마이그레이션 전략
 
-**워크플로우 1: 월초 아이템 생성 (매월 1일 00:00)**
+```
+[트리거 교체만으로 n8n 전환 가능한 구조]
+
+현재 (Cron):
+  vercel.json cron → POST /api/cron/monthly-generate
+                   → POST /api/cron/daily-notify
+
+나중에 (n8n 추가):
+  n8n Schedule → POST /api/cron/monthly-generate  ← 같은 API
+  vercel.json에서 cron 항목만 삭제
+  API 코드 변경 없음
+```
+
+### 4.2 Cron API 설계
+
+**Cron 1: 월초 아이템 생성 (매월 1일 01:00)**
+```
+GET /api/cron/monthly-generate
+  │
+  ├── CRON_SECRET 인증
+  │
+  ├── 활성 구독 workspace 목록 조회
+  │
+  ├── For each workspace:
+  │   ├── POST /api/autoposting/generate-pool  ← 내부 호출
+  │   └── POST /api/autoposting/send-notification  ← 준비 완료 알림 이메일
+  │
+  └── 완료 로그
+```
+
+**Cron 2: 크레딧 월간 리셋 (매월 1일 00:00)**
+```
+GET /api/cron/monthly-credit-reset
+  │
+  ├── 활성 구독 workspace 크레딧 플랜 기본값으로 리셋
+  └── credit_ledger에 'monthly_reset' 기록
+```
+
+**vercel.json 설정:**
+```json
+{
+  "crons": [
+    { "path": "/api/cron/monthly-generate",     "schedule": "0 1 1 * *" },
+    { "path": "/api/cron/monthly-credit-reset", "schedule": "0 0 1 * *" }
+  ]
+}
+```
+
+**인증:** `Authorization: Bearer {CRON_SECRET}` (Vercel이 자동 주입)
+
+### 4.3 n8n 전환 시 작업 목록 (참고용)
+
+나중에 n8n으로 전환할 때 필요한 작업:
+1. `vercel.json`에서 crons 항목 삭제
+2. n8n에서 Schedule Trigger → 같은 API URL 호출
+3. API 코드 변경 없음
+
+n8n이 추가로 줄 수 있는 것 (v3.0):
+- 카카오 알림톡 연동
+- 실패 워크스페이스 자동 재시도
+- Slack/디스코드 어드민 알림
+- 복잡한 조건 분기 자동화
+
+### 4.4 Phase 3 산출물
+
+| 산출물 | 파일 |
+|--------|------|
+| 월초 생성 Cron | `/api/cron/monthly-generate/route.ts` |
+| 크레딧 리셋 Cron | `/api/cron/monthly-credit-reset/route.ts` |
+| 활성 WS 조회 | `/api/autoposting/active-workspaces/route.ts` |
+| 스케줄 빌드 | `/api/autoposting/build-schedule/route.ts` |
+| 월간 요약 | `/api/autoposting/monthly-summary/route.ts` |
+| vercel.json | Cron 스케줄 등록 |
+
+---
+
+## 4-legacy. [참고] n8n 워크플로우 설계 (v3.0 이후)
+
+> 아래는 v3.0에서 n8n 레이어 추가 시 참고용으로 보존.
+
+### n8n 워크플로우 1: 월초 아이템 생성 (매월 1일 00:00)
 ```
 [Schedule Trigger: 매월 1일]
   │
@@ -874,8 +1014,8 @@ src/
 
 ---
 
-> **v2.0 한 줄 요약:**  
-> "결제한 순간부터 매월 15개 마케팅 콘텐츠가 자동으로 만들어지고, 2일마다 이메일로 배달된다."
+> **v2.0 한 줄 요약 (2026-03-10 업데이트):**  
+> "결제한 순간부터 매월 15개 마케팅 콘텐츠(글+이미지)가 자동 생성되어 마이페이지에서 바로 복사 사용. 리뷰·고객 문의 답변도 30초 안에 완성. 나만의 홍보팀+CS팀."
 
 ---
 

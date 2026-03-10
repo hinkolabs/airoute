@@ -10,7 +10,7 @@ import {
   getActiveWorkspace,
   type ActiveWorkspace,
 } from "@/lib/workspace/getActiveWorkspace";
-import { TrendingUp, Mail, Calendar, CheckCircle2, Sparkles, Send, Lock } from "lucide-react";
+import { TrendingUp, Mail, Calendar, CheckCircle2, Sparkles, Send, Copy, ChevronRight } from "lucide-react";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -134,6 +134,17 @@ function WorkspaceDashboardContent() {
   const [bootstrapError, setBootstrapError] = useState<string | null>(null);
   const [workspaceError, setWorkspaceError] = useState<string | null>(null);
   const [bootstrappedUserId, setBootstrappedUserId] = useState<string | null>(null);
+  const [creditBalance, setCreditBalance] = useState<number | null>(null);
+  const [contentItems, setContentItems] = useState<Array<{
+    id: string;
+    topic: string;
+    blog_content: string | null;
+    sns_content: string | null;
+    image_urls: string[] | null;
+    generated_at: string | null;
+    status: string;
+  }>>([]);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
@@ -232,6 +243,52 @@ function WorkspaceDashboardContent() {
     };
   }, [authLoading, user, isBootstrapping, bootstrapDone]);
 
+  // Fetch real credit balance
+  useEffect(() => {
+    const wsId = (providerWorkspace || workspace)?.workspace?.id;
+    if (!wsId) return;
+
+    fetch(`/api/credits/balance?workspace_id=${wsId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.balance != null) setCreditBalance(data.balance); })
+      .catch(() => {});
+  }, [providerWorkspace, workspace]);
+
+  // Fetch recent content items
+  useEffect(() => {
+    const wsId = (providerWorkspace || workspace)?.workspace?.id;
+    if (!wsId) return;
+
+    fetch(`/api/autoposting/items?workspace_id=${wsId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => { if (data?.items) setContentItems(data.items.slice(0, 3)); })
+      .catch(() => {});
+  }, [providerWorkspace, workspace]);
+
+  const handleCopy = async (text: string, key: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedId(key);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch {}
+  };
+
+  // Redirect to onboarding if brand_name not set (personal workspace only)
+  useEffect(() => {
+    const wsId = (providerWorkspace || workspace)?.workspace?.id;
+    const wsType = (providerWorkspace || workspace)?.workspaceType;
+    if (!wsId || wsType !== "personal") return;
+
+    fetch(`/api/workspace/manager-settings?workspace_id=${wsId}`)
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (!data?.settings?.brand_name) {
+          router.replace("/kr/workspace/onboarding");
+        }
+      })
+      .catch(() => {});
+  }, [providerWorkspace, workspace, router]);
+
   // Show loading state
   if (authLoading || loading || workspaceLoading) {
     return (
@@ -281,19 +338,14 @@ function WorkspaceDashboardContent() {
   // Calculate user role
   const userRole = calculateUserRole(user, effectiveWorkspace);
   const isAdmin = userRole === "system_admin" || userRole === "team_admin" || userRole === "personal_owner";
-  const canManage = isAdmin; // Can create items, manage settings
-  const canAccessBilling = userRole !== "guest"; // All logged-in users can access billing
+  const canManage = isAdmin;
 
-  // STUB: Mock data for dashboard
-  const tokenBalance = 1000; // STUB
-  const memberCount = isCompanyWorkspace ? 5 : 1; // STUB
-  const planName = entitlement.planKey === "free" ? "Free" : entitlement.planKey === "pro" ? "Pro" : "Business"; // STUB
-  
-  // Mock KPI data
-  const sentThisMonth = 8;
-  const totalThisMonth = 15;
-  const nextSendDate = "1월 23일";
-  const emailStats = { openRate: 23, clickRate: 4 };
+  // Plan display name
+  const planName = entitlement.planKey === "pro"
+    ? "프로"
+    : entitlement.planKey === "starter"
+    ? "스타터"
+    : "무료";
 
   // Both company and personal workspaces show the same dashboard UI
   const shouldShowLock = !isCompanyWorkspace && !isPersonalWorkspace;
@@ -335,42 +387,38 @@ function WorkspaceDashboardContent() {
           </div>
         )}
         
-        {/* Page Title + Role Badge */}
-        <div className="mb-8 flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">대시보드</h1>
-            <p className="mt-1.5 text-sm text-muted-foreground">
-              {ws.name} · 이번 주 영업/마케팅 현황
-            </p>
-          </div>
-          {/* Debug Role Badge */}
-          <div className="rounded-md border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300">
-            Role: {userRole}
-          </div>
+        {/* Page Title */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-foreground">대시보드</h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            {ws.name} · 이번 주 영업/마케팅 현황
+          </p>
         </div>
 
         {/* KPI Cards */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
             icon={<Send className="h-5 w-5 text-blue-500" />}
-            title={`${sentThisMonth} / ${totalThisMonth}`}
-            description="이번 달 발송 완료"
+            title={entitlement.isActive ? "자동 포스팅" : "미활성"}
+            description={entitlement.isActive ? "구독 활성 상태" : "구독을 시작해보세요"}
           />
           <KPICard
             icon={<Calendar className="h-5 w-5 text-emerald-500" />}
-            title={nextSendDate}
-            description="다음 자동 발송"
+            title={entitlement.currentPeriodEnd
+              ? new Date(entitlement.currentPeriodEnd).toLocaleDateString("ko-KR", { month: "long", day: "numeric" })
+              : "—"}
+            description={entitlement.currentPeriodEnd ? "구독 만료일" : "구독 없음"}
           />
           <KPICard
             icon={<CheckCircle2 className="h-5 w-5 text-amber-500" />}
-            title="아이템 생성/확인"
-            description={`이번달 ${totalThisMonth}개 아이템 준비`}
+            title={creditBalance != null ? `${creditBalance.toLocaleString()} P` : "— P"}
+            description="크레딧 잔액"
             highlighted
           />
           <KPICard
             icon={<TrendingUp className="h-5 w-5 text-purple-500" />}
-            title={`오픈 ${emailStats.openRate}% · 클릭 ${emailStats.clickRate}%`}
-            description="메일 기준(샘플)"
+            title={planName}
+            description="현재 플랜"
           />
         </div>
 
@@ -399,30 +447,66 @@ function WorkspaceDashboardContent() {
           </div>
         </div>
 
-        {/* 이번달 캠페인 요약 */}
+        {/* 이번 달 홍보 콘텐츠 */}
         <div className="mb-8">
-          <h2 className="mb-4 text-lg font-semibold text-foreground">이번달 캠페인 요약</h2>
-          <div className="space-y-4">
-            <CampaignSummaryCard
-              type="Blog"
-              sent={sentThisMonth}
-              total={totalThisMonth}
-              nextDate={nextSendDate}
-              href="/kr/workspace/marketing"
-            />
-            <CampaignSummaryCard
-              type="SNS"
-              sent={sentThisMonth}
-              total={totalThisMonth}
-              nextDate={nextSendDate}
-              href="/kr/workspace/marketing"
-            />
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground">이번 달 홍보 콘텐츠</h2>
+            <Link
+              href="/kr/workspace/inbox"
+              className="flex items-center gap-1 text-sm text-primary hover:underline"
+            >
+              전체 보기 <ChevronRight className="h-4 w-4" />
+            </Link>
           </div>
+          {contentItems.length === 0 ? (
+            <div className="rounded-xl border border-dashed border-border bg-muted/20 p-8 text-center">
+              <p className="text-sm text-muted-foreground">
+                아직 생성된 콘텐츠가 없습니다.
+              </p>
+              <Link
+                href="/kr/workspace/marketing/auto-posting"
+                className="mt-3 inline-block rounded-lg bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                콘텐츠 생성하기
+              </Link>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {contentItems.map((item) => (
+                <div
+                  key={item.id}
+                  className="rounded-xl border border-border bg-card p-4"
+                >
+                  <p className="mb-3 text-sm font-medium text-foreground line-clamp-2">
+                    {item.topic}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleCopy(item.blog_content ?? "", `blog-${item.id}`)}
+                      className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      {copiedId === `blog-${item.id}` ? "복사됨!" : "블로그 복사"}
+                    </button>
+                    <button
+                      onClick={() => handleCopy(item.sns_content ?? "", `sns-${item.id}`)}
+                      className="flex items-center gap-1.5 rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium text-foreground transition hover:bg-muted"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      {copiedId === `sns-${item.id}` ? "복사됨!" : "SNS 복사"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* 운영정보 요약 */}
         <div className="rounded-xl border border-border bg-card p-4 text-center text-sm text-muted-foreground">
-          플랜 {planName} · 토큰 {tokenBalance.toLocaleString()} · 멤버 {memberCount}명
+          플랜 {planName}
+          {creditBalance != null && ` · 크레딧 ${creditBalance.toLocaleString()}P`}
+          {isCompanyWorkspace && " · 팀 워크스페이스"}
         </div>
       </div>
       </div>
@@ -492,38 +576,6 @@ function ActionCard({
   return disabled ? content : <Link href={href}>{content}</Link>;
 }
 
-// Campaign Summary Card Component
-function CampaignSummaryCard({
-  type,
-  sent,
-  total,
-  nextDate,
-  href,
-}: {
-  type: string;
-  sent: number;
-  total: number;
-  nextDate: string;
-  href: string;
-}) {
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-border bg-card p-5">
-      <div>
-        <div className="mb-1 text-sm font-semibold text-foreground">{type}용</div>
-        <div className="text-xs text-muted-foreground">
-          이번달 {total}개 아이템 중 {sent}개 발송됨
-        </div>
-        <div className="mt-1 text-xs text-muted-foreground">다음 발송: {nextDate}</div>
-      </div>
-      <Link
-        href={href}
-        className="rounded-lg border border-border bg-background px-4 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
-      >
-        자세히
-      </Link>
-    </div>
-  );
-}
 
 export default function WorkspaceDashboardPage() {
   return (
