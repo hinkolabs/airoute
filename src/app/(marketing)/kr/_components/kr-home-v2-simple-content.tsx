@@ -87,7 +87,7 @@ export function KRHomeV2SimpleContent() {
             <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute KR" className="transition hover:text-foreground">파트너십</a>
           </div>
           <p className="mt-3 text-xs text-muted-foreground/50">
-            © 2025 HinkoLabs ·{" "}
+            © {new Date().getFullYear()} HinkoLabs ·{" "}
             <Link href="/privacy" className="hover:text-muted-foreground">개인정보처리방침</Link>{" "}·{" "}
             <Link href="/terms" className="hover:text-muted-foreground">이용약관</Link>
           </p>

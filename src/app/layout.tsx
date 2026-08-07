@@ -52,6 +52,14 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased bg-background text-foreground`}>
+        {/* Google AdSense */}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3036758334282217"
+          crossOrigin="anonymous"
+          strategy="beforeInteractive"
+        />
+
         {/* Google Analytics */}
         {GA_ID && (
           <>

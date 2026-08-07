@@ -316,7 +316,7 @@ function FooterV2() {
               고객지원
             </a>
           </div>
-          <p className="text-xs text-muted-foreground/60">© 2025 HinkoLabs</p>
+          <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} HinkoLabs</p>
           <div className="flex gap-3 text-xs text-muted-foreground/60">
             <Link href="/privacy" className="transition hover:text-muted-foreground">
               개인정보처리방침

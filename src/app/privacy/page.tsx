@@ -5,7 +5,7 @@ export default function PrivacyPage() {
         <header>
           <h1 className="text-3xl font-bold text-foreground">Privacy Policy</h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Last updated: December 2025
+            Last updated: August 2026
           </p>
         </header>
 
@@ -92,7 +92,53 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">6. Data Retention & Deletion</h2>
+          <h2 className="text-xl font-semibold text-foreground">6. Advertising (Google AdSense)</h2>
+          <p className="text-muted-foreground">
+            We use Google AdSense to display advertisements on parts of the Service (primarily on Guide pages).
+            Google, as a third-party vendor, uses cookies (including the DoubleClick cookie) to serve ads based on
+            your prior visits to this and other websites.
+          </p>
+          <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
+            <li>Google may use data collected through advertising cookies to personalize the ads shown to you.</li>
+            <li>
+              You can opt out of personalized advertising by visiting{" "}
+              <a
+                href="https://adssettings.google.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Google Ads Settings
+              </a>
+              , or opt out of third-party vendor cookies for personalized advertising by visiting{" "}
+              <a
+                href="https://www.aboutads.info/choices"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                www.aboutads.info
+              </a>
+              .
+            </li>
+            <li>
+              We do not control the cookies placed by Google or other third-party advertising vendors. Please refer
+              to{" "}
+              <a
+                href="https://policies.google.com/technologies/ads"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Google's advertising policy
+              </a>{" "}
+              for more information on how Google uses data when you use our Service.
+            </li>
+          </ul>
+        </section>
+
+        <section className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">7. Data Retention & Deletion</h2>
           <ul className="list-disc list-inside space-y-2 text-muted-foreground pl-4">
             <li><strong>Retention:</strong> We retain personal data only as long as necessary to provide the Service.</li>
             <li>
@@ -105,35 +151,35 @@ export default function PrivacyPage() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">7. Third-Party Services</h2>
+          <h2 className="text-xl font-semibold text-foreground">8. Third-Party Services</h2>
           <p className="text-muted-foreground">
             Our Service may link to external AI tools or websites. We are not responsible for the content or privacy practices of third-party services.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">8. International Data Transfers</h2>
+          <h2 className="text-xl font-semibold text-foreground">9. International Data Transfers</h2>
           <p className="text-muted-foreground">
             Your information may be stored and processed on servers located outside your country of residence.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">9. Children's Information</h2>
+          <h2 className="text-xl font-semibold text-foreground">10. Children's Information</h2>
           <p className="text-muted-foreground">
             The Service is not intended for individuals under the age of 13.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">10. Security</h2>
+          <h2 className="text-xl font-semibold text-foreground">11. Security</h2>
           <p className="text-muted-foreground">
             We use commercially reasonable measures (including Supabase security practices) to protect your personal information, but no system is 100% secure.
           </p>
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-xl font-semibold text-foreground">11. Contact Us</h2>
+          <h2 className="text-xl font-semibold text-foreground">12. Contact Us</h2>
           <p className="text-muted-foreground">
             If you have any questions about this Privacy Policy:
           </p>

@@ -13,10 +13,9 @@ export default async function KRGuidePage({ params }: Props) {
   if (!resolvedParams?.slug) return notFound();
   
   const slug = resolvedParams.slug;
-  console.log("[KRGuideDetail] slug:", slug);
 
   const selectFields =
-    "id, slug, title, excerpt, content, guide_type, taxonomy, primary_intent, cta_type, cta_tool_slug, cta_route_slug, created_at, status, lang";
+    "id, slug, title, excerpt, content, guide_type, taxonomy, primary_intent, cta_type, cta_tool_slug, cta_route_slug, created_at, updated_at, status, lang";
 
   // 1) KR 가이드 우선 조회
   const { data: krGuide } = await supabaseServerClient
@@ -41,10 +40,7 @@ export default async function KRGuidePage({ params }: Props) {
   }
 
   const md = (guide.content ?? "").replaceAll("\\n", "\n");
-
-  console.log("🔥 [KR GUIDE DETAIL] Rendering guide:", guide.slug);
-  console.log("🔥 [KR GUIDE DETAIL] Content length:", guide.content?.length);
-  console.log("🔥 [KR GUIDE DETAIL] First 200 chars:", md.substring(0, 200));
+  const lastUpdated = guide.updated_at ?? guide.created_at;
 
   return (
     <main className="mx-auto w-full max-w-[1200px] px-4 py-8 sm:px-6 lg:px-8 md:py-16">
@@ -56,6 +52,16 @@ export default async function KRGuidePage({ params }: Props) {
           {guide.excerpt && (
             <p className="text-base leading-relaxed text-muted-foreground md:text-lg md:leading-relaxed">
               {guide.excerpt}
+            </p>
+          )}
+          {lastUpdated && (
+            <p className="mt-4 text-sm text-muted-foreground">
+              최종 수정일:{" "}
+              {new Date(lastUpdated).toLocaleDateString("ko-KR", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
             </p>
           )}
         </header>

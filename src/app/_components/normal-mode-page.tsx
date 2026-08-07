@@ -323,7 +323,7 @@ function PageFooter() {
         </a>
       </div>
       <div className="mb-2">
-        <p className="text-xs text-muted-foreground">© 2025 HinkoLabs</p>
+        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} HinkoLabs</p>
       </div>
         <div className="flex items-center justify-center gap-3 text-xs text-muted-foreground">
           <Link href="/privacy" className="transition-colors hover:text-muted-foreground">

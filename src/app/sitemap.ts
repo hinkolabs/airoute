@@ -41,12 +41,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Dynamic guide pages
   const { data: guides } = await supabaseServerClient
     .from("guides")
-    .select("slug, created_at");
+    .select("slug, created_at, updated_at");
   
   const guidePages: MetadataRoute.Sitemap = guides
     ? guides.map((guide) => ({
         url: `${baseUrl}/guides/${guide.slug}`,
-        lastModified: new Date(guide.created_at),
+        lastModified: new Date(guide.updated_at ?? guide.created_at),
         changeFrequency: "monthly" as const,
         priority: 0.6,
       }))

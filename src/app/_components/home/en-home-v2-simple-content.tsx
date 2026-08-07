@@ -121,7 +121,7 @@ export async function ENHomeV2SimpleContent() {
             <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="transition hover:text-foreground">Partnership</a>
           </div>
           <p className="mt-3 text-xs text-muted-foreground/50">
-            © 2025 HinkoLabs ·{" "}
+            © {new Date().getFullYear()} HinkoLabs ·{" "}
             <Link href="/privacy" className="hover:text-muted-foreground">Privacy</Link>{" "}·{" "}
             <Link href="/terms" className="hover:text-muted-foreground">Terms</Link>
           </p>

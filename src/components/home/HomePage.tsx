@@ -164,7 +164,7 @@ export function HomePage({ initialTools }: HomePageProps) {
 
       {/* 5) 푸터 */}
       <footer className="pt-8 md:pt-10 mt-10 md:mt-16 border-t border-border text-xs text-muted-foreground flex flex-wrap justify-between gap-2">
-        <span>© 2025 Hinko Labs · AIROUTE</span>
+        <span>© {new Date().getFullYear()} Hinko Labs · AIROUTE</span>
         <div className="flex gap-4">
           <Link href="/privacy" className="hover:text-primary transition">Privacy</Link>
           <Link href="/terms" className="hover:text-primary transition">Terms</Link>

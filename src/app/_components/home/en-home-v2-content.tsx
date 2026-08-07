@@ -201,7 +201,7 @@ export async function ENHomeV2Content() {
               <a href="mailto:contact@hinkolabs.com?subject=[Partnership] Airoute" className="transition hover:text-foreground">Partner with us</a>
               <a href="mailto:contact@hinkolabs.com?subject=[Support] Airoute" className="transition hover:text-foreground">Help Center</a>
             </div>
-            <p className="text-xs text-muted-foreground/60">© 2025 HinkoLabs</p>
+            <p className="text-xs text-muted-foreground/60">© {new Date().getFullYear()} HinkoLabs</p>
             <div className="flex gap-3 text-xs text-muted-foreground/60">
               <Link href="/privacy" className="transition hover:text-muted-foreground">Privacy Policy</Link>
               <span>·</span>
