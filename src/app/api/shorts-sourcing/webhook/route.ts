@@ -7,6 +7,7 @@ import { buildSearchCacheKey } from "@/lib/shorts-sourcing/normalize";
 import { ShortsPlatform, SourceItem, SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 // POST /api/shorts-sourcing/webhook?job_id=...&secret=...
 // Called by Apify (ad-hoc webhook registered in search-orchestrator.ts) when an

@@ -7,6 +7,7 @@ import { SHORTS_VISION_PROMPT_VERSION } from "@/lib/shorts-sourcing/types";
 import { CREDIT_COSTS } from "@/lib/credit-costs";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const BUCKET = "workspace-assets";
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB per SSOT

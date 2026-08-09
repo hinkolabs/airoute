@@ -6,6 +6,7 @@ import { ShortsPlatform, SHORTS_PLATFORMS, SHORTS_SEARCH_LIMITS } from "@/lib/sh
 import { CREDIT_COSTS } from "@/lib/credit-costs";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 async function tryConsumeCredits(request: NextRequest, workspaceId: string, jobsStarted: number) {
   if (jobsStarted <= 0) return;

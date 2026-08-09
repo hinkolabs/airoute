@@ -7,6 +7,7 @@ import { SourceItem, SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
 import { CREDIT_COSTS } from "@/lib/credit-costs";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const BUCKET = "workspace-assets";
 
