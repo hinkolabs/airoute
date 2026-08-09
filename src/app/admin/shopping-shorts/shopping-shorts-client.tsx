@@ -247,6 +247,8 @@ export default function ShoppingShortsClient() {
 
   const platformCount = platform === "all" ? 2 : 1;
   const estimatedJobs = keywords.filter((k) => k.is_selected).length * platformCount;
+  const selectedMatch = matches.find((m) => m.is_selected) ?? null;
+  const selectedKeywords = keywords.filter((k) => k.is_selected);
 
   return (
     <PageContainer>
@@ -309,6 +311,14 @@ export default function ShoppingShortsClient() {
           title="2. 1688에서 정확한 제품 찾기"
           subtitle="쿠팡 상품과 정확히 같은 제품을 1688에서 사진으로 찾습니다. 목록에서 맞는 것을 직접 선택해주세요."
         >
+          <InfoBanner variant="info" className="mb-4">
+            AI가 사진을 보고 <strong>&ldquo;{analysis.product_name_ko}&rdquo;</strong>
+            {analysis.category_ko ? ` (${analysis.category_ko})` : ""}로 추정했습니다. 이 추정만으로 검색하면 같은 카테고리의
+            다른 제품 영상까지 섞여 나올 수 있어서, 1688에서 사진으로 정확히 같은 상품을 먼저 찾아 확인하는 단계입니다.
+            아래에서 맞는 상품을 선택하면 그 상품의 실제 이름으로 검색어가 바뀌고, 선택하지 않으면 AI 추정 검색어(3단계)로
+            진행됩니다.
+          </InfoBanner>
+
           {matches.length === 0 && (
             <Button onClick={handleMatchProduct} disabled={matching} variant="outline">
               {matching ? (
@@ -402,7 +412,27 @@ export default function ShoppingShortsClient() {
             <dd>{analysis.attributes.length > 0 ? analysis.attributes.join(" · ") : "-"}</dd>
           </dl>
 
-          <div className="mt-4 flex flex-wrap gap-2">
+          <InfoBanner variant={selectedMatch ? "success" : "warning"} className="mt-4">
+            {selectedMatch ? (
+              <>
+                <strong>검색 기준: 1688에서 선택한 실제 상품</strong> — &ldquo;{selectedMatch.title}&rdquo;의 실제 이름으로
+                만든 아래 검색어를 사용합니다.
+              </>
+            ) : (
+              <>
+                <strong>검색 기준: AI 추정 (2단계 미완료)</strong> — 아직 1688에서 정확한 제품을 선택하지 않아서, AI가
+                사진만 보고 추측한 아래 검색어를 그대로 사용합니다. 더 정확한 결과를 원하면 위 2단계에서 제품을 먼저
+                선택하세요.
+              </>
+            )}
+          </InfoBanner>
+
+          <p className="mt-4 text-sm text-muted-foreground">
+            아래 검색어 중 <strong className="text-foreground">선택된(진한 색) 검색어</strong>만 4단계에서 더우인·샤오홍슈
+            검색에 실제로 사용됩니다. 검색어를 클릭하면 켜고 끌 수 있고, 직접 추가/삭제도 가능합니다.
+          </p>
+
+          <div className="mt-3 flex flex-wrap gap-2">
             {keywords.map((k) => (
               <button
                 key={k.id}
@@ -476,9 +506,17 @@ export default function ShoppingShortsClient() {
             />
           </div>
 
-          <InfoBanner variant="info" className="mt-4">
-            이번 검색: 검색어 {keywords.filter((k) => k.is_selected).length}개 × 플랫폼 {platformCount}개 · 예상 검색 작업 최대 {estimatedJobs}회
-            (동일 검색어는 캐시가 있으면 API를 다시 호출하지 않습니다)
+          <InfoBanner variant={selectedKeywords.length > 0 ? "info" : "warning"} className="mt-4">
+            {selectedKeywords.length > 0 ? (
+              <>
+                이번 검색어: <strong>{selectedKeywords.map((k) => k.keyword).join(", ")}</strong>
+                <br />
+                검색어 {selectedKeywords.length}개 × 플랫폼 {platformCount}개 · 예상 검색 작업 최대 {estimatedJobs}회
+                (동일 검색어는 캐시가 있으면 API를 다시 호출하지 않습니다)
+              </>
+            ) : (
+              "선택된 검색어가 없습니다. 3단계에서 검색어를 1개 이상 선택해주세요."
+            )}
           </InfoBanner>
 
           {searchError && <InfoBanner variant="error" className="mt-3">{searchError}</InfoBanner>}

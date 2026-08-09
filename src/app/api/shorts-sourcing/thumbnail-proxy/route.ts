@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
+import convertHeic from "heic-convert";
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 30;
 
 /**
  * Douyin/Xiaohongshu CDN thumbnails reject direct hotlinking from other origins
@@ -9,6 +11,11 @@ export const dynamic = "force-dynamic";
  * broken/empty box in the admin UI. This route fetches the image server-side with
  * a platform-appropriate Referer + desktop User-Agent and streams it back
  * same-origin, admin-gated like every other shorts-sourcing route.
+ *
+ * Douyin also serves video covers as `.heic` (image/heic) — the Referer fix alone
+ * still isn't enough there, since Chrome/Firefox/Edge cannot render HEIC in <img>
+ * (only Safari can). So HEIC responses are additionally transcoded to JPEG here
+ * before being sent to the browser.
  */
 
 const PLATFORM_REFERER: Record<string, string> = {
@@ -64,14 +71,34 @@ export async function GET(request: NextRequest) {
     }
 
     const contentType = upstream.headers.get("content-type") ?? "image/jpeg";
-    return new NextResponse(upstream.body, {
-      status: 200,
-      headers: {
-        "Content-Type": contentType,
-        // Signed CDN URLs expire, but rarely within an hour — safe to cache briefly.
-        "Cache-Control": "private, max-age=3600",
-      },
-    });
+    const isHeic = contentType.includes("heic") || contentType.includes("heif") || /\.hei[cf]($|\?)/i.test(parsed.pathname);
+
+    if (!isHeic) {
+      return new NextResponse(upstream.body, {
+        status: 200,
+        headers: {
+          "Content-Type": contentType,
+          // Signed CDN URLs expire, but rarely within an hour — safe to cache briefly.
+          "Cache-Control": "private, max-age=3600",
+        },
+      });
+    }
+
+    // Browsers other than Safari can't render HEIC inline — transcode to JPEG.
+    const heicBuffer = Buffer.from(await upstream.arrayBuffer());
+    try {
+      const jpegBuffer = await convertHeic({ buffer: heicBuffer, format: "JPEG", quality: 0.8 });
+      return new NextResponse(new Uint8Array(jpegBuffer), {
+        status: 200,
+        headers: {
+          "Content-Type": "image/jpeg",
+          "Cache-Control": "private, max-age=3600",
+        },
+      });
+    } catch (err) {
+      console.error("[shorts-sourcing/thumbnail-proxy] heic->jpeg conversion failed:", err);
+      return NextResponse.json({ error: "heic_conversion_failed" }, { status: 502 });
+    }
   } catch (err) {
     console.error("[shorts-sourcing/thumbnail-proxy] fetch failed:", err);
     return NextResponse.json({ error: "proxy_failed" }, { status: 502 });
