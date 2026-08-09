@@ -61,6 +61,68 @@ function VersionBadge() {
   );
 }
 
+const PLATFORM_FILTER_LABEL: Record<PlatformFilter, string> = {
+  all: "더우인 + 샤오홍슈",
+  douyin: "더우인",
+  xiaohongshu: "샤오홍슈",
+};
+
+/**
+ * Always-visible "what will actually be searched" summary — sticky so it stays
+ * on screen while the admin scrolls through steps 2~4. This is the single
+ * source of truth answer to "지금 뭘 검색하는거야?", instead of making the
+ * admin piece it together from separate section banners.
+ */
+function SearchPlanSummary({
+  analysis,
+  selectedMatch,
+  selectedKeywords,
+  platform,
+  platformCount,
+  estimatedJobs,
+}: {
+  analysis: ProductAnalysis;
+  selectedMatch: MatchRow | null;
+  selectedKeywords: KeywordRow[];
+  platform: PlatformFilter;
+  platformCount: number;
+  estimatedJobs: number;
+}) {
+  const productLabel = selectedMatch ? selectedMatch.title : analysis.chinese_product_name;
+
+  return (
+    <div className="sticky top-3 z-10 rounded-2xl border border-primary/30 bg-card/95 p-4 shadow-md backdrop-blur">
+      <p className="mb-2 text-[11px] font-bold uppercase tracking-wide text-primary">지금 검색될 대상</p>
+      <dl className="grid grid-cols-[64px_1fr] gap-y-1.5 text-sm">
+        <dt className="text-muted-foreground">상품</dt>
+        <dd className="flex flex-wrap items-center gap-1.5 font-medium">
+          <span className="line-clamp-1">{productLabel}</span>
+          <span
+            className={`inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
+              selectedMatch ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+            }`}
+          >
+            {selectedMatch ? "1688 확인됨" : "AI 추정"}
+          </span>
+        </dd>
+        <dt className="text-muted-foreground">검색어</dt>
+        <dd>
+          {selectedKeywords.length > 0 ? (
+            <span className="font-medium">{selectedKeywords.map((k) => k.keyword).join(", ")}</span>
+          ) : (
+            <span className="text-amber-700">선택된 검색어 없음 — 3단계에서 골라주세요</span>
+          )}
+        </dd>
+        <dt className="text-muted-foreground">플랫폼</dt>
+        <dd>
+          {PLATFORM_FILTER_LABEL[platform]} · 예상 검색 작업 최대 {estimatedJobs}회 (검색어 {selectedKeywords.length}개 ×
+          플랫폼 {platformCount}개)
+        </dd>
+      </dl>
+    </div>
+  );
+}
+
 export default function ShoppingShortsClient() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -261,6 +323,17 @@ export default function ShoppingShortsClient() {
         subtitle="상품 스크린샷을 넣으면 더우인/샤오홍슈에서 유사 영상 후보를 찾아드립니다."
       />
       <ShortsSourcingNav />
+
+      {analysis && (
+        <SearchPlanSummary
+          analysis={analysis}
+          selectedMatch={selectedMatch}
+          selectedKeywords={selectedKeywords}
+          platform={platform}
+          platformCount={platformCount}
+          estimatedJobs={estimatedJobs}
+        />
+      )}
 
       <SectionCard title="1. 상품 이미지" subtitle="쿠팡 등에서 캡처한 상품 스크린샷을 올려주세요 (JPG/PNG/WEBP, 최대 10MB)">
         <div
