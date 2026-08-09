@@ -48,6 +48,19 @@ function formatSold(count: number | null): string | null {
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu";
 
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
+
+function VersionBadge() {
+  return (
+    <span
+      title={`빌드 버전 ${APP_VERSION} — 이 값이 최신 커밋 해시와 다르면 아직 배포가 반영되지 않은 것입니다.`}
+      className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 font-mono text-[11px] text-muted-foreground"
+    >
+      v{APP_VERSION}
+    </span>
+  );
+}
+
 export default function ShoppingShortsClient() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -237,7 +250,14 @@ export default function ShoppingShortsClient() {
 
   return (
     <PageContainer>
-      <PageHeader title="숏츠 영상 소싱" subtitle="상품 스크린샷을 넣으면 더우인/샤오홍슈에서 유사 영상 후보를 찾아드립니다." />
+      <PageHeader
+        title={
+          <>
+            숏츠 영상 소싱 <VersionBadge />
+          </>
+        }
+        subtitle="상품 스크린샷을 넣으면 더우인/샤오홍슈에서 유사 영상 후보를 찾아드립니다."
+      />
       <ShortsSourcingNav />
 
       <SectionCard title="1. 상품 이미지" subtitle="쿠팡 등에서 캡처한 상품 스크린샷을 올려주세요 (JPG/PNG/WEBP, 최대 10MB)">
