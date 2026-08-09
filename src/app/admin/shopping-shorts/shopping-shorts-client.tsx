@@ -47,6 +47,7 @@ function formatSold(count: number | null): string | null {
 }
 
 type PlatformFilter = "all" | "douyin" | "xiaohongshu";
+type InputMode = "image" | "text";
 
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || "dev";
 
@@ -76,6 +77,7 @@ const PLATFORM_FILTER_LABEL: Record<PlatformFilter, string> = {
 function SearchPlanSummary({
   analysis,
   selectedMatch,
+  inputMode,
   selectedKeywords,
   platform,
   platformCount,
@@ -83,12 +85,18 @@ function SearchPlanSummary({
 }: {
   analysis: ProductAnalysis;
   selectedMatch: MatchRow | null;
+  inputMode: InputMode;
   selectedKeywords: KeywordRow[];
   platform: PlatformFilter;
   platformCount: number;
   estimatedJobs: number;
 }) {
   const productLabel = selectedMatch ? selectedMatch.title : analysis.chinese_product_name;
+  const sourceBadge = selectedMatch
+    ? `${PRODUCT_MATCH_PROVIDER_LABEL[selectedMatch.provider]} 확인됨`
+    : inputMode === "text"
+      ? "직접 입력"
+      : "AI 추정";
 
   return (
     <div className="sticky top-3 z-10 rounded-2xl border border-primary/30 bg-card/95 p-4 shadow-md backdrop-blur">
@@ -99,10 +107,10 @@ function SearchPlanSummary({
           <span className="line-clamp-1">{productLabel}</span>
           <span
             className={`inline-flex flex-shrink-0 items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-              selectedMatch ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
+              selectedMatch || inputMode === "text" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
             }`}
           >
-            {selectedMatch ? `${PRODUCT_MATCH_PROVIDER_LABEL[selectedMatch.provider]} 확인됨` : "AI 추정"}
+            {sourceBadge}
           </span>
         </dd>
         <dt className="text-muted-foreground">검색어</dt>
@@ -127,10 +135,15 @@ export default function ShoppingShortsClient() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [inputMode, setInputMode] = useState<InputMode>("image");
+
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [analyzeError, setAnalyzeError] = useState<string | null>(null);
+
+  const [productTitleInput, setProductTitleInput] = useState("");
+  const [productDescInput, setProductDescInput] = useState("");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [analysis, setAnalysis] = useState<ProductAnalysis | null>(null);
@@ -147,15 +160,25 @@ export default function ShoppingShortsClient() {
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  function handleFileSelected(file: File | null) {
-    if (!file) return;
-    setSelectedFile(file);
+  function resetSession() {
     setAnalyzeError(null);
     setAnalysis(null);
     setKeywords([]);
     setSessionId(null);
     setMatches([]);
     setMatchError(null);
+  }
+
+  function switchMode(mode: InputMode) {
+    if (mode === inputMode) return;
+    setInputMode(mode);
+    resetSession();
+  }
+
+  function handleFileSelected(file: File | null) {
+    if (!file) return;
+    setSelectedFile(file);
+    resetSession();
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -191,6 +214,34 @@ export default function ShoppingShortsClient() {
       setKeywords(data.keywords ?? []);
     } catch (err: any) {
       setAnalyzeError(err.message || "상품 분석에 실패했습니다.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
+  async function handleAnalyzeText() {
+    const title = productTitleInput.trim();
+    if (!title) return;
+    setAnalyzing(true);
+    setAnalyzeError(null);
+
+    try {
+      const res = await fetch("/api/shorts-sourcing/analyze-text", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product_title: title, description: productDescInput.trim() || undefined }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.message || "검색어 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+
+      setSessionId(data.session_id);
+      setAnalysis(data.analysis);
+      setKeywords(data.keywords ?? []);
+    } catch (err: any) {
+      setAnalyzeError(err.message || "검색어 생성에 실패했습니다.");
     } finally {
       setAnalyzing(false);
     }
@@ -312,6 +363,11 @@ export default function ShoppingShortsClient() {
   const selectedMatch = matches.find((m) => m.is_selected) ?? null;
   const selectedKeywords = keywords.filter((k) => k.is_selected);
 
+  // 텍스트 모드에서는 "여러 사이트에서 정확한 제품 찾기" 단계(사진 필요)를 건너뛰므로
+  // 이후 단계 번호를 하나씩 당겨서 보여준다.
+  const stepKeywordNum = inputMode === "image" ? 3 : 2;
+  const stepSearchNum = inputMode === "image" ? 4 : 3;
+
   return (
     <PageContainer>
       <PageHeader
@@ -328,6 +384,7 @@ export default function ShoppingShortsClient() {
         <SearchPlanSummary
           analysis={analysis}
           selectedMatch={selectedMatch}
+          inputMode={inputMode}
           selectedKeywords={selectedKeywords}
           platform={platform}
           platformCount={platformCount}
@@ -335,51 +392,125 @@ export default function ShoppingShortsClient() {
         />
       )}
 
-      <SectionCard title="1. 상품 이미지" subtitle="쿠팡 등에서 캡처한 상품 스크린샷을 올려주세요 (JPG/PNG/WEBP, 최대 10MB)">
-        <div
-          onDrop={handleDrop}
-          onDragOver={(e) => e.preventDefault()}
-          onClick={() => fileInputRef.current?.click()}
-          className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 px-6 py-10 text-center hover:border-primary/40 hover:bg-muted/50 transition-colors"
-        >
-          {imagePreview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={imagePreview} alt="상품 미리보기" className="max-h-64 rounded-lg object-contain" />
-          ) : (
-            <>
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">클릭하거나 이미지를 드래그해서 올려주세요</p>
-            </>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/jpeg,image/jpg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => handleFileSelected(e.target.files?.[0] ?? null)}
-          />
+      <SectionCard
+        title="1. 상품 정보 입력"
+        subtitle="쿠팡 스크린샷으로 AI가 찾게 하거나, 1688 등에서 이미 찾은 상품명을 직접 입력할 수 있습니다."
+      >
+        <div className="mb-4 flex gap-2">
+          <button
+            onClick={() => switchMode("image")}
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+              inputMode === "image"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            이미지로 찾기
+          </button>
+          <button
+            onClick={() => switchMode("text")}
+            className={`rounded-full border px-4 py-1.5 text-sm font-medium transition-colors ${
+              inputMode === "text"
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-background text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            상품명 직접 입력
+          </button>
         </div>
 
-        {analyzeError && (
-          <InfoBanner variant="error" className="mt-3">{analyzeError}</InfoBanner>
-        )}
+        {inputMode === "image" ? (
+          <>
+            <p className="mb-3 text-xs text-muted-foreground">
+              쿠팡 등에서 캡처한 상품 스크린샷을 올려주세요 (JPG/PNG/WEBP, 최대 10MB). AI가 사진을 보고 상품을 추정한 뒤,
+              2단계에서 1688·Alibaba·AliExpress 사진 검색으로 정확한 상품을 확인합니다.
+            </p>
+            <div
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+              onClick={() => fileInputRef.current?.click()}
+              className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-border bg-muted/30 px-6 py-10 text-center hover:border-primary/40 hover:bg-muted/50 transition-colors"
+            >
+              {imagePreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={imagePreview} alt="상품 미리보기" className="max-h-64 rounded-lg object-contain" />
+              ) : (
+                <>
+                  <Upload className="h-8 w-8 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">클릭하거나 이미지를 드래그해서 올려주세요</p>
+                </>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => handleFileSelected(e.target.files?.[0] ?? null)}
+              />
+            </div>
 
-        <div className="mt-4">
-          <Button onClick={handleAnalyze} disabled={!selectedFile || analyzing}>
-            {analyzing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 분석 중...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" /> 상품 분석
-              </>
+            {analyzeError && (
+              <InfoBanner variant="error" className="mt-3">{analyzeError}</InfoBanner>
             )}
-          </Button>
-        </div>
+
+            <div className="mt-4">
+              <Button onClick={handleAnalyze} disabled={!selectedFile || analyzing}>
+                {analyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 분석 중...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" /> 상품 분석
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="mb-3 text-xs text-muted-foreground">
+              1688·Alibaba 등에서 이미 찾은 정확한 상품명을 붙여넣으면, 사진 분석 없이 바로 검색어를 만듭니다. 중국어든
+              한국어든 상관없습니다.
+            </p>
+            <div className="space-y-3">
+              <input
+                value={productTitleInput}
+                onChange={(e) => setProductTitleInput(e.target.value)}
+                placeholder="예: 车载折叠桌 后排小桌板 (1688 상품명 등)"
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <textarea
+                value={productDescInput}
+                onChange={(e) => setProductDescInput(e.target.value)}
+                placeholder="상품 설명이나 태그가 있다면 추가로 붙여넣어 주세요 (선택)"
+                rows={3}
+                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+            </div>
+
+            {analyzeError && (
+              <InfoBanner variant="error" className="mt-3">{analyzeError}</InfoBanner>
+            )}
+
+            <div className="mt-4">
+              <Button onClick={handleAnalyzeText} disabled={!productTitleInput.trim() || analyzing}>
+                {analyzing ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 검색어 생성 중...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="mr-2 h-4 w-4" /> 검색어 생성
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
       </SectionCard>
 
-      {analysis && (
+      {analysis && inputMode === "image" && (
         <SectionCard
           title="2. 여러 사이트에서 정확한 제품 찾기"
           subtitle="쿠팡 상품과 정확히 같은 제품을 1688·Alibaba·AliExpress에서 사진으로 찾습니다. 목록에서 맞는 것을 직접 선택해주세요."
@@ -472,7 +603,14 @@ export default function ShoppingShortsClient() {
       )}
 
       {analysis && (
-        <SectionCard title="3. 분석 결과 · 검색어 편집" subtitle="중국어를 몰라도 그대로 검색을 진행할 수 있습니다. 2단계에서 제품을 선택하면 검색어가 자동으로 갱신됩니다.">
+        <SectionCard
+          title={`${stepKeywordNum}. 분석 결과 · 검색어 편집`}
+          subtitle={
+            inputMode === "image"
+              ? "중국어를 몰라도 그대로 검색을 진행할 수 있습니다. 2단계에서 제품을 선택하면 검색어가 자동으로 갱신됩니다."
+              : "입력한 상품명으로 만든 검색어입니다. 중국어를 몰라도 그대로 검색을 진행할 수 있습니다."
+          }
+        >
           <dl className="grid grid-cols-[80px_1fr] gap-y-2 text-sm">
             <dt className="text-muted-foreground">상품명</dt>
             <dd className="font-medium">{analysis.product_name_ko}</dd>
@@ -484,11 +622,16 @@ export default function ShoppingShortsClient() {
             <dd>{analysis.attributes.length > 0 ? analysis.attributes.join(" · ") : "-"}</dd>
           </dl>
 
-          <InfoBanner variant={selectedMatch ? "success" : "warning"} className="mt-4">
+          <InfoBanner variant={selectedMatch ? "success" : inputMode === "text" ? "success" : "warning"} className="mt-4">
             {selectedMatch ? (
               <>
                 <strong>검색 기준: {PRODUCT_MATCH_PROVIDER_LABEL[selectedMatch.provider]}에서 선택한 실제 상품</strong> —
                 &ldquo;{selectedMatch.title}&rdquo;의 실제 이름으로 만든 아래 검색어를 사용합니다.
+              </>
+            ) : inputMode === "text" ? (
+              <>
+                <strong>검색 기준: 직접 입력한 상품명</strong> — &ldquo;{analysis.product_name_ko}&rdquo;로 만든 아래
+                검색어를 그대로 사용합니다.
               </>
             ) : (
               <>
@@ -545,7 +688,7 @@ export default function ShoppingShortsClient() {
       )}
 
       {analysis && (
-        <SectionCard title="4. 플랫폼 선택 · 검색 실행">
+        <SectionCard title={`${stepSearchNum}. 플랫폼 선택 · 검색 실행`}>
           <div className="flex gap-2">
             {([
               { key: "all", label: "전체" },

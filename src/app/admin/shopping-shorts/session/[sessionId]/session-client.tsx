@@ -32,6 +32,9 @@ export default function SessionResultsClient({ sessionId }: { sessionId: string 
   const [sortBy, setSortBy] = useState<SortOption>("recommended");
   const [platformFilter, setPlatformFilter] = useState<PlatformOption>("all");
   const [ranking, setRanking] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadMoreError, setLoadMoreError] = useState<string | null>(null);
+  const [maxResultsReached, setMaxResultsReached] = useState(false);
 
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -97,6 +100,32 @@ export default function SessionResultsClient({ sessionId }: { sessionId: string 
       setError(err.message || "AI 정밀 정렬에 실패했습니다.");
     } finally {
       setRanking(false);
+    }
+  }
+
+  async function loadMore() {
+    setLoadingMore(true);
+    setLoadMoreError(null);
+    try {
+      const res = await fetch(`/api/shorts-sourcing/session/${sessionId}/load-more`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        if (data.error === "max_results_reached") {
+          setMaxResultsReached(true);
+        } else {
+          throw new Error(data.message || "추가 검색을 시작하지 못했습니다.");
+        }
+        return;
+      }
+      if (data.next_limit_per_keyword >= data.max_limit_per_keyword) {
+        setMaxResultsReached(true);
+      }
+      setAllJobsDone(false); // resume polling — new jobs were just started
+      await fetchStatus();
+    } catch (err: any) {
+      setLoadMoreError(err.message || "추가 검색을 시작하지 못했습니다.");
+    } finally {
+      setLoadingMore(false);
     }
   }
 
@@ -193,11 +222,34 @@ export default function SessionResultsClient({ sessionId }: { sessionId: string 
           description={runningJobs.length > 0 ? "완료되는 대로 이 화면에 바로 표시됩니다." : "검색어나 플랫폼을 바꿔서 다시 시도해보세요."}
         />
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-          {sorted.map((item) => (
-            <ResultCard key={item.id} item={item} onToggleFavorite={toggleFavorite} />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+            {sorted.map((item) => (
+              <ResultCard key={item.id} item={item} onToggleFavorite={toggleFavorite} />
+            ))}
+          </div>
+
+          <div className="flex flex-col items-center gap-2 pt-2">
+            {maxResultsReached ? (
+              <p className="text-xs text-muted-foreground">검색어당 최대 결과 수까지 모두 찾았습니다.</p>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={loadMore}
+                disabled={loadingMore || runningJobs.length > 0}
+              >
+                {loadingMore || runningJobs.length > 0 ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 더 찾는 중...
+                  </>
+                ) : (
+                  "더 찾기"
+                )}
+              </Button>
+            )}
+            {loadMoreError && <InfoBanner variant="error">{loadMoreError}</InfoBanner>}
+          </div>
+        </>
       )}
     </PageContainer>
   );

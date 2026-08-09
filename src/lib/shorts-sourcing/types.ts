@@ -9,6 +9,10 @@ export type ShortsPlatform = (typeof SHORTS_PLATFORMS)[number];
 
 export const SHORTS_VISION_PROMPT_VERSION = "v1";
 
+// Separate prompt-version namespace for text-only sessions (see analyze-text/route.ts)
+// so its session cache never collides with image-analysis cache entries.
+export const SHORTS_TEXT_KEYWORDS_PROMPT_VERSION = "text-v1";
+
 /** Structured result of analyzing a product screenshot with a vision model. */
 export interface ProductAnalysis {
   product_name_ko: string;
@@ -125,7 +129,9 @@ export interface SearchFilters {
 export const SHORTS_SEARCH_LIMITS = {
   maxKeywordsPerSession: 5,
   defaultResultsPerKeyword: 20,
-  maxResultsPerKeyword: 20,
+  // Raised from 20 so "더 찾기" (load more) on the results page has room to grow
+  // beyond the initial search in LOAD_MORE_STEP increments (see load-more/route.ts).
+  maxResultsPerKeyword: 60,
   maxResultsPerPlatform: 100,
   cacheTtlHours: 24,
   preciseRankTopN: 20,
