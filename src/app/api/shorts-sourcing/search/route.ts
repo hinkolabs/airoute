@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { startSourcingSearch } from "@/lib/shorts-sourcing/search-orchestrator";
 import { ShortsPlatform, SHORTS_PLATFORMS, SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
@@ -30,8 +29,6 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string, jobs
 // Body: { session_id, keyword_ids: string[], platform: "all"|"douyin"|"xiaohongshu", limit_per_keyword }
 // workspace_id is derived from the session itself (via requireSessionAccess) — no need to pass it.
 export async function POST(request: NextRequest) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 

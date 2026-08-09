@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, resolveWorkspaceId, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { analyzeProductImage } from "@/lib/shorts-sourcing/analyze-product-image";
 import { SHORTS_VISION_PROMPT_VERSION } from "@/lib/shorts-sourcing/types";
@@ -44,10 +43,6 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string) {
 // FormData: { file, workspace_id? } — workspace_id is ignored/optional in admin-key mode
 // (see /lib/shorts-sourcing/api-guard.ts), required for real Supabase-user callers.
 export async function POST(request: NextRequest) {
-  if (await getDemoMode()) {
-    return new NextResponse(null, { status: 404 });
-  }
-
   try {
     const ctx = await requireUser();
     if (isErrorResponse(ctx)) return ctx;

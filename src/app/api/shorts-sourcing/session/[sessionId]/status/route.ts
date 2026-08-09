@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { dedupeSourceItems } from "@/lib/shorts-sourcing/dedupe";
 import { computeBaseScores } from "@/lib/shorts-sourcing/ranking";
@@ -10,8 +9,6 @@ export const dynamic = "force-dynamic";
 // GET /api/shorts-sourcing/session/:sessionId/status
 // Polled by the results UI every few seconds while jobs are still running/pending.
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId } = await params;

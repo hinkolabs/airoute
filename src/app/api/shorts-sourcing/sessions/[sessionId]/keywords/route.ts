@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
 
@@ -7,8 +6,6 @@ export const dynamic = "force-dynamic";
 
 // GET /api/shorts-sourcing/sessions/:sessionId/keywords
 export async function GET(_request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId } = await params;
@@ -32,8 +29,6 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 // POST /api/shorts-sourcing/sessions/:sessionId/keywords
 // Body: { keyword: string } — adds a user-added keyword (is_ai_generated=false)
 export async function POST(request: NextRequest, { params }: { params: Promise<{ sessionId: string }> }) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId } = await params;

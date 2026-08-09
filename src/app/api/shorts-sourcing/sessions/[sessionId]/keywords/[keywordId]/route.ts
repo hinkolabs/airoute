@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 
 export const dynamic = "force-dynamic";
@@ -10,8 +9,6 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ sessionId: string; keywordId: string }> }
 ) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId, keywordId } = await params;
@@ -42,8 +39,6 @@ export async function DELETE(
   _request: NextRequest,
   { params }: { params: Promise<{ sessionId: string; keywordId: string }> }
 ) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId, keywordId } = await params;

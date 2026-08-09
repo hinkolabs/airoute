@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, resolveWorkspaceId, requireSourceItemAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 
 export const dynamic = "force-dynamic";
@@ -7,8 +6,6 @@ export const dynamic = "force-dynamic";
 // GET /api/shorts-sourcing/favorites?workspace_id=... (workspace_id optional in admin-key mode)
 // Lists all favorited candidates for a workspace ("소싱함"), newest first.
 export async function GET(request: NextRequest) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 
@@ -36,8 +33,6 @@ export async function GET(request: NextRequest) {
 // POST /api/shorts-sourcing/favorites
 // Body: { source_item_id, note? }
 export async function POST(request: NextRequest) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 

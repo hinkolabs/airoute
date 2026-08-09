@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getDemoMode } from "@/lib/flags";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { dedupeSourceItems } from "@/lib/shorts-sourcing/dedupe";
 import { computeBaseScores, computeVisualScores, applyPreciseScores } from "@/lib/shorts-sourcing/ranking";
@@ -33,8 +32,6 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string) {
 // Compares the top-N (base score) candidates' thumbnails against the original
 // product photo with a vision model. Only ever runs on an explicit button click.
 export async function POST(request: NextRequest) {
-  if (await getDemoMode()) return new NextResponse(null, { status: 404 });
-
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 
