@@ -1,32 +1,36 @@
 /**
- * 1688 reverse-image-search provider — targets the Apify Store actor
+ * Reverse-image-search provider — targets the Apify Store actor
  * `devcake/scraper-by-image` ("Scraper by Image - 1688 / Alibaba / AliExpress").
  *
- * ⚠️ Verification status: the field names below were taken from the actor's PUBLIC
- * documentation on Apify Store (checked while planning this feature, 2026-08),
- * which includes a real trimmed example row per provider. This has NOT been
- * verified against a live API response in this environment. Per SSOT rule 0
- * ("외부 API 응답 스키마를 확인하지 않고 필드명을 추측하여 하드코딩하지 않는다"),
- * re-verify the actual dataset item shape with a real run before fully trusting
- * this in production — if the actor's output has drifted from its docs, only
- * this file needs to change. normalize() is defensive: unknown/missing fields
- * fall back to null rather than throwing.
- *
- * Documented output shape (one row per matched product), relevant "1688" subset:
- * {
- *   provider: "1688", image_rank, product_id, title, product_url, image_url,
- *   images: string[], description, price_min, price_max, currency,
- *   shop_name, shop_url, country, rating, sold_count, tags: string[]
- * }
+ * ✅ Verified against a live API response on 2026-08-09 (real run against a real
+ * uploaded product screenshot, all three providers). Confirmed:
+ * - `provider` only accepts exactly "1688" | "alibaba" | "aliexpress" — passing
+ *   "taobao" returns a 400 invalid-input error. Taobao is NOT supported by this actor.
+ * - `maxProducts` must be >= 30 (lower values are rejected with a 400).
+ * - Field names below match the real dataset item shape for all three providers.
+ * - "alibaba" titles can contain raw HTML (e.g. `<img src='...'></img><span> ...`),
+ *   so title/description are stripped of tags in normalize().
+ * - Many numeric/business fields (rating, sold_count, shop_name, etc.) are only
+ *   populated for 1688 and/or alibaba; aliexpress mostly returns null for these —
+ *   this is real provider behavior, not a bug, and normalize() treats them as
+ *   optional throughout.
  */
 
 import { runApifyActorSyncGetDatasetItems } from "../search/apify-client";
-import { ProductMatch } from "../../types";
+import { ProductMatch, ProductMatchProvider, PRODUCT_MATCH_PROVIDERS } from "../../types";
 
 const DEFAULT_ACTOR_ID = "devcake/scraper-by-image";
+const MIN_MAX_PRODUCTS = 30; // actor hard-rejects anything lower
+const MAX_MATCHES_PER_PROVIDER = 12; // trimmed for UI/DB, actor itself still runs with MIN_MAX_PRODUCTS
 
 function getImageMatchActorId(): string {
   return process.env.SHORTS_SOURCING_IMAGE_MATCH_ACTOR_ID || DEFAULT_ACTOR_ID;
+}
+
+function stripHtml(text: string | null | undefined): string | null {
+  if (!text) return null;
+  const cleaned = text.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+  return cleaned.length > 0 ? cleaned : null;
 }
 
 interface ScraperByImageRawItem {
@@ -49,17 +53,18 @@ interface ScraperByImageRawItem {
   tags?: string[];
 }
 
-function normalizeMatchItem(raw: unknown): ProductMatch | null {
+function normalizeMatchItem(raw: unknown, expectedProvider: ProductMatchProvider): ProductMatch | null {
   const item = raw as ScraperByImageRawItem;
-  if (!item || item.provider !== "1688" || !item.title || !item.product_id || !item.image_url) {
+  const title = stripHtml(item?.title);
+  if (!item || item.provider !== expectedProvider || !title || !item.product_id || !item.image_url) {
     return null;
   }
 
   return {
-    provider: "1688",
+    provider: expectedProvider,
     product_id: String(item.product_id),
-    title: item.title,
-    description: item.description ?? null,
+    title,
+    description: stripHtml(item.description),
     image_url: item.image_url,
     images: Array.isArray(item.images) ? item.images.filter((u): u is string => typeof u === "string") : [],
     product_url: item.product_url ?? "",
@@ -76,30 +81,51 @@ function normalizeMatchItem(raw: unknown): ProductMatch | null {
   };
 }
 
-/**
- * Reverse-image-searches 1688 for the uploaded product screenshot and returns
- * normalized candidates sorted by the provider's own match rank (best first).
- * Runs synchronously (single image, single provider) — no webhook needed.
- */
-export async function searchProductMatchesOn1688(imageUrl: string, maxProducts = 12): Promise<ProductMatch[]> {
+async function searchOneProvider(imageUrl: string, provider: ProductMatchProvider): Promise<ProductMatch[]> {
   const rawItems = await runApifyActorSyncGetDatasetItems({
     actorId: getImageMatchActorId(),
     input: {
-      provider: "1688",
+      provider,
       imageUrls: [imageUrl],
-      maxProducts,
+      maxProducts: MIN_MAX_PRODUCTS,
     },
   });
 
   return rawItems
     .map((raw) => {
       try {
-        return normalizeMatchItem(raw);
+        return normalizeMatchItem(raw, provider);
       } catch (err) {
-        console.warn("[scraper-by-image] normalize() threw on one item, skipping:", err);
+        console.warn(`[scraper-by-image] normalize() threw on one ${provider} item, skipping:`, err);
         return null;
       }
     })
     .filter((x): x is ProductMatch => x !== null)
-    .sort((a, b) => (a.image_rank ?? 999) - (b.image_rank ?? 999));
+    .sort((a, b) => (a.image_rank ?? 999) - (b.image_rank ?? 999))
+    .slice(0, MAX_MATCHES_PER_PROVIDER);
+}
+
+/**
+ * Reverse-image-searches the uploaded product screenshot across every provider
+ * the actor supports (1688, Alibaba, AliExpress — NOT Taobao, unsupported) and
+ * returns normalized candidates, grouped by provider then sorted by that
+ * provider's own match rank (best first) within each group. Providers run in
+ * parallel; if one provider fails, the others still return results.
+ */
+export async function searchProductMatches(
+  imageUrl: string,
+  providers: readonly ProductMatchProvider[] = PRODUCT_MATCH_PROVIDERS
+): Promise<ProductMatch[]> {
+  const results = await Promise.allSettled(providers.map((provider) => searchOneProvider(imageUrl, provider)));
+
+  const matches: ProductMatch[] = [];
+  results.forEach((result, i) => {
+    if (result.status === "fulfilled") {
+      matches.push(...result.value);
+    } else {
+      console.error(`[scraper-by-image] provider "${providers[i]}" failed:`, result.reason);
+    }
+  });
+
+  return matches;
 }

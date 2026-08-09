@@ -6,7 +6,7 @@ import { Upload, Sparkles, Loader2, Search, X, Plus, Check, ImageOff } from "luc
 import { Button } from "@/components/ui/button";
 import { PageContainer, PageHeader, SectionCard, InfoBanner } from "./_components/ui";
 import ShortsSourcingNav from "./_components/shorts-nav";
-import { SHORTS_SEARCH_LIMITS, ProductMatch } from "@/lib/shorts-sourcing/types";
+import { SHORTS_SEARCH_LIMITS, ProductMatch, PRODUCT_MATCH_PROVIDER_LABEL } from "@/lib/shorts-sourcing/types";
 
 interface ProductAnalysis {
   product_name_ko: string;
@@ -102,7 +102,7 @@ function SearchPlanSummary({
               selectedMatch ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
             }`}
           >
-            {selectedMatch ? "1688 확인됨" : "AI 추정"}
+            {selectedMatch ? `${PRODUCT_MATCH_PROVIDER_LABEL[selectedMatch.provider]} 확인됨` : "AI 추정"}
           </span>
         </dd>
         <dt className="text-muted-foreground">검색어</dt>
@@ -209,11 +209,11 @@ export default function ShoppingShortsClient() {
       });
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.message || "1688 제품 매칭에 실패했습니다.");
+        throw new Error(data.message || "제품 매칭에 실패했습니다.");
       }
       setMatches(data.matches ?? []);
     } catch (err) {
-      setMatchError(err instanceof Error ? err.message : "1688 제품 매칭에 실패했습니다.");
+      setMatchError(err instanceof Error ? err.message : "제품 매칭에 실패했습니다.");
     } finally {
       setMatching(false);
     }
@@ -381,26 +381,26 @@ export default function ShoppingShortsClient() {
 
       {analysis && (
         <SectionCard
-          title="2. 1688에서 정확한 제품 찾기"
-          subtitle="쿠팡 상품과 정확히 같은 제품을 1688에서 사진으로 찾습니다. 목록에서 맞는 것을 직접 선택해주세요."
+          title="2. 여러 사이트에서 정확한 제품 찾기"
+          subtitle="쿠팡 상품과 정확히 같은 제품을 1688·Alibaba·AliExpress에서 사진으로 찾습니다. 목록에서 맞는 것을 직접 선택해주세요."
         >
           <InfoBanner variant="info" className="mb-4">
             AI가 사진을 보고 <strong>&ldquo;{analysis.product_name_ko}&rdquo;</strong>
             {analysis.category_ko ? ` (${analysis.category_ko})` : ""}로 추정했습니다. 이 추정만으로 검색하면 같은 카테고리의
-            다른 제품 영상까지 섞여 나올 수 있어서, 1688에서 사진으로 정확히 같은 상품을 먼저 찾아 확인하는 단계입니다.
-            아래에서 맞는 상품을 선택하면 그 상품의 실제 이름으로 검색어가 바뀌고, 선택하지 않으면 AI 추정 검색어(3단계)로
-            진행됩니다.
+            다른 제품 영상까지 섞여 나올 수 있어서, 1688·Alibaba·AliExpress 3곳에서 사진으로 정확히 같은 상품을 먼저 찾아
+            확인하는 단계입니다 (플랫폼마다 검색 결과가 다르므로 여러 곳을 함께 찾습니다). 아래에서 맞는 상품을 선택하면 그
+            상품의 실제 이름으로 검색어가 바뀌고, 선택하지 않으면 AI 추정 검색어(3단계)로 진행됩니다.
           </InfoBanner>
 
           {matches.length === 0 && (
             <Button onClick={handleMatchProduct} disabled={matching} variant="outline">
               {matching ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 1688 검색 중...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 검색 중... (1688·Alibaba·AliExpress)
                 </>
               ) : (
                 <>
-                  <Search className="mr-2 h-4 w-4" /> 1688에서 이 제품 찾기
+                  <Search className="mr-2 h-4 w-4" /> 여러 사이트에서 이 제품 찾기
                 </>
               )}
             </Button>
@@ -438,11 +438,10 @@ export default function ShoppingShortsClient() {
                           <ImageOff className="h-5 w-5" />
                         </div>
                       )}
-                      {m.image_rank !== null && (
-                        <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white">
-                          매칭 {m.image_rank}위
-                        </span>
-                      )}
+                      <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                        {PRODUCT_MATCH_PROVIDER_LABEL[m.provider]}
+                        {m.image_rank !== null ? ` · ${m.image_rank}위` : ""}
+                      </span>
                       {m.is_selected && (
                         <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
                           {selectingMatchId === m.id ? (
@@ -465,7 +464,7 @@ export default function ShoppingShortsClient() {
               </div>
               <Button onClick={handleMatchProduct} disabled={matching} variant="ghost" size="sm" className="mt-3">
                 {matching ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Search className="mr-1.5 h-3.5 w-3.5" />}
-                다시 검색
+                다시 검색 (1688·Alibaba·AliExpress)
               </Button>
             </>
           )}
@@ -473,7 +472,7 @@ export default function ShoppingShortsClient() {
       )}
 
       {analysis && (
-        <SectionCard title="3. 분석 결과 · 검색어 편집" subtitle="중국어를 몰라도 그대로 검색을 진행할 수 있습니다. 1688 제품을 선택하면 검색어가 자동으로 갱신됩니다.">
+        <SectionCard title="3. 분석 결과 · 검색어 편집" subtitle="중국어를 몰라도 그대로 검색을 진행할 수 있습니다. 2단계에서 제품을 선택하면 검색어가 자동으로 갱신됩니다.">
           <dl className="grid grid-cols-[80px_1fr] gap-y-2 text-sm">
             <dt className="text-muted-foreground">상품명</dt>
             <dd className="font-medium">{analysis.product_name_ko}</dd>
@@ -488,12 +487,12 @@ export default function ShoppingShortsClient() {
           <InfoBanner variant={selectedMatch ? "success" : "warning"} className="mt-4">
             {selectedMatch ? (
               <>
-                <strong>검색 기준: 1688에서 선택한 실제 상품</strong> — &ldquo;{selectedMatch.title}&rdquo;의 실제 이름으로
-                만든 아래 검색어를 사용합니다.
+                <strong>검색 기준: {PRODUCT_MATCH_PROVIDER_LABEL[selectedMatch.provider]}에서 선택한 실제 상품</strong> —
+                &ldquo;{selectedMatch.title}&rdquo;의 실제 이름으로 만든 아래 검색어를 사용합니다.
               </>
             ) : (
               <>
-                <strong>검색 기준: AI 추정 (2단계 미완료)</strong> — 아직 1688에서 정확한 제품을 선택하지 않아서, AI가
+                <strong>검색 기준: AI 추정 (2단계 미완료)</strong> — 아직 2단계에서 정확한 제품을 선택하지 않아서, AI가
                 사진만 보고 추측한 아래 검색어를 그대로 사용합니다. 더 정확한 결과를 원하면 위 2단계에서 제품을 먼저
                 선택하세요.
               </>

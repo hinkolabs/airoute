@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser, requireSessionAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
-import { searchProductMatchesOn1688 } from "@/lib/shorts-sourcing/providers/match/scraper-by-image";
+import { searchProductMatches } from "@/lib/shorts-sourcing/providers/match/scraper-by-image";
 import { CREDIT_COSTS } from "@/lib/credit-costs";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string) {
         workspace_id: workspaceId,
         feature_key: "shorts_sourcing_product_match",
         amount: CREDIT_COSTS.shorts_sourcing_product_match,
-        description: "숏츠 소싱: 1688 제품 매칭",
+        description: "숏츠 소싱: 제품 매칭 (1688·Alibaba·AliExpress)",
       }),
     });
   } catch (err) {
@@ -32,9 +32,9 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string) {
 
 // POST /api/shorts-sourcing/match-product
 // Body: { session_id }
-// Reverse-image-searches the session's uploaded screenshot against 1688 so the
-// admin can confirm the exact product before generating Douyin/Xiaohongshu
-// search keywords from it (see /api/shorts-sourcing/matches/[matchId] PATCH).
+// Reverse-image-searches the session's uploaded screenshot against 1688, Alibaba,
+// and AliExpress so the admin can confirm the exact product before generating
+// Douyin/Xiaohongshu search keywords from it (see /api/shorts-sourcing/matches/[matchId] PATCH).
 export async function POST(request: NextRequest) {
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
@@ -65,11 +65,11 @@ export async function POST(request: NextRequest) {
 
   let matches;
   try {
-    matches = await searchProductMatchesOn1688(imageUrl);
+    matches = await searchProductMatches(imageUrl);
   } catch (err) {
     console.error("[shorts-sourcing/match-product] search failed:", err);
     return NextResponse.json(
-      { error: "match_search_failed", message: "1688 제품 매칭에 실패했습니다. 잠시 후 다시 시도해 주세요." },
+      { error: "match_search_failed", message: "제품 매칭에 실패했습니다. 잠시 후 다시 시도해 주세요." },
       { status: 502 }
     );
   }

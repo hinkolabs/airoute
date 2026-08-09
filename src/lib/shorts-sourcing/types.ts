@@ -58,9 +58,17 @@ export interface SourceItem {
 }
 
 /** A candidate product listing found by reverse-image-searching the uploaded
- *  screenshot against a Chinese wholesale/B2B marketplace (currently only 1688). */
-export const PRODUCT_MATCH_PROVIDERS = ["1688"] as const;
+ *  screenshot against Chinese wholesale/marketplace sites. `devcake/scraper-by-image`
+ *  (the Apify actor backing this) only supports these three providers — Taobao is
+ *  NOT supported (verified live 2026-08-09; the actor rejects any other value). */
+export const PRODUCT_MATCH_PROVIDERS = ["1688", "alibaba", "aliexpress"] as const;
 export type ProductMatchProvider = (typeof PRODUCT_MATCH_PROVIDERS)[number];
+
+export const PRODUCT_MATCH_PROVIDER_LABEL: Record<ProductMatchProvider, string> = {
+  "1688": "1688",
+  alibaba: "Alibaba",
+  aliexpress: "AliExpress",
+};
 
 export interface ProductMatch {
   id?: string;

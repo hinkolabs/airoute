@@ -30,7 +30,7 @@ export const CREDIT_COSTS = {
 
   // Shopping shorts sourcing (admin-only for now; keys already wired for future rollout)
   shorts_sourcing_vision_analyze: 10,  // product image -> ProductAnalysis (cached by image hash)
-  shorts_sourcing_product_match: 10,   // product image -> 1688 reverse-image-search candidates
+  shorts_sourcing_product_match: 20,   // product image -> reverse-image-search across 1688 + Alibaba + AliExpress (3 actor runs)
   shorts_sourcing_search_job: 5,       // per uncached platform x keyword Apify job
   shorts_sourcing_precise_rank: 15,    // AI 정밀 정렬 (top 20 visual_score pass)
 } as const;
