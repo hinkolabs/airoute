@@ -217,6 +217,7 @@ function DashboardTab({ onNavigate }: { onNavigate: (tab: Tab) => void }) {
           <QuickLink href="/admin/tools" label="툴 관리" desc="등록/수정/삭제/번역" />
           <QuickLink href="/admin/routes" label="루트 관리" desc="등록/수정/삭제" />
           <QuickLink href="/admin/guides" label="가이드 관리" desc="생성/수정/삭제" />
+          <QuickLink href="/admin/shopping-shorts" label="쇼핑숏츠 소싱" desc="상품 이미지 → 영상 후보 찾기" />
         </div>
       </div>
     </div>
