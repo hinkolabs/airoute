@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Heart, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -47,13 +48,25 @@ export default function ResultCard({
   const duration = formatDuration(item.duration_seconds);
   const likes = formatCount(item.like_count);
   const scorePercent = item.final_score !== null ? Math.round(item.final_score * 100) : null;
+  const [imgFailed, setImgFailed] = useState(false);
+
+  // Douyin/Xiaohongshu CDN thumbnails block direct hotlinking (Referer check), so
+  // they're loaded through our server-side proxy instead of the raw CDN url.
+  const proxiedThumbnailUrl = item.thumbnail_url
+    ? `/api/shorts-sourcing/thumbnail-proxy?platform=${item.platform}&url=${encodeURIComponent(item.thumbnail_url)}`
+    : null;
 
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
       <div className="relative aspect-[9/13] w-full bg-muted">
-        {item.thumbnail_url ? (
+        {proxiedThumbnailUrl && !imgFailed ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={item.thumbnail_url} alt={item.title ?? "썸네일"} className="h-full w-full object-cover" />
+          <img
+            src={proxiedThumbnailUrl}
+            alt={item.title ?? "썸네일"}
+            className="h-full w-full object-cover"
+            onError={() => setImgFailed(true)}
+          />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">
             미리보기 없음

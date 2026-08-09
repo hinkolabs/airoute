@@ -85,7 +85,14 @@ export default function FavoritesClient() {
                 <div className="h-24 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                   {item.thumbnail_url && (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={item.thumbnail_url} alt={item.title ?? ""} className="h-full w-full object-cover" />
+                    <img
+                      src={`/api/shorts-sourcing/thumbnail-proxy?platform=${item.platform}&url=${encodeURIComponent(item.thumbnail_url)}`}
+                      alt={item.title ?? ""}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.style.display = "none";
+                      }}
+                    />
                   )}
                 </div>
                 <div className="flex-1 space-y-1">
