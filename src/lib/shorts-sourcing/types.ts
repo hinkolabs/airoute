@@ -7,11 +7,14 @@
 export const SHORTS_PLATFORMS = ["douyin", "xiaohongshu"] as const;
 export type ShortsPlatform = (typeof SHORTS_PLATFORMS)[number];
 
-export const SHORTS_VISION_PROMPT_VERSION = "v1";
+// v2 (2026-08): keywords must combine 2+ distinguishing attributes instead of a
+// single generic category noun (e.g. "创意铅笔晴雨伞" instead of bare "晴雨伞"),
+// so search results stay narrow to this specific product instead of the whole category.
+export const SHORTS_VISION_PROMPT_VERSION = "v2";
 
 // Separate prompt-version namespace for text-only sessions (see analyze-text/route.ts)
 // so its session cache never collides with image-analysis cache entries.
-export const SHORTS_TEXT_KEYWORDS_PROMPT_VERSION = "text-v1";
+export const SHORTS_TEXT_KEYWORDS_PROMPT_VERSION = "text-v2";
 
 /** Structured result of analyzing a product screenshot with a vision model. */
 export interface ProductAnalysis {
