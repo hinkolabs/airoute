@@ -1,8 +1,7 @@
 import { createHash } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminSupabase } from "@/lib/supabase/admin";
 import { getDemoMode } from "@/lib/flags";
+import { requireUser, resolveWorkspaceId, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 import { analyzeProductImage } from "@/lib/shorts-sourcing/analyze-product-image";
 import { SHORTS_VISION_PROMPT_VERSION } from "@/lib/shorts-sourcing/types";
 import { CREDIT_COSTS } from "@/lib/credit-costs";
@@ -41,29 +40,24 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string) {
 }
 
 // POST /api/shorts-sourcing/analyze-image
-// FormData: { file, workspace_id }
+// FormData: { file, workspace_id? } — workspace_id is ignored/optional in admin-key mode
+// (see /lib/shorts-sourcing/api-guard.ts), required for real Supabase-user callers.
 export async function POST(request: NextRequest) {
   if (await getDemoMode()) {
     return new NextResponse(null, { status: 404 });
   }
 
   try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-    }
+    const ctx = await requireUser();
+    if (isErrorResponse(ctx)) return ctx;
+    const admin = ctx.admin;
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
-    const workspaceId = formData.get("workspace_id") as string | null;
+    const requestedWorkspaceId = formData.get("workspace_id") as string | null;
 
-    if (!file || !workspaceId) {
-      return NextResponse.json({ error: "file and workspace_id are required" }, { status: 400 });
+    if (!file) {
+      return NextResponse.json({ error: "file is required" }, { status: 400 });
     }
 
     const ext = ALLOWED_TYPES[file.type];
@@ -81,17 +75,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify workspace membership
-    const { data: membership, error: membershipError } = await supabase
-      .from("workspace_members")
-      .select("role")
-      .eq("workspace_id", workspaceId)
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (membershipError || !membership) {
-      return NextResponse.json({ error: "not_a_member" }, { status: 403 });
-    }
+    const wsResult = await resolveWorkspaceId(ctx, requestedWorkspaceId);
+    if (isErrorResponse(wsResult)) return wsResult;
+    const { workspaceId } = wsResult;
 
     if (process.env.OPENAI_ENABLED !== "true" || !process.env.OPENAI_API_KEY) {
       return NextResponse.json(
@@ -103,8 +89,6 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const imageHash = createHash("sha256").update(buffer).digest("hex");
-
-    const admin = createAdminSupabase();
 
     // Cache check: same workspace + image + prompt/model combo -> reuse existing analysis
     const { data: cachedSession } = await admin
@@ -181,7 +165,7 @@ export async function POST(request: NextRequest) {
       .from("shorts_sourcing_sessions")
       .insert({
         workspace_id: workspaceId,
-        created_by: user.id,
+        created_by: ctx.userId,
         image_hash: imageHash,
         image_storage_path: storagePath,
         product_name_ko: analysis.product_name_ko,

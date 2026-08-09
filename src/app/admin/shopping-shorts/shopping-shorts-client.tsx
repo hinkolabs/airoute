@@ -3,9 +3,8 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Sparkles, Loader2, Search, X, Plus } from "lucide-react";
-import { useWorkspace } from "@/app/_providers/workspace-provider";
 import { Button } from "@/components/ui/button";
-import { PageContainer, PageHeader, SectionCard, InfoBanner } from "../../_components/ui";
+import { PageContainer, PageHeader, SectionCard, InfoBanner } from "./_components/ui";
 import ShortsSourcingNav from "./_components/shorts-nav";
 import { SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
 
@@ -32,8 +31,6 @@ type PlatformFilter = "all" | "douyin" | "xiaohongshu";
 
 export default function ShoppingShortsClient() {
   const router = useRouter();
-  const { activeWorkspace } = useWorkspace();
-  const workspaceId = activeWorkspace?.workspace.id;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -70,14 +67,13 @@ export default function ShoppingShortsClient() {
   }
 
   async function handleAnalyze() {
-    if (!selectedFile || !workspaceId) return;
+    if (!selectedFile) return;
     setAnalyzing(true);
     setAnalyzeError(null);
 
     try {
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("workspace_id", workspaceId);
 
       const res = await fetch("/api/shorts-sourcing/analyze-image", {
         method: "POST",
@@ -133,7 +129,7 @@ export default function ShoppingShortsClient() {
   }
 
   async function handleSearch() {
-    if (!sessionId || !workspaceId) return;
+    if (!sessionId) return;
     const selectedKeywordIds = keywords.filter((k) => k.is_selected).map((k) => k.id);
     if (selectedKeywordIds.length === 0) {
       setSearchError("검색어를 최소 1개 이상 선택해주세요.");
@@ -149,7 +145,6 @@ export default function ShoppingShortsClient() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           session_id: sessionId,
-          workspace_id: workspaceId,
           keyword_ids: selectedKeywordIds,
           platform,
           limit_per_keyword: resultsPerKeyword,
@@ -159,7 +154,7 @@ export default function ShoppingShortsClient() {
       if (!res.ok) {
         throw new Error(data.message || "영상 검색을 시작하지 못했습니다.");
       }
-      router.push(`/kr/workspace/admin/shopping-shorts/session/${sessionId}`);
+      router.push(`/admin/shopping-shorts/session/${sessionId}`);
     } catch (err: any) {
       setSearchError(err.message || "영상 검색을 시작하지 못했습니다.");
     } finally {

@@ -16,7 +16,7 @@ export async function PATCH(
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId, keywordId } = await params;
 
-  const access = await requireSessionAccess(ctx.admin, sessionId, ctx.user.id);
+  const access = await requireSessionAccess(ctx, sessionId);
   if (isErrorResponse(access)) return access;
 
   const body = await request.json().catch(() => ({}));
@@ -48,7 +48,7 @@ export async function DELETE(
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId, keywordId } = await params;
 
-  const access = await requireSessionAccess(ctx.admin, sessionId, ctx.user.id);
+  const access = await requireSessionAccess(ctx, sessionId);
   if (isErrorResponse(access)) return access;
 
   const { error } = await ctx.admin

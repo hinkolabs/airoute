@@ -16,7 +16,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
   if (isErrorResponse(ctx)) return ctx;
   const { sessionId } = await params;
 
-  const access = await requireSessionAccess(ctx.admin, sessionId, ctx.user.id);
+  const access = await requireSessionAccess(ctx, sessionId);
   if (isErrorResponse(access)) return access;
 
   const [{ data: session }, { data: jobs }, { data: items }, { data: favorites }, { data: keywordRows }] = await Promise.all([

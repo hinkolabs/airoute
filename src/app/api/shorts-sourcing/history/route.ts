@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDemoMode } from "@/lib/flags";
-import { requireUser, requireWorkspaceMember, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
+import { requireUser, resolveWorkspaceId, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/shorts-sourcing/history?workspace_id=...
+// GET /api/shorts-sourcing/history?workspace_id=... (workspace_id optional in admin-key mode)
 // Lists past sourcing sessions ("검색 기록"). Opening this never calls any external API.
 export async function GET(request: NextRequest) {
   if (await getDemoMode()) return new NextResponse(null, { status: 404 });
@@ -12,13 +12,10 @@ export async function GET(request: NextRequest) {
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 
-  const workspaceId = new URL(request.url).searchParams.get("workspace_id");
-  if (!workspaceId) {
-    return NextResponse.json({ error: "workspace_id is required" }, { status: 400 });
-  }
-
-  const membership = await requireWorkspaceMember(ctx.admin, workspaceId, ctx.user.id);
-  if (isErrorResponse(membership)) return membership;
+  const requestedWorkspaceId = new URL(request.url).searchParams.get("workspace_id");
+  const resolved = await resolveWorkspaceId(ctx, requestedWorkspaceId);
+  if (isErrorResponse(resolved)) return resolved;
+  const { workspaceId } = resolved;
 
   const { data: sessions, error } = await ctx.admin
     .from("shorts_sourcing_sessions")

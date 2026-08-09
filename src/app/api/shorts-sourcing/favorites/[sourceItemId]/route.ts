@@ -16,7 +16,7 @@ export async function PATCH(
   if (isErrorResponse(ctx)) return ctx;
   const { sourceItemId } = await params;
 
-  const access = await requireSourceItemAccess(ctx.admin, sourceItemId, ctx.user.id);
+  const access = await requireSourceItemAccess(ctx, sourceItemId);
   if (isErrorResponse(access)) return access;
 
   const body = await request.json().catch(() => ({}));
@@ -52,7 +52,7 @@ export async function DELETE(
   if (isErrorResponse(ctx)) return ctx;
   const { sourceItemId } = await params;
 
-  const access = await requireSourceItemAccess(ctx.admin, sourceItemId, ctx.user.id);
+  const access = await requireSourceItemAccess(ctx, sourceItemId);
   if (isErrorResponse(access)) return access;
 
   const { error } = await ctx.admin.from("shorts_favorites").delete().eq("source_item_id", sourceItemId);

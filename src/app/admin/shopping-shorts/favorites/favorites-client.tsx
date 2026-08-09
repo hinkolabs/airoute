@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Heart, ExternalLink } from "lucide-react";
-import { useWorkspace } from "@/app/_providers/workspace-provider";
-import { PageContainer, PageHeader, EmptyState, SkeletonRow, Card } from "../../../_components/ui";
+import { PageContainer, PageHeader, EmptyState, SkeletonRow, Card } from "../_components/ui";
 import ShortsSourcingNav from "../_components/shorts-nav";
 
 interface FavoriteRow {
@@ -32,21 +31,18 @@ const STATUS_LABEL: Record<FavoriteRow["usage_status"], string> = {
 };
 
 export default function FavoritesClient() {
-  const { activeWorkspace } = useWorkspace();
-  const workspaceId = activeWorkspace?.workspace.id;
   const [favorites, setFavorites] = useState<FavoriteRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!workspaceId) return;
     (async () => {
       setLoading(true);
-      const res = await fetch(`/api/shorts-sourcing/favorites?workspace_id=${workspaceId}`);
+      const res = await fetch("/api/shorts-sourcing/favorites");
       const data = await res.json();
       if (res.ok) setFavorites(data.favorites ?? []);
       setLoading(false);
     })();
-  }, [workspaceId]);
+  }, []);
 
   async function removeFavorite(sourceItemId: string) {
     setFavorites((prev) => prev.filter((f) => f.source_item?.id !== sourceItemId));

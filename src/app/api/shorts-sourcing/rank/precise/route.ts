@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "session_id is required" }, { status: 400 });
   }
 
-  const access = await requireSessionAccess(ctx.admin, sessionId, ctx.user.id);
+  const access = await requireSessionAccess(ctx, sessionId);
   if (isErrorResponse(access)) return access;
 
   if (process.env.OPENAI_ENABLED !== "true" || !process.env.OPENAI_API_KEY) {

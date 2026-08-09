@@ -5,9 +5,9 @@ import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
 const TABS = [
-  { label: "새 소싱", href: "/kr/workspace/admin/shopping-shorts" },
-  { label: "소싱함", href: "/kr/workspace/admin/shopping-shorts/favorites" },
-  { label: "검색 기록", href: "/kr/workspace/admin/shopping-shorts/history" },
+  { label: "새 소싱", href: "/admin/shopping-shorts" },
+  { label: "소싱함", href: "/admin/shopping-shorts/favorites" },
+  { label: "검색 기록", href: "/admin/shopping-shorts/history" },
 ];
 
 export default function ShortsSourcingNav() {
@@ -17,7 +17,7 @@ export default function ShortsSourcingNav() {
     <div className="flex gap-1 border-b border-border">
       {TABS.map((tab) => {
         const active =
-          tab.href === "/kr/workspace/admin/shopping-shorts"
+          tab.href === "/admin/shopping-shorts"
             ? pathname === tab.href
             : pathname.startsWith(tab.href);
         return (

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { PageContainer, PageHeader, InfoBanner, EmptyState } from "../../../../_components/ui";
+import { PageContainer, PageHeader, InfoBanner, EmptyState } from "../../_components/ui";
 import ShortsSourcingNav from "../../_components/shorts-nav";
 import ResultCard, { ResultCardItem } from "../../_components/result-card";
 
@@ -116,7 +116,7 @@ export default function SessionResultsClient({ sessionId }: { sessionId: string 
   return (
     <PageContainer>
       <Link
-        href="/kr/workspace/admin/shopping-shorts"
+        href="/admin/shopping-shorts"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" /> 새 소싱으로 돌아가기

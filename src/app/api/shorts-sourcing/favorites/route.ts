@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDemoMode } from "@/lib/flags";
-import { requireUser, requireWorkspaceMember, requireSourceItemAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
+import { requireUser, resolveWorkspaceId, requireSourceItemAccess, isErrorResponse } from "@/lib/shorts-sourcing/api-guard";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/shorts-sourcing/favorites?workspace_id=...
+// GET /api/shorts-sourcing/favorites?workspace_id=... (workspace_id optional in admin-key mode)
 // Lists all favorited candidates for a workspace ("소싱함"), newest first.
 export async function GET(request: NextRequest) {
   if (await getDemoMode()) return new NextResponse(null, { status: 404 });
@@ -12,13 +12,10 @@ export async function GET(request: NextRequest) {
   const ctx = await requireUser();
   if (isErrorResponse(ctx)) return ctx;
 
-  const workspaceId = new URL(request.url).searchParams.get("workspace_id");
-  if (!workspaceId) {
-    return NextResponse.json({ error: "workspace_id is required" }, { status: 400 });
-  }
-
-  const membership = await requireWorkspaceMember(ctx.admin, workspaceId, ctx.user.id);
-  if (isErrorResponse(membership)) return membership;
+  const requestedWorkspaceId = new URL(request.url).searchParams.get("workspace_id");
+  const resolved = await resolveWorkspaceId(ctx, requestedWorkspaceId);
+  if (isErrorResponse(resolved)) return resolved;
+  const { workspaceId } = resolved;
 
   const { data: favorites, error } = await ctx.admin
     .from("shorts_favorites")
@@ -50,7 +47,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "source_item_id is required" }, { status: 400 });
   }
 
-  const access = await requireSourceItemAccess(ctx.admin, sourceItemId, ctx.user.id);
+  const access = await requireSourceItemAccess(ctx, sourceItemId);
   if (isErrorResponse(access)) return access;
 
   const { data: favorite, error } = await ctx.admin
@@ -60,7 +57,7 @@ export async function POST(request: NextRequest) {
         source_item_id: sourceItemId,
         workspace_id: access.workspaceId,
         note: typeof body.note === "string" ? body.note : null,
-        created_by: ctx.user.id,
+        created_by: ctx.userId,
       },
       { onConflict: "source_item_id" }
     )

@@ -3,8 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { History, ChevronRight } from "lucide-react";
-import { useWorkspace } from "@/app/_providers/workspace-provider";
-import { PageContainer, PageHeader, EmptyState, Card, SkeletonRow } from "../../../_components/ui";
+import { PageContainer, PageHeader, EmptyState, Card, SkeletonRow } from "../_components/ui";
 import ShortsSourcingNav from "../_components/shorts-nav";
 
 interface SessionRow {
@@ -16,21 +15,18 @@ interface SessionRow {
 }
 
 export default function HistoryClient() {
-  const { activeWorkspace } = useWorkspace();
-  const workspaceId = activeWorkspace?.workspace.id;
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!workspaceId) return;
     (async () => {
       setLoading(true);
-      const res = await fetch(`/api/shorts-sourcing/history?workspace_id=${workspaceId}`);
+      const res = await fetch("/api/shorts-sourcing/history");
       const data = await res.json();
       if (res.ok) setSessions(data.sessions ?? []);
       setLoading(false);
     })();
-  }, [workspaceId]);
+  }, []);
 
   return (
     <PageContainer>
@@ -50,7 +46,7 @@ export default function HistoryClient() {
       ) : (
         <div className="space-y-2">
           {sessions.map((s) => (
-            <Link key={s.id} href={`/kr/workspace/admin/shopping-shorts/session/${s.id}`}>
+            <Link key={s.id} href={`/admin/shopping-shorts/session/${s.id}`}>
               <Card className="flex items-center justify-between" onClick={() => {}}>
                 <div>
                   <p className="text-sm font-medium">{s.product_name_ko ?? "이름 없는 상품"}</p>

@@ -26,7 +26,8 @@ async function tryConsumeCredits(request: NextRequest, workspaceId: string, jobs
 }
 
 // POST /api/shorts-sourcing/search
-// Body: { session_id, workspace_id, keyword_ids: string[], platform: "all"|"douyin"|"xiaohongshu", limit_per_keyword }
+// Body: { session_id, keyword_ids: string[], platform: "all"|"douyin"|"xiaohongshu", limit_per_keyword }
+// workspace_id is derived from the session itself (via requireSessionAccess) — no need to pass it.
 export async function POST(request: NextRequest) {
   if (await getDemoMode()) return new NextResponse(null, { status: 404 });
 
@@ -34,16 +35,15 @@ export async function POST(request: NextRequest) {
   if (isErrorResponse(ctx)) return ctx;
 
   const body = await request.json().catch(() => ({}));
-  const { session_id, workspace_id, keyword_ids, platform, limit_per_keyword } = body as {
+  const { session_id, keyword_ids, platform, limit_per_keyword } = body as {
     session_id?: string;
-    workspace_id?: string;
     keyword_ids?: string[];
     platform?: "all" | ShortsPlatform;
     limit_per_keyword?: number;
   };
 
-  if (!session_id || !workspace_id || !Array.isArray(keyword_ids) || keyword_ids.length === 0) {
-    return NextResponse.json({ error: "session_id, workspace_id, keyword_ids are required" }, { status: 400 });
+  if (!session_id || !Array.isArray(keyword_ids) || keyword_ids.length === 0) {
+    return NextResponse.json({ error: "session_id, keyword_ids are required" }, { status: 400 });
   }
 
   if (keyword_ids.length > SHORTS_SEARCH_LIMITS.maxKeywordsPerSession) {
@@ -53,11 +53,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const access = await requireSessionAccess(ctx.admin, session_id, ctx.user.id);
+  const access = await requireSessionAccess(ctx, session_id);
   if (isErrorResponse(access)) return access;
-  if (access.workspaceId !== workspace_id) {
-    return NextResponse.json({ error: "workspace_mismatch" }, { status: 403 });
-  }
+  const workspace_id = access.workspaceId;
 
   const webhookSecret = process.env.SHORTS_SOURCING_WEBHOOK_SECRET;
   if (!webhookSecret) {
