@@ -86,3 +86,37 @@ export async function fetchApifyDatasetItems(datasetId: string): Promise<unknown
   const items = await res.json();
   return Array.isArray(items) ? items : [];
 }
+
+/**
+ * Runs an Actor synchronously and returns its dataset items directly in one HTTP
+ * call (Apify's `run-sync-get-dataset-items` endpoint) — no webhook/polling needed.
+ * Only suitable for short-lived, single-shot runs (e.g. one reverse-image-search
+ * call) since the request blocks until the Actor finishes or `timeoutSecs` elapses.
+ */
+export async function runApifyActorSyncGetDatasetItems(params: {
+  actorId: string;
+  input: Record<string, unknown>;
+  timeoutSecs?: number;
+}): Promise<unknown[]> {
+  const token = getApifyToken();
+  const timeoutSecs = params.timeoutSecs ?? 55; // stay under Next.js route's maxDuration=60
+
+  const url = `${APIFY_API_BASE}/acts/${encodeURIComponent(
+    params.actorId
+  )}/run-sync-get-dataset-items?token=${encodeURIComponent(token)}&timeout=${timeoutSecs}&clean=true`;
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params.input),
+  });
+
+  if (!res.ok) {
+    const errBody = await res.text().catch(() => "");
+    console.error("[apify-client] runApifyActorSyncGetDatasetItems failed:", res.status, errBody);
+    throw new Error("apify_sync_run_failed");
+  }
+
+  const items = await res.json();
+  return Array.isArray(items) ? items : [];
+}

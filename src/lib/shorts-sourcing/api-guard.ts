@@ -135,6 +135,30 @@ export async function requireSessionAccess(
 }
 
 /**
+ * Looks up which workspace a 1688 product match belongs to, and verifies the
+ * current caller may access it. Returns the session_id + workspace_id, or an
+ * error response.
+ */
+export async function requireProductMatchAccess(
+  ctx: AuthedContext,
+  matchId: string
+): Promise<{ sessionId: string; workspaceId: string } | NextResponse> {
+  const { data: match } = await ctx.admin
+    .from("shorts_product_matches")
+    .select("session_id, workspace_id")
+    .eq("id", matchId)
+    .maybeSingle();
+
+  if (!match) {
+    return NextResponse.json({ error: "match_not_found" }, { status: 404 });
+  }
+
+  const ok = await verifyWorkspaceAccess(ctx, match.workspace_id);
+  if (ok !== true) return ok;
+  return { sessionId: match.session_id, workspaceId: match.workspace_id };
+}
+
+/**
  * Looks up which workspace a source item belongs to, and verifies the current
  * caller may access it. Returns the workspace_id, or an error response.
  */

@@ -2,11 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, Sparkles, Loader2, Search, X, Plus } from "lucide-react";
+import { Upload, Sparkles, Loader2, Search, X, Plus, Check, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageContainer, PageHeader, SectionCard, InfoBanner } from "./_components/ui";
 import ShortsSourcingNav from "./_components/shorts-nav";
-import { SHORTS_SEARCH_LIMITS } from "@/lib/shorts-sourcing/types";
+import { SHORTS_SEARCH_LIMITS, ProductMatch } from "@/lib/shorts-sourcing/types";
 
 interface ProductAnalysis {
   product_name_ko: string;
@@ -27,6 +27,25 @@ interface KeywordRow {
   is_selected: boolean;
 }
 
+interface MatchRow extends ProductMatch {
+  id: string;
+}
+
+function formatPrice(match: MatchRow): string | null {
+  if (match.price_min === null) return null;
+  const currency = match.currency ?? "CNY";
+  if (match.price_max !== null && match.price_max !== match.price_min) {
+    return `${match.price_min}~${match.price_max} ${currency}`;
+  }
+  return `${match.price_min} ${currency}`;
+}
+
+function formatSold(count: number | null): string | null {
+  if (count === null || count === undefined) return null;
+  if (count >= 10000) return `${(count / 10000).toFixed(1)}만개 판매`;
+  return `${count}개 판매`;
+}
+
 type PlatformFilter = "all" | "douyin" | "xiaohongshu";
 
 export default function ShoppingShortsClient() {
@@ -43,6 +62,11 @@ export default function ShoppingShortsClient() {
   const [keywords, setKeywords] = useState<KeywordRow[]>([]);
   const [newKeyword, setNewKeyword] = useState("");
 
+  const [matches, setMatches] = useState<MatchRow[]>([]);
+  const [matching, setMatching] = useState(false);
+  const [matchError, setMatchError] = useState<string | null>(null);
+  const [selectingMatchId, setSelectingMatchId] = useState<string | null>(null);
+
   const [platform, setPlatform] = useState<PlatformFilter>("all");
   const [resultsPerKeyword, setResultsPerKeyword] = useState<number>(SHORTS_SEARCH_LIMITS.defaultResultsPerKeyword);
   const [searching, setSearching] = useState(false);
@@ -55,6 +79,8 @@ export default function ShoppingShortsClient() {
     setAnalysis(null);
     setKeywords([]);
     setSessionId(null);
+    setMatches([]);
+    setMatchError(null);
     const reader = new FileReader();
     reader.onload = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
@@ -92,6 +118,50 @@ export default function ShoppingShortsClient() {
       setAnalyzeError(err.message || "상품 분석에 실패했습니다.");
     } finally {
       setAnalyzing(false);
+    }
+  }
+
+  async function handleMatchProduct() {
+    if (!sessionId) return;
+    setMatching(true);
+    setMatchError(null);
+
+    try {
+      const res = await fetch("/api/shorts-sourcing/match-product", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "1688 제품 매칭에 실패했습니다.");
+      }
+      setMatches(data.matches ?? []);
+    } catch (err) {
+      setMatchError(err instanceof Error ? err.message : "1688 제품 매칭에 실패했습니다.");
+    } finally {
+      setMatching(false);
+    }
+  }
+
+  async function selectMatch(matchId: string) {
+    setSelectingMatchId(matchId);
+    setMatches((prev) => prev.map((m) => ({ ...m, is_selected: m.id === matchId })));
+
+    try {
+      const res = await fetch(`/api/shorts-sourcing/matches/${matchId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_selected: true }),
+      });
+      const data = await res.json();
+      if (res.ok && data.keywords) {
+        setKeywords(data.keywords);
+      }
+    } catch {
+      // best-effort — keyword refresh failing just means the admin edits keywords manually below
+    } finally {
+      setSelectingMatchId(null);
     }
   }
 
@@ -215,7 +285,92 @@ export default function ShoppingShortsClient() {
       </SectionCard>
 
       {analysis && (
-        <SectionCard title="2. 분석 결과 · 검색어 편집" subtitle="중국어를 몰라도 그대로 검색을 진행할 수 있습니다.">
+        <SectionCard
+          title="2. 1688에서 정확한 제품 찾기"
+          subtitle="쿠팡 상품과 정확히 같은 제품을 1688에서 사진으로 찾습니다. 목록에서 맞는 것을 직접 선택해주세요."
+        >
+          {matches.length === 0 && (
+            <Button onClick={handleMatchProduct} disabled={matching} variant="outline">
+              {matching ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 1688 검색 중...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" /> 1688에서 이 제품 찾기
+                </>
+              )}
+            </Button>
+          )}
+
+          {matchError && (
+            <InfoBanner variant="error" className="mt-3">{matchError}</InfoBanner>
+          )}
+
+          {matches.length > 0 && (
+            <>
+              <div className="mt-1 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                {matches.map((m) => (
+                  <button
+                    key={m.id}
+                    onClick={() => selectMatch(m.id)}
+                    disabled={selectingMatchId !== null}
+                    className={`overflow-hidden rounded-xl border text-left transition-colors ${
+                      m.is_selected ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/40"
+                    }`}
+                  >
+                    <div className="relative aspect-square w-full bg-muted">
+                      {m.image_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={m.image_url}
+                          alt={m.title}
+                          className="h-full w-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                          <ImageOff className="h-5 w-5" />
+                        </div>
+                      )}
+                      {m.image_rank !== null && (
+                        <span className="absolute left-1.5 top-1.5 rounded-full bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold text-white">
+                          매칭 {m.image_rank}위
+                        </span>
+                      )}
+                      {m.is_selected && (
+                        <span className="absolute right-1.5 top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          {selectingMatchId === m.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <Check className="h-3 w-3" />
+                          )}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-0.5 p-2">
+                      <p className="line-clamp-2 text-xs font-medium leading-snug">{m.title}</p>
+                      <div className="flex flex-wrap items-center gap-x-1.5 text-[11px] text-muted-foreground">
+                        {formatPrice(m) && <span>{formatPrice(m)}</span>}
+                        {formatSold(m.sold_count) && <span>· {formatSold(m.sold_count)}</span>}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <Button onClick={handleMatchProduct} disabled={matching} variant="ghost" size="sm" className="mt-3">
+                {matching ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Search className="mr-1.5 h-3.5 w-3.5" />}
+                다시 검색
+              </Button>
+            </>
+          )}
+        </SectionCard>
+      )}
+
+      {analysis && (
+        <SectionCard title="3. 분석 결과 · 검색어 편집" subtitle="중국어를 몰라도 그대로 검색을 진행할 수 있습니다. 1688 제품을 선택하면 검색어가 자동으로 갱신됩니다.">
           <dl className="grid grid-cols-[80px_1fr] gap-y-2 text-sm">
             <dt className="text-muted-foreground">상품명</dt>
             <dd className="font-medium">{analysis.product_name_ko}</dd>
@@ -268,7 +423,7 @@ export default function ShoppingShortsClient() {
       )}
 
       {analysis && (
-        <SectionCard title="3. 플랫폼 선택 · 검색 실행">
+        <SectionCard title="4. 플랫폼 선택 · 검색 실행">
           <div className="flex gap-2">
             {([
               { key: "all", label: "전체" },

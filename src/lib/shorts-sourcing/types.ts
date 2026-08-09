@@ -57,6 +57,34 @@ export interface SourceItem {
   final_score: number | null;
 }
 
+/** A candidate product listing found by reverse-image-searching the uploaded
+ *  screenshot against a Chinese wholesale/B2B marketplace (currently only 1688). */
+export const PRODUCT_MATCH_PROVIDERS = ["1688"] as const;
+export type ProductMatchProvider = (typeof PRODUCT_MATCH_PROVIDERS)[number];
+
+export interface ProductMatch {
+  id?: string;
+  session_id?: string;
+  workspace_id?: string;
+  provider: ProductMatchProvider;
+  product_id: string;
+  title: string;
+  description: string | null;
+  image_url: string;
+  images: string[];
+  product_url: string;
+  price_min: number | null;
+  price_max: number | null;
+  currency: string | null;
+  shop_name: string | null;
+  shop_url: string | null;
+  rating: number | null;
+  sold_count: number | null;
+  image_rank: number | null; // 1 = closest visual match, per the provider's own ranking
+  tags: string[];
+  is_selected: boolean;
+}
+
 export type SourcingJobStatus = "pending" | "running" | "succeeded" | "failed";
 
 export interface SourcingJob {
