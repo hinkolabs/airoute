@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, ExternalLink } from "lucide-react";
+import { Heart, ExternalLink, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface ResultCardItem {
@@ -11,6 +11,7 @@ export interface ResultCardItem {
   title: string | null;
   author_name: string | null;
   thumbnail_url: string | null;
+  media_url: string | null;
   duration_seconds: number | null;
   like_count: number | null;
   published_at?: string | null;
@@ -56,6 +57,14 @@ export default function ResultCard({
     ? `/api/shorts-sourcing/thumbnail-proxy?platform=${item.platform}&url=${encodeURIComponent(item.thumbnail_url)}`
     : null;
 
+  // Xiaohongshu's actor doesn't expose a playable video url, so media_url stays
+  // null there — download button only ever shows up for Douyin items.
+  const downloadUrl = item.media_url
+    ? `/api/shorts-sourcing/download-video?platform=${item.platform}&url=${encodeURIComponent(
+        item.media_url
+      )}&filename=${encodeURIComponent(`${item.platform}_${item.id ?? "video"}.mp4`)}`
+    : null;
+
   return (
     <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md">
       <div className="relative aspect-[9/13] w-full bg-muted">
@@ -92,14 +101,26 @@ export default function ResultCard({
           {likes && <span>♥ {likes}</span>}
           {duration && <span>{duration}</span>}
         </div>
-        <a
-          href={item.canonical_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-1 flex items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-xs font-medium text-foreground hover:bg-muted"
-        >
-          원본 보기 <ExternalLink className="h-3 w-3" />
-        </a>
+        <div className="mt-1 flex items-center gap-1.5">
+          <a
+            href={item.canonical_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+          >
+            원본 보기 <ExternalLink className="h-3 w-3" />
+          </a>
+          {downloadUrl && (
+            <a
+              href={downloadUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex flex-1 items-center justify-center gap-1 rounded-lg border border-border py-1.5 text-xs font-medium text-foreground hover:bg-muted"
+            >
+              다운로드 <Download className="h-3 w-3" />
+            </a>
+          )}
+        </div>
       </div>
     </div>
   );
