@@ -19,6 +19,7 @@ import {
   Sparkles,
   Shield,
   Loader2,
+  Video,
 } from "lucide-react";
 
 type Tab = "dashboard" | "routes" | "tools" | "guides" | "tests";
@@ -77,6 +78,13 @@ export default function AdminPageClient() {
                 </button>
               );
             })}
+            <Link
+              href="/admin/shopping-shorts"
+              className="ml-auto flex items-center gap-2 border-b-2 border-transparent px-5 py-3.5 text-sm font-medium text-muted-foreground transition hover:text-foreground"
+            >
+              <Video className="h-4 w-4" />
+              쇼핑숏츠
+            </Link>
           </div>
         </div>
       </nav>
